@@ -274,7 +274,7 @@ void bddprintzbddelements(FILE* fp, bddp f, const char* delim1,
 }
 
 sbddextended_INLINE_FUNC
-bddp bddconstructzddfromfile_inner(FILE* fp, int is_hex
+bddp bddconstructzddfromfileknuth_inner(FILE* fp, int is_hex
 #ifdef __cplusplus
                              , const GetLineObject& sbddextended_getLine
 #endif
@@ -384,36 +384,36 @@ bddp bddconstructzddfromfile_inner(FILE* fp, int is_hex
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-ZBDD ConstructZDDFromFile(FILE* fp, bool is_hex)
+ZBDD ConstructZDDFromFileKnuth(FILE* fp, bool is_hex)
 {
     GetLineObject glo(false, NULL);
     bddp p;
-    p = bddconstructzddfromfile_inner(fp, (is_hex ? 1 : 0), glo);
+    p = bddconstructzddfromfileknuth_inner(fp, (is_hex ? 1 : 0), glo);
     return ZBDD_ID(p);
 }
 
 sbddextended_INLINE_FUNC
-ZBDD ConstructZDDFromFile(std::istream& ist, bool is_hex)
+ZBDD ConstructZDDFromFileKnuth(std::istream& ist, bool is_hex)
 {
     GetLineObject glo(true, &ist);
     bddp p;
-    p = bddconstructzddfromfile_inner(NULL, (is_hex ? 1 : 0), glo);
+    p = bddconstructzddfromfileknuth_inner(NULL, (is_hex ? 1 : 0), glo);
     return ZBDD_ID(p);
 }
 
 sbddextended_INLINE_FUNC
-bddp bddconstructzddfromfile(FILE* fp, int is_hex)
+bddp bddconstructzddfromfileknuth(FILE* fp, int is_hex)
 {
     GetLineObject glo(false, NULL);
-    return bddconstructzddfromfile_inner(fp, (is_hex ? 1 : 0), glo);
+    return bddconstructzddfromfileknuth_inner(fp, (is_hex ? 1 : 0), glo);
 }
 
 #else
 
 sbddextended_INLINE_FUNC
-bddp bddconstructzddfromfile(FILE* fp, int is_hex)
+bddp bddconstructzddfromfileknuth(FILE* fp, int is_hex)
 {
-    return bddconstructzddfromfile_inner(fp, is_hex);
+    return bddconstructzddfromfileknuth_inner(fp, is_hex);
 }
 
 #endif

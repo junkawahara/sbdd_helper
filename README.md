@@ -1,4 +1,4 @@
-# SAPPOROBDD one header library
+# One header library for SAPPOROBDD
 
 このツールは SAPPOROBDD について知っている人向けです。
 SAPPOROBDD を使用する際に便利な関数を提供しています。
@@ -36,7 +36,7 @@ int main()
 
     bddinit(100000, 100000000);
     fp = fopen("file.txt", "r");
-    p = bddconstructzddfromfile(fp, 0); // import from file
+    p = bddconstructzddfromfileknuth(fp, 0); // import from file
     fclose(fp);
 
     return 0;
@@ -56,7 +56,7 @@ int main()
     BDD_Init(100000, 100000000);
 
     std::ifstream ifs("file.txt");
-    ZBDD z = ConstructZDDFromFile(ifs, false); // import from file
+    ZBDD z = ConstructZDDFromFileKnuth(ifs, false); // import from file
 
     return 0;
 }
