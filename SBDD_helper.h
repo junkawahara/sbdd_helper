@@ -343,6 +343,10 @@ bddp bddconstructzddfromfile_inner(FILE* fp, int is_hex
     }
     sbddextended_MyVector_add(&level_vec, lo_vec.count);
 
+    while (bddvarused() < level_vec.count - 1) {
+        bddnewvar();
+    }
+
     bddnode_buf = (bddp*)malloc(lo_vec.count * sizeof(bddp));
     bddnode_buf[0] = bddempty;
     bddnode_buf[1] = bddsingle;
