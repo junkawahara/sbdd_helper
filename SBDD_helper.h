@@ -44,6 +44,7 @@
 #endif
 
 typedef long long int llint;
+typedef unsigned long long int ullint;
 
 #define unused(a) (void)(a)
 
@@ -465,9 +466,19 @@ sbddextended_INLINE_FUNC int bddisconstant(bddp f)
     return (f & B_CST_MASK) ? 1 : 0;
 }
 
-sbddextended_INLINE_FUNC bddp takenot(bddp f)
+sbddextended_INLINE_FUNC bddp bddtakenot(bddp f)
 {
     return f ^ B_INV_MASK;
+}
+
+sbddextended_INLINE_FUNC bddp bddaddnot(bddp f)
+{
+    return f | B_INV_MASK;
+}
+
+sbddextended_INLINE_FUNC bddp bdderasenot(bddp f)
+{
+    return f & ~B_INV_MASK;
 }
 
 sbddextended_INLINE_FUNC int bddis64bitversion()
@@ -535,7 +546,7 @@ sbddextended_INLINE_FUNC bddp bddgetchild0(bddp f)
 sbddextended_INLINE_FUNC bddp bddgetchild0braw(bddp f)
 {
     if (bddisnegative(f)) {
-        return takenot(bddgetchild0b(f));
+        return bddtakenot(bddgetchild0b(f));
     } else {
         return bddgetchild0b(f);
     }
@@ -544,7 +555,7 @@ sbddextended_INLINE_FUNC bddp bddgetchild0braw(bddp f)
 sbddextended_INLINE_FUNC bddp bddgetchild0zraw(bddp f)
 {
     if (bddisnegative(f)) {
-        return takenot(bddgetchild0z(f));
+        return bddtakenot(bddgetchild0z(f));
     } else {
         return bddgetchild0z(f);
     }
@@ -599,7 +610,7 @@ sbddextended_INLINE_FUNC bddp bddgetchild1(bddp f)
 sbddextended_INLINE_FUNC bddp bddgetchild1braw(bddp f)
 {
     if (bddisnegative(f)) {
-        return takenot(bddgetchild1b(f));
+        return bddtakenot(bddgetchild1b(f));
     } else {
         return bddgetchild1b(f);
     }
@@ -845,6 +856,298 @@ bool IsMemberZ(const ZBDD& f, const std::vector<bddvar>& vararr)
 }
 #endif
 
+//******************** bddNodeIndex start ********************
+
+typedef struct tagbddNodeIndex {
+    int is_raw;
+    sbddextended_MyDict* node_dict_arr;
+    sbddextended_MyVector* level_vec_arr;
+    llint* offset_arr;
+    llint* count_arr;
+    int height;
+    bddp f;
+} bddNodeIndex;
+
+sbddextended_INLINE_FUNC
+bddNodeIndex* bddNodeIndex_makeIndexWithoutCount_inner(bddp f, int is_raw)
+{
+    int i, j, k, level;
+    bddp node, child;
+    bddNodeIndex* index;
+
+    index = (bddNodeIndex*)malloc(sizeof(bddNodeIndex));
+    if (index == NULL) {
+        fprintf(stderr, "out of memory\n");
+        exit(1);
+    }
+    index->is_raw = is_raw;
+    index->f = f;
+    index->height = (int)bddgetlev(f);
+
+    if (is_raw) {
+        f = bdderasenot(f);
+    }
+
+    index->node_dict_arr = (sbddextended_MyDict*)malloc(
+                            (index->height + 1) * sizeof(sbddextended_MyDict));
+    if (index->node_dict_arr == NULL) {
+        fprintf(stderr, "out of memory\n");
+        exit(1);
+    }
+    index->level_vec_arr = (sbddextended_MyVector*)malloc(
+                            (index->height + 1) * sizeof(sbddextended_MyVector));
+    if (index->level_vec_arr == NULL) {
+        fprintf(stderr, "out of memory\n");
+        exit(1);
+    }
+    for (i = 1; i <= index->height; ++i) {
+        sbddextended_MyDict_initialize(&index->node_dict_arr[i]);
+        sbddextended_MyVector_initialize(&index->level_vec_arr[i]);
+    }
+
+    sbddextended_MyDict_add(&index->node_dict_arr[index->height],
+                            (llint)f,
+                            0); // 0 means the first node in the level
+    sbddextended_MyVector_add(&index->level_vec_arr[index->height], (llint)f);
+
+    for (i = index->height; i >= 1; --i) {
+        for (j = 0; j < index->level_vec_arr[i].count; ++j) {
+            node = sbddextended_MyVector_get(&index->level_vec_arr[i], j);
+            for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
+                if (is_raw) {
+                    child = bddgetchildzraw(node, k);
+                    child = bdderasenot(child);
+                } else {
+                    child = bddgetchildz(node, k);
+                }
+
+                if (!bddisterminal(child)) {
+                    level = bddgetlev(child);
+                    if (sbddextended_MyDict_find(&index->node_dict_arr[level],
+                                                 (llint)child, NULL) == 0) {
+                        sbddextended_MyDict_add(&index->node_dict_arr[level],
+                                                (llint)child,
+                                                index->node_dict_arr[level].count);
+                        sbddextended_MyVector_add(&index->level_vec_arr[level], (llint)child);
+                    }
+                }
+            }
+        }
+    }
+
+    index->offset_arr = (llint*)malloc((index->height + 1) * sizeof(llint));
+    if (index->offset_arr == NULL) {
+        fprintf(stderr, "out of memory\n");
+        exit(1);
+    }
+    index->offset_arr[index->height] = sbddextended_BDDNODE_START;
+
+    for (i = index->height; i >= 1; --i) {
+        index->offset_arr[i - 1] = index->offset_arr[i] + index->level_vec_arr[i].count;
+    }
+
+    index->count_arr = NULL;
+    return index;
+}
+
+sbddextended_INLINE_FUNC
+bddNodeIndex* bddNodeIndex_makeIndexWithoutCount(bddp f)
+{
+    return bddNodeIndex_makeIndexWithoutCount_inner(f, 0);
+}
+
+sbddextended_INLINE_FUNC
+bddNodeIndex* bddNodeIndex_makeRawIndexWithoutCount(bddp f)
+{
+    return bddNodeIndex_makeIndexWithoutCount_inner(f, 1);
+}
+
+sbddextended_INLINE_FUNC
+bddNodeIndex* bddNodeIndex_makeIndex_inner(bddp f, int is_raw)
+{
+    int i, clevel, raw_flag;
+    llint j, id0, id1;
+    bddp node, n0, n1;
+    bddNodeIndex* index;
+
+    index = bddNodeIndex_makeIndexWithoutCount_inner(f, is_raw);
+
+    index->count_arr = (llint*)malloc(index->offset_arr[0] * sizeof(llint));
+    index->count_arr[0] = 0;
+    index->count_arr[1] = 1;
+
+    for (i = 1; i <= index->height; ++i) {
+        for (j = index->offset_arr[i]; j < index->offset_arr[i - 1]; ++j) {
+            node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i],
+                                                   j - index->offset_arr[i]);
+            if (is_raw) {
+                n0 = bddgetchild0zraw(node);
+            } else {
+                n0 = bddgetchild0z(node);
+            }
+            if (n0 == bddempty) {
+                id0 = 0;
+            } else if (n0 == bddsingle) {
+                id0 = 1;
+            } else {
+                clevel = (int)bddgetlev(n0);
+                if (sbddextended_MyDict_find(&index->node_dict_arr[clevel],
+                                                 (llint)n0, &id0) == 0) {
+                    fprintf(stderr, "node not found!\n");
+                    exit(1);
+                }
+                id0 += index->offset_arr[clevel];
+            }
+            raw_flag = 0;
+            if (is_raw) {
+                n1 = bddgetchild1zraw(node);
+                if (bddisnegative(n1)) {
+                    raw_flag = 1;
+                    n1 = bdderasenot(n1);
+                }
+            } else {
+                n1 = bddgetchild1z(node);
+            }
+            if (n1 == bddempty) {
+                id1 = 0;
+            } else if (n1 == bddsingle) {
+                id1 = 1;
+            } else {
+                clevel = (int)bddgetlev(n1);
+                if (sbddextended_MyDict_find(&index->node_dict_arr[clevel],
+                                                 (llint)n1, &id1) == 0) {
+                    fprintf(stderr, "node not found!\n");
+                    exit(1);
+                }
+                id1 += index->offset_arr[clevel];
+            }
+            index->count_arr[j] = index->count_arr[id0] + index->count_arr[id1];
+            if (is_raw && raw_flag) {
+                index->count_arr[j] += 1;
+            }
+        }
+    }
+    return index;
+}
+
+sbddextended_INLINE_FUNC
+bddNodeIndex* bddNodeIndex_makeIndex(bddp f)
+{
+    return bddNodeIndex_makeIndex_inner(f, 0);
+}
+
+sbddextended_INLINE_FUNC
+bddNodeIndex* bddNodeIndex_makeRawIndex(bddp f)
+{
+    return bddNodeIndex_makeIndex_inner(f, 1);
+}
+
+sbddextended_INLINE_FUNC
+llint bddNodeIndex_size(bddNodeIndex* index)
+{
+    return index->offset_arr[0] - sbddextended_BDDNODE_START;
+}
+
+sbddextended_INLINE_FUNC
+void bddNodeIndex_sizeeachlevel(bddNodeIndex* index, bddvar* arr)
+{
+    int i;
+    for (i = 1; i <= index->height; ++i) {
+        arr[i] = index->offset_arr[i - 1] - index->offset_arr[i];
+    }
+}
+
+sbddextended_INLINE_FUNC
+llint bddNodeIndex_count(bddNodeIndex* index)
+{
+    if (index->is_raw) {
+        if (bddisnegative(index->f)) {
+            return index->count_arr[sbddextended_BDDNODE_START] + 1;
+        } else {
+            return index->count_arr[sbddextended_BDDNODE_START];
+        }
+    } else {
+        return index->count_arr[sbddextended_BDDNODE_START];
+    }
+}
+
+sbddextended_INLINE_FUNC
+void bddNodeIndex_destruct(bddNodeIndex* index)
+{
+    int i;
+
+    for (i = 1; i <= index->height; ++i) {
+        sbddextended_MyVector_deinitialize(&index->level_vec_arr[i]);
+        sbddextended_MyDict_deinitialize(&index->node_dict_arr[i]);
+    }
+    free(index->offset_arr);
+    if (index->count_arr != NULL) {
+        free(index->count_arr);
+    }
+    free(index);
+}
+
+//******************** bddNodeIndex end ********************
+
+//******************** bddNodeIterator start ********************
+
+typedef struct tagbddNodeIterator {
+    bddNodeIndex* index;
+    llint pos;
+    llint level;
+} bddNodeIterator;
+
+sbddextended_INLINE_FUNC
+bddNodeIterator* bddNodeIterator_make_inner(bddp f, int is_raw)
+{
+    bddNodeIterator* itor;
+
+    itor = (bddNodeIterator*)malloc(sizeof(bddNodeIterator));
+    if (itor == NULL) {
+        fprintf(stderr, "out of memory\n");
+        exit(1);
+    }
+    itor->index = bddNodeIndex_makeIndex_inner(f, is_raw);
+    itor->pos = 0;
+    itor->level = itor->index->height;
+    return itor;
+}
+
+sbddextended_INLINE_FUNC
+bddNodeIterator* bddNodeIterator_make(bddp f)
+{
+    return bddNodeIterator_make_inner(f, 0);
+}
+
+sbddextended_INLINE_FUNC
+bddNodeIterator* bddNodeIterator_makeRaw(bddp f)
+{
+    return bddNodeIterator_make_inner(f, 1);
+}
+
+sbddextended_INLINE_FUNC
+int bddNodeIterator_hasNext(bddNodeIterator* itor)
+{
+    return (itor->level > 0 ? 1 : 0);
+}
+
+sbddextended_INLINE_FUNC
+bddp bddNodeIterator_next(bddNodeIterator* itor)
+{
+    bddp f;
+
+    f = sbddextended_MyVector_get(&itor->index->level_vec_arr[itor->level], itor->pos);
+    ++itor->pos;
+
+    while (itor->level > 0 && itor->pos >= itor->index->level_vec_arr[itor->level].count) {
+        itor->pos = 0;
+        --itor->level;
+    }
+    return f;
+}
+
+//******************** bddNodeIterator end ********************
+
 sbddextended_INLINE_FUNC
 void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
                                 const char* delim2, const char* var_name_map[]
@@ -875,7 +1178,7 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
     if (bddisnegative(f)) {
         // Output bddsingle first
         is_first_delim1 = 0;
-        g = takenot(f);
+        g = bddtakenot(f);
     } else {
         g = f;
     }
@@ -1033,6 +1336,7 @@ bddp bddconstructzbddfromfileknuth_inner(FILE* fp, int is_hex, int root_level
 {
     int c, level, level_count = 1;
     llint i, id, lo, hi, line_count = 0;
+    ullint idu, lou, hiu;
     char buf[sbddextended_MAX_LINE];
     bddp p, p0, p1;
     bddp* bddnode_buf;
@@ -1075,7 +1379,10 @@ bddp bddconstructzbddfromfileknuth_inner(FILE* fp, int is_hex, int root_level
             sbddextended_MyVector_add(&level_vec, lo_vec.count);
         } else {
             if (is_hex) {
-                c = sscanf(buf, "%llx:%llx,%llx", &id, &lo, &hi);
+                c = sscanf(buf, "%llx:%llx,%llx", &idu, &lou, &hiu);
+                id = (llint)idu;
+                lo = (llint)lou;
+                hi = (llint)hiu;
             } else {
                 c = sscanf(buf, "%lld:%lld,%lld", &id, &lo, &hi);
             }
@@ -1188,12 +1495,10 @@ void bddwritezbddtofileknuth_inner(FILE* fp, bddp f, int is_hex
 #endif
                              )
 {
-    int height, level, clevel, i;
-    bddp node, child, n0, n1;
-    llint id0, id1, k, j;
-    sbddextended_MyDict* visited_node_dict;
-    sbddextended_MyVector* level_vec;
-    llint* offset;
+    int clevel, i;
+    bddp node, n0, n1;
+    llint id0, id1, k;
+    bddNodeIndex* index;
     char ss[sbddextended_TEMP_BUFSIZE];
 
     if (f == bddnull) {
@@ -1207,71 +1512,13 @@ void bddwritezbddtofileknuth_inner(FILE* fp, bddp f, int is_hex
         sbddextended_writeLine("1", fp);
         return;
     }
+    index = bddNodeIndex_makeIndexWithoutCount(f);
 
-    height = (int)bddgetlev(f);
-
-    visited_node_dict = (sbddextended_MyDict*)malloc(
-                            (height + 1) * sizeof(sbddextended_MyDict));
-    if (visited_node_dict == NULL) {
-        fprintf(stderr, "out of memory\n");
-        return;
-    }
-    level_vec = (sbddextended_MyVector*)malloc(
-                    (height + 1) * sizeof(sbddextended_MyVector));
-    if (level_vec == NULL) {
-        fprintf(stderr, "out of memory\n");
-        return;
-    }
-    for (i = 1; i <= height; ++i) {
-        sbddextended_MyDict_initialize(&visited_node_dict[i]);
-        sbddextended_MyVector_initialize(&level_vec[i]);
-    }
-
-    sbddextended_MyDict_add(&visited_node_dict[height],
-                            (llint)f,
-                            0); // 0 means the first node in the level
-    sbddextended_MyVector_add(&level_vec[height], (llint)f);
-
-    for (i = height; i >= 1; --i) {
-        for (j = 0; j < level_vec[i].count; ++j) {
-            node = sbddextended_MyVector_get(&level_vec[i], j);
-            for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
-                if (k == 0) {
-                    child = bddgetchild0z(node);
-                } else {
-                    child = bddgetchild1z(node);
-                }
-
-                if (!bddisterminal(child)) {
-                    level = bddgetlev(child);
-                    if (sbddextended_MyDict_find(&visited_node_dict[level],
-                                                 (llint)child, NULL) == 0) {
-                        sbddextended_MyDict_add(&visited_node_dict[level],
-                                                (llint)child,
-                                                visited_node_dict[level].count);
-                        sbddextended_MyVector_add(&level_vec[level], (llint)child);
-                    }
-                }
-            }
-        }
-    }
-
-    offset = (llint*)malloc((height + 1) * sizeof(llint));
-    if (offset == NULL) {
-        fprintf(stderr, "out of memory\n");
-        return;
-    }
-    offset[height] = sbddextended_BDDNODE_START;
-
-    for (i = height; i > 1; --i) {
-        offset[i - 1] = offset[i] + level_vec[i].count;
-    }
-
-    for (i = height; i >= 1; --i) {
-        sprintf(ss, "#%d", height - i + 1);
+    for (i = index->height; i >= 1; --i) {
+        sprintf(ss, "#%d", index->height - i + 1);
         sbddextended_writeLine(ss, fp);
-        for (k = 0; k < level_vec[i].count; ++k) {
-            node = (bddp)sbddextended_MyVector_get(&level_vec[i], k);
+        for (k = 0; k < index->level_vec_arr[i].count; ++k) {
+            node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i], k);
             n0 = bddgetchild0z(node);
             if (n0 == bddempty) {
                 id0 = 0;
@@ -1279,12 +1526,12 @@ void bddwritezbddtofileknuth_inner(FILE* fp, bddp f, int is_hex
                 id0 = 1;
             } else {
                 clevel = (int)bddgetlev(n0);
-                if (sbddextended_MyDict_find(&visited_node_dict[clevel],
+                if (sbddextended_MyDict_find(&index->node_dict_arr[clevel],
                                              (llint)n0, &id0) == 0) {
                     fprintf(stderr, "node not found!\n");
                     exit(1);
                 }
-                id0 += offset[clevel];
+                id0 += index->offset_arr[clevel];
             }
             n1 = bddgetchild1z(node);
             if (n1 == bddempty) {
@@ -1293,26 +1540,22 @@ void bddwritezbddtofileknuth_inner(FILE* fp, bddp f, int is_hex
                 id1 = 1;
             } else {
                 clevel = (int)bddgetlev(n1);
-                if (sbddextended_MyDict_find(&visited_node_dict[clevel],
+                if (sbddextended_MyDict_find(&index->node_dict_arr[clevel],
                                              (llint)n1, &id1) == 0) {
                     fprintf(stderr, "node not found!\n");
                     exit(1);
                 }
-                id1 += offset[clevel];
+                id1 += index->offset_arr[clevel];
             }
             if (is_hex) {
-                sprintf(ss, "%llx:%llx,%llx", offset[i] + k, id0, id1);
+                sprintf(ss, "%llx:%llx,%llx", index->offset_arr[i] + k, id0, id1);
             } else {
-                sprintf(ss, "%lld:%lld,%lld", offset[i] + k, id0, id1);
+                sprintf(ss, "%lld:%lld,%lld", index->offset_arr[i] + k, id0, id1);
             }
             sbddextended_writeLine(ss, fp);
         }
     }
-
-    for (i = 1; i <= height; ++i) {
-        sbddextended_MyVector_deinitialize(&level_vec[i]);
-        sbddextended_MyDict_deinitialize(&visited_node_dict[i]);
-    }
+    bddNodeIndex_destruct(index);
 }
 
 #ifdef __cplusplus

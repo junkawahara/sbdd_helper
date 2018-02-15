@@ -256,7 +256,7 @@ void test_bddfunctions()
     test(bddisconstant(bddsingle));
     test(!bddisconstant(f));
 
-    // bddisnegative and takenot will be tested at
+    // bddisnegative and bddtakenot will be tested at
     // test_getsingleandpowerset
 
     test(bddis64bitversion());
@@ -348,12 +348,16 @@ void test_getsingleandpowerset()
     test(N <= 38); // bddcard cannot return a value more than 2^38
     test_eq(bddcard(f), (1llu << N)); // 2^N
 
-    // test also bddisnegative and takenot
+    // test also bddisnegative and bddtakenot
     while (f != bddempty) {
         f0 = bddgetchild0zraw(f);
         f1 = bddgetchild1zraw(f);
-        test(takenot(f0) == f1);
-        test(takenot(f1) == f0);
+        test(bddtakenot(f0) == f1);
+        test(bddtakenot(f1) == f0);
+        test(bddaddnot(f0) == f1);
+        test(bddaddnot(f1) == f1);
+        test(bdderasenot(f1) == f0);
+        test(bdderasenot(f0) == f0);
         test(!bddisnegative(f0));
         test(bddisnegative(f1));
         f = f0;
@@ -514,6 +518,15 @@ void test_at_random()
         exit(1);
     }
 
+    bddNodeIndex* index = bddNodeIndex_makeIndex(g);
+    test_eq(bddNodeIndex_count(index), bddcard(g));
+    bddNodeIndex_destruct(index);
+
+    index = bddNodeIndex_makeRawIndex(g);
+    test_eq(bddNodeIndex_count(index), bddcard(g));
+    test_eq(bddNodeIndex_size(index), bddsize(g));
+    bddNodeIndex_destruct(index);
+
     free(vararr);
     free(ar);
 }
@@ -587,6 +600,46 @@ void test_io()
     }
 }
 
+void test_index()
+{
+    int i, count;
+    bddp f = make_test_bdd();
+    bddNodeIndex* index = bddNodeIndex_makeIndex(f);
+    test_eq(bddNodeIndex_count(index), 3);
+    test_eq(bddNodeIndex_size(index), 4);
+    bddNodeIndex_destruct(index);
+
+    bddNodeIterator* itor = bddNodeIterator_make(f);
+    count = 0;
+    while (bddNodeIterator_hasNext(itor)) {
+        bddNodeIterator_next(itor);
+        ++count;
+    }
+    test_eq(count, 4);
+
+    bddvar vararr[40];
+    for (i = 0; i < 40; ++i) {
+        vararr[i] = i + 1;
+    }
+    f = bddgetpowerset(vararr, 40);
+    index = bddNodeIndex_makeIndex(f);
+    test_eq(bddNodeIndex_count(index), 1ll << 40);
+    test_eq(bddNodeIndex_size(index), 40);
+    bddNodeIndex_destruct(index);
+
+    f = make_test_bdd();
+    index = bddNodeIndex_makeRawIndex(f);
+    test_eq(bddNodeIndex_count(index), 3);
+    test_eq(bddNodeIndex_size(index), 4);
+    bddNodeIndex_destruct(index);
+
+    f = bddgetpowerset(vararr, 40);
+    index = bddNodeIndex_makeRawIndex(f);
+    test_eq(bddNodeIndex_count(index), 1ll << 40);
+    test_eq(bddNodeIndex_size(index), bddsize(f));
+    bddNodeIndex_destruct(index);
+}
+
 void start_test()
 {
     srand(1);
@@ -600,4 +653,5 @@ void start_test()
     test_ismemberz();
     test_io();
     test_at_random();
+    test_index();
 }

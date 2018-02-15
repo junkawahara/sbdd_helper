@@ -41,10 +41,10 @@ if (bddisconstant(f)) {
 }
 ```
 
-## takenot
+## bddtakenot
 
 ```
-bddp takenot(bddp f)
+bddp bddtakenot(bddp f)
 ```
 f の否定を反転させて得られるノードを返す。
 
