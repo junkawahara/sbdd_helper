@@ -22,8 +22,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "SBDD/bddc.h"
-#include "SBDD_helper.h"
+#include "../SBDD/bddc.h"
+#include "../devel/SBDD_helper.h"
+
+#ifdef __cplusplus
+using namespace sbddh;
+#endif
 
 #define test(b) testfunc((llint)(b), __LINE__)
 #define test_eq(v1, v2) testfunc_eq((llint)(v1), (llint)(v2), __LINE__)
@@ -50,7 +54,8 @@ void testfunc_eq(llint v1, llint v2, int error_line)
 int is_expected_str(FILE* fp, const char* str)
 {
     long v;
-    int b, c, len;
+    int b, c;
+    size_t len;
     char* buf;
 
     len = strlen(str);
@@ -68,17 +73,17 @@ int is_expected_str(FILE* fp, const char* str)
         fprintf(stderr, "fseek failed\n");
         exit(1);
     }
-    if (v != len) {
+    if (v != (long)len) {
         return 0;
     }
-    buf = (char*)malloc(v + 1); // +1 for '\0'
+    buf = (char*)malloc((size_t)v + 1); // +1 for '\0'
     if (buf == NULL) {
         fprintf(stderr, "malloc failed\n");
         exit(1);
     }
     c = 0;
-    while (c < v && fgets(buf + c, v + 1 - c, fp) != NULL) {
-        c += strlen(buf + c);
+    while (c < v && fgets(buf + c, (int)v + 1 - c, fp) != NULL) {
+        c += (int)strlen(buf + c);
     }
     if (c == 0) {
         fprintf(stderr, "fgets failed!\n");
@@ -88,7 +93,7 @@ int is_expected_str(FILE* fp, const char* str)
         fprintf(stderr, "fseek failed\n");
         exit(1);
     }
-    b = (strncmp(buf, str, v) == 0 ? 1 : 0);
+    b = (strncmp(buf, str, (size_t)v) == 0 ? 1 : 0);
     if (!b) {
         fprintf(stderr, "unexpected str: %s\n", buf);
     }
@@ -138,13 +143,14 @@ void test_MyVector()
     int i;
     sbddextended_MyVector v0;
     sbddextended_MyVector v;
+    sbddextended_MyVector v1;
 
     sbddextended_MyVector_initialize(&v0);
     test_eq(v0.count, 0);
     sbddextended_MyVector_deinitialize(&v0);
 
-
     sbddextended_MyVector_initialize(&v);
+    sbddextended_MyVector_initialize(&v1);
 
     for (i = 0; i < N; ++i) {
         sbddextended_MyVector_add(&v, (llint)i * 2);
@@ -167,6 +173,19 @@ void test_MyVector()
         }
     }
 
+    sbddextended_MyVector_copy(&v1, &v);
+
+    test_eq(v1.count, v.count);
+
+    for (i = 0; i < N; ++i) {
+        if (i % 2 == 0) {
+            test_eq(sbddextended_MyVector_get(&v1, (llint)i), (llint)i * 3);
+        } else {
+            test_eq(sbddextended_MyVector_get(&v1, (llint)i), (llint)i * 2);
+        }
+    }
+
+    sbddextended_MyVector_deinitialize(&v1);
     sbddextended_MyVector_deinitialize(&v);
 }
 
@@ -177,12 +196,14 @@ void test_MyDict()
     llint value;
     sbddextended_MyDict d0;
     sbddextended_MyDict d;
+    sbddextended_MyDict d1;
 
     sbddextended_MyDict_initialize(&d0);
     test_eq(d0.count, 0);
     sbddextended_MyDict_deinitialize(&d0);
 
     sbddextended_MyDict_initialize(&d);
+    sbddextended_MyDict_initialize(&d1);
 
     for (i = 0; i < N; ++i) {
         sbddextended_MyDict_add(&d, i * 2, N - i * 2);
@@ -211,6 +232,16 @@ void test_MyDict()
         test_eq(value, 16 * N + i);
     }
 
+    sbddextended_MyDict_copy(&d1, &d);
+
+    test_eq(d1.count, d.count);
+
+    for (i = 0; i < N; ++i) {
+        test_eq(sbddextended_MyDict_find(&d1, i * 2, &value), 1);
+        test_eq(value, 16 * N + i);
+    }
+
+    sbddextended_MyDict_deinitialize(&d1);
     sbddextended_MyDict_deinitialize(&d);
 }
 
@@ -281,8 +312,20 @@ void test_bddfunctions()
     test(bddrshift(s2, 1) == bddgetsingleton(1));
 
     for (i = 1; i <= 50; ++i) {
-        test(bddlshift(s2, i) == bddgetsingleton(2 + i));
+        test(bddlshift(s2, (bddvar)i) == bddgetsingleton((bddvar)(2 + i)));
     }
+
+    // test bddprimenot
+    f = bddat1(bddxor(bddprime((bddvar)1), bddprime((bddvar)2)),
+               (bddvar)2); // compute (x_1 xor x_2)|_{x_2 = 0}, i.e., bar(x_1)
+    test(f == bddprimenot((bddvar)1));
+
+    for (i = 2; i <= 50; ++i) {
+        f = bddat1(bddxor(bddprime((bddvar)i), bddprime((bddvar)1)),
+                   (bddvar)1); // compute (x_1 xor x_i)|_{x_i = 0}, i.e., bar(x_i)
+        test(f == bddprimenot((bddvar)i));
+    }
+
 }
 
 void test_getsingleandpowerset()
@@ -293,14 +336,14 @@ void test_getsingleandpowerset()
     bddvar* vararr;
     FILE* fp;
 
-    vararr = (bddvar*)malloc(N * sizeof(vararr));
+    vararr = (bddvar*)malloc((size_t)N * sizeof(vararr));
     if (vararr == NULL) {
         fprintf(stderr, "out of memory\n");
         exit(1);
     }
 
     for (i = 0; i < N; ++i) {
-        vararr[i] = 2 * i + 1;
+        vararr[i] = 2 * (bddvar)i + 1;
     }
 
     // test getsingleset
@@ -403,13 +446,13 @@ void test_ismemberz()
     test(bddismemberz(f, vararr, 0));
 }
 
-void int_to_vararr(int v, bddvar* vararr, int* num)
+void ullint_to_vararr(ullint v, bddvar* vararr, int* num)
 {
     int count = 1;
     *num = 0;
     while (v > 0) {
-        if ((v & 1) != 0) {
-            vararr[*num] = count;
+        if ((v & 1llu) != 0) {
+            vararr[*num] = (bddvar)count;
             ++(*num);
         }
         v >>= 1;
@@ -419,19 +462,19 @@ void int_to_vararr(int v, bddvar* vararr, int* num)
 
 void test_at_random()
 {
-    int w = 30;
-    int N = 1000;
-    int i, j, c, num, found;
-    int w_pow;
-    int* ar;
-    int sp = 0;
+    size_t w = 30;
+    size_t N = 1000;
+    int i, j, num, found;
+    ullint w_pow, c;
+    ullint* ar;
+    size_t sp = 0;
     bddp f, g, h;
     bddvar* vararr;
     FILE* fp;
 
     w_pow = (1llu << w);
 
-    ar = (int*)malloc(N * sizeof(int));
+    ar = (ullint*)malloc(N * sizeof(ullint));
     if (ar == NULL) {
         fprintf(stderr, "out of memory\n");
         exit(1);
@@ -444,16 +487,16 @@ void test_at_random()
 
     // make array whose elements are distinct
     while (sp < N) {
-        c = rand() % w_pow;
+        c = (((ullint)rand() << 32) | ((ullint)rand())) % w_pow;
         if (c == 0) {
             continue;
         }
-        for (i = 0; i < sp; ++i) {
+        for (i = 0; i < (int)sp; ++i) {
             if (ar[i] == c) {
                 break;
             }
         }
-        if (i < sp) {
+        if (i < (int)sp) {
             continue;
         }
         ar[sp] = c;
@@ -462,8 +505,8 @@ void test_at_random()
 
     f = bddempty;
 
-    for (i = 0; i < N; ++i) {
-        int_to_vararr(ar[i], vararr, &num);
+    for (i = 0; i < (int)N; ++i) {
+        ullint_to_vararr(ar[i], vararr, &num);
         g = bddgetsingleset(vararr, num);
         h = bddunion(f, g);
         bddfree(f);
@@ -472,21 +515,21 @@ void test_at_random()
     }
     test_eq(bddcard(f), N);
 
-    for (i = 0; i < N; ++i) {
-        int_to_vararr(ar[i], vararr, &num);
+    for (i = 0; i < (int)N; ++i) {
+        ullint_to_vararr(ar[i], vararr, &num);
         test(bddismemberz(f, vararr, num));
     }
 
-    for (i = 0; i < 2 * N; ++i) {
-        c = rand() & w_pow;
+    for (i = 0; i < 2 * (int)N; ++i) {
+        c = (ullint)rand() & w_pow;
         found = 0;
-        for (j = 0; j < N; ++j) {
+        for (j = 0; j < (int)N; ++j) {
             if (ar[j] == c) {
                 found = 1;
                 break;
             }
         }
-        int_to_vararr(c, vararr, &num);
+        ullint_to_vararr(c, vararr, &num);
         test_eq(bddismemberz(f, vararr, num), found);
     }
     test(!bddismemberz(f, NULL, 0));
@@ -518,11 +561,11 @@ void test_at_random()
         exit(1);
     }
 
-    bddNodeIndex* index = bddNodeIndex_makeIndex(g);
+    bddNodeIndex* index = bddNodeIndex_makeIndexZ(g);
     test_eq(bddNodeIndex_count(index), bddcard(g));
     bddNodeIndex_destruct(index);
 
-    index = bddNodeIndex_makeRawIndex(g);
+    index = bddNodeIndex_makeRawIndexZ(g);
     test_eq(bddNodeIndex_count(index), bddcard(g));
     test_eq(bddNodeIndex_size(index), bddsize(g));
     bddNodeIndex_destruct(index);
@@ -538,6 +581,8 @@ void test_io()
     FILE* fp2;
     bddvar vararr[3];
     const char* var_name_map[] = {"dummy", "e", "d", "c", "b", "a"};
+    const unsigned char table1[] = {1, 1, 1, 1, 0, 1, 1, 1};
+    const unsigned char table2[] = {0, 0, 1, 0, 0, 1, 0, 1};
 
     // open as binary because treating '\n' as a normal charactor
     fp1 = fopen(g_filename1, "wb+");
@@ -598,18 +643,30 @@ void test_io()
         fprintf(stderr, "remove failed\n");
         exit(1);
     }
+
+    // need test bddoutputbddforgraphviz(stderr, f, NULL); here
+
+    f = bddtruthtabletobdd(table1, vararr, 3);
+    g = bddor(bddor(bddprime(2), bddprime(3)), bddnot(bddprime(5)));
+    test(f == g);
+
+    f = bddtruthtabletobdd(table2, vararr, 3);
+    g = bddor(bddand(bddprime(2), bddprime(5)),
+              bddand(bddnot(bddor(bddprime(2), bddprime(5))),
+                     bddprime(3)));
+    test(f == g);
 }
 
 void test_index()
 {
     int i, count;
     bddp f = make_test_bdd();
-    bddNodeIndex* index = bddNodeIndex_makeIndex(f);
+    bddNodeIndex* index = bddNodeIndex_makeIndexZ(f);
     test_eq(bddNodeIndex_count(index), 3);
     test_eq(bddNodeIndex_size(index), 4);
     bddNodeIndex_destruct(index);
 
-    bddNodeIterator* itor = bddNodeIterator_make(f);
+    bddNodeIterator* itor = bddNodeIterator_make(index);
     count = 0;
     while (bddNodeIterator_hasNext(itor)) {
         bddNodeIterator_next(itor);
@@ -619,22 +676,22 @@ void test_index()
 
     bddvar vararr[40];
     for (i = 0; i < 40; ++i) {
-        vararr[i] = i + 1;
+        vararr[i] = (bddvar)i + 1;
     }
     f = bddgetpowerset(vararr, 40);
-    index = bddNodeIndex_makeIndex(f);
+    index = bddNodeIndex_makeIndexZ(f);
     test_eq(bddNodeIndex_count(index), 1ll << 40);
     test_eq(bddNodeIndex_size(index), 40);
     bddNodeIndex_destruct(index);
 
     f = make_test_bdd();
-    index = bddNodeIndex_makeRawIndex(f);
+    index = bddNodeIndex_makeRawIndexZ(f);
     test_eq(bddNodeIndex_count(index), 3);
     test_eq(bddNodeIndex_size(index), 4);
     bddNodeIndex_destruct(index);
 
     f = bddgetpowerset(vararr, 40);
-    index = bddNodeIndex_makeRawIndex(f);
+    index = bddNodeIndex_makeRawIndexZ(f);
     test_eq(bddNodeIndex_count(index), 1ll << 40);
     test_eq(bddNodeIndex_size(index), bddsize(f));
     bddNodeIndex_destruct(index);

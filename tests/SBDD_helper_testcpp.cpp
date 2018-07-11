@@ -23,15 +23,56 @@
 #include <string.h>
 
 #define BDD_CPP
-#include "SBDD/bddc.h"
-#include "SBDD/BDD.h"
-#include "SBDD/ZBDD.h"
+#include "../SBDD/bddc.h"
+#include "../SBDD/BDD.h"
+#include "../SBDD/ZBDD.h"
 
 #include "SBDD_helper_testc_cpp.h"
+
+void test_index_cpp()
+{
+    ZBDD f = ZBDD_ID(make_test_bdd());
+    DDNodeIndex index(f, false);
+    test_eq(index.Count(), 3);
+    test_eq(index.Size(), 4);
+
+    DDNodeIndex::DDNodeIterator itor = index.begin();
+    int count = 0;
+    while (itor != index.end()) {
+        ++itor;
+        ++count;
+    }
+    test_eq(count, 4);
+
+    std::vector<bddvar> vararr;
+    for (int i = 0; i < 40; ++i) {
+        vararr.push_back(i + 1);
+    }
+    f = GetPowerSet(vararr);
+    DDNodeIndex index2(f, false);
+    test_eq(index2.Count(), 1ll << 40);
+    test_eq(index2.Size(), 40);
+
+    f = ZBDD_ID(make_test_bdd());
+    DDNodeIndex index3(f, true);
+    test_eq(index3.Count(), 3);
+    test_eq(index3.Size(), 4);
+
+    f = GetPowerSet(vararr);
+    DDNodeIndex index4(f, false);
+    test_eq(index4.Count(), 1ll << 40);
+    test_eq(index4.Size(), f.Size());
+}
+
+void start_test_cpp()
+{
+    test_index_cpp();
+}
 
 int main()
 {
     start_test();
+    start_test_cpp();
 
     printf("test passed!\n");
     return 0;
