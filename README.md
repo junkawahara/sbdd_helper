@@ -75,7 +75,7 @@ int main()
 
 ## リファレンス
 
-[リファレンス](reference.md)
+[リファレンス](documents/reference.md)
 
 ## 免責事項
 

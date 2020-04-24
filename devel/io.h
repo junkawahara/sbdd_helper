@@ -1,6 +1,8 @@
+// num_of_variables: 0 -> elements format, non 0 -> value list format
 sbddextended_INLINE_FUNC
 void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
-                                const char* delim2, const char* var_name_map[]
+                                const char* delim2, const char* var_name_map[],
+                                int num_of_variables
 #ifdef __cplusplus
                        , const WriteObject& sbddextended_write
 #endif
@@ -9,8 +11,10 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
     bddp* bddnode_stack;
     bddp g;
     char* op_stack;
+    char* value_list;
     char op;
     int i, height, sp, is_first_delim1, is_first_delim2;
+    bddvar v;
     bddp node, child;
     char buf[sbddextended_MAX_LINE];
 
@@ -21,28 +25,55 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
         sbddextended_write("E", fp);
         return;
     } else if (f == bddsingle) {
+        if (num_of_variables != 0) {
+            for (i = 1; i <= num_of_variables; ++i) {
+                sprintf(buf, "0");
+                sbddextended_write(buf, fp);
+                if (i < num_of_variables) {
+                    sprintf(buf, "%s", delim2);
+                    sbddextended_write(buf, fp);
+                }
+            }
+        }
         return;
     }
 
     is_first_delim1 = 1;
     if (bddisnegative(f)) {
         // Output bddsingle first
+        if (num_of_variables != 0) {
+            for (i = 1; i <= num_of_variables; ++i) {
+                sprintf(buf, "0");
+                sbddextended_write(buf, fp);
+                if (i < num_of_variables) {
+                    sprintf(buf, "%s", delim2);
+                    sbddextended_write(buf, fp);
+                }
+            }
+        }
         is_first_delim1 = 0;
         g = bddtakenot(f);
     } else {
         g = f;
     }
 
-    height = (int)bddgetlev(g) + 1;
-    bddnode_stack = (bddp*)malloc((size_t)height * sizeof(bddp));
+    height = (int)bddgetlev(g);
+    bddnode_stack = (bddp*)malloc((size_t)(height + 1) * sizeof(bddp));
     if (bddnode_stack == NULL) {
         fprintf(stderr, "out of memory\n");
         return;
     }
-    op_stack = (char*)malloc((size_t)height * sizeof(char));
+    op_stack = (char*)malloc((size_t)(height + 1) * sizeof(char));
     if (op_stack == NULL) {
         fprintf(stderr, "out of memory\n");
         return;
+    }
+    if (num_of_variables != 0) {
+        value_list = (char*)malloc((size_t)(num_of_variables + 1) * sizeof(char));
+        if (value_list == NULL) {
+            fprintf(stderr, "out of memory\n");
+            return;
+        }
     }
 
     sp = 0;
@@ -66,20 +97,45 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
                 sbddextended_write(buf, fp);
             }
             is_first_delim2 = 1;
-            for (i = 0; i < sp; ++i) {
-                if (op_stack[i] == 0) {
-                    if (is_first_delim2 != 0) {
-                        is_first_delim2 = 0;
-                    } else {
+            if (num_of_variables != 0) {
+                for (i = 1; i <= num_of_variables; ++i) {
+                    value_list[i] = 0;
+                }
+                for (i = 0; i < sp; ++i) {
+                    if (op_stack[i] == 0) {
+                        v = bddgetvar(bddnode_stack[i]);
+                        if (! (1 <= v && v <= (bddvar)num_of_variables)) {
+                            fprintf(stderr, "variable number is "
+                                "not in {1,...,num_of_variables} \n");
+                            return;
+                        }
+                        value_list[v] = 1;
+                    }
+                }
+                for (i = 1; i <= num_of_variables; ++i) {
+                    sprintf(buf, "%d", value_list[i]);
+                    sbddextended_write(buf, fp);
+                    if (i < num_of_variables) {
                         sprintf(buf, "%s", delim2);
                         sbddextended_write(buf, fp);
                     }
-                    if (var_name_map != NULL) {
-                        sprintf(buf, "%s", var_name_map[bddgetvar(bddnode_stack[i])]);
-                    } else {
-                        sprintf(buf, "%d", bddgetvar(bddnode_stack[i]));
+                }
+            } else {
+                for (i = 0; i < sp; ++i) {
+                    if (op_stack[i] == 0) {
+                        if (is_first_delim2 != 0) {
+                            is_first_delim2 = 0;
+                        } else {
+                            sprintf(buf, "%s", delim2);
+                            sbddextended_write(buf, fp);
+                        }
+                        if (var_name_map != NULL) {
+                            sprintf(buf, "%s", var_name_map[bddgetvar(bddnode_stack[i])]);
+                        } else {
+                            sprintf(buf, "%d", bddgetvar(bddnode_stack[i]));
+                        }
+                        sbddextended_write(buf, fp);
                     }
-                    sbddextended_write(buf, fp);
                 }
             }
 
@@ -107,6 +163,9 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
             }
         }
     }
+    if (num_of_variables != 0) {
+        free(value_list);
+    }
     free(op_stack);
     free(bddnode_stack);
 }
@@ -114,42 +173,58 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-void PrintZBDDElements(FILE* fp, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2)
+void printZBDDElements(FILE* fp, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2)
 {
     WriteObject wo(false, false, NULL);
-    bddprintzbddelements_inner(fp, zbdd.GetID(), delim1.c_str(), delim2.c_str(), NULL, wo);
+    bddprintzbddelements_inner(fp, zbdd.GetID(), delim1.c_str(), delim2.c_str(), NULL, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
-void PrintZBDDElements(FILE* fp, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2, const std::vector<std::string>& var_name_map)
+void printZBDDElements(FILE* fp, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2, const std::vector<std::string>& var_name_map)
 {
     WriteObject wo(false, false, NULL);
-    const char** arr = sbddextended_strvector_to_array(var_name_map);
-    bddprintzbddelements_inner(fp, zbdd.GetID(), delim1.c_str(), delim2.c_str(), arr, wo);
+    const char** arr = sbddextended_strVectorToArray(var_name_map);
+    bddprintzbddelements_inner(fp, zbdd.GetID(), delim1.c_str(), delim2.c_str(), arr, 0, wo);
     free(arr);
 }
 
 sbddextended_INLINE_FUNC
-void PrintZBDDElements(std::ostream& ost, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2)
+void printZBDDElements(std::ostream& ost, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2)
 {
     WriteObject wo(true, false, &ost);
-    bddprintzbddelements_inner(NULL, zbdd.GetID(), delim1.c_str(), delim2.c_str(), NULL, wo);
+    bddprintzbddelements_inner(NULL, zbdd.GetID(), delim1.c_str(), delim2.c_str(), NULL, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
-void PrintZBDDElements(std::ostream& ost, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2, const std::vector<std::string>& var_name_map)
+void printZBDDElements(std::ostream& ost, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2, const std::vector<std::string>& var_name_map)
 {
     WriteObject wo(true, false, &ost);
-    const char** arr = sbddextended_strvector_to_array(var_name_map);
-    bddprintzbddelements_inner(NULL, zbdd.GetID(), delim1.c_str(), delim2.c_str(), arr, wo);
+    const char** arr = sbddextended_strVectorToArray(var_name_map);
+    bddprintzbddelements_inner(NULL, zbdd.GetID(), delim1.c_str(), delim2.c_str(), arr, 0, wo);
     free(arr);
+}
+
+sbddextended_INLINE_FUNC
+void printZBDDElements(FILE* fp, const ZBDD& zbdd)
+{
+    fprintf(fp, "{");
+    printZBDDElements(fp, zbdd, "}, {", ", ");
+    fprintf(fp, "}");
+}
+
+sbddextended_INLINE_FUNC
+void printZBDDElements(std::ostream& ost, const ZBDD& zbdd)
+{
+    ost << "{";
+    printZBDDElements(ost, zbdd, "}, {", ", ");
+    ost << "}";
 }
 
 sbddextended_INLINE_FUNC
 void bddprintzbddelements(FILE* fp, bddp f, const char* delim1, const char* delim2)
 {
     WriteObject wo(false, false, NULL);
-    bddprintzbddelements_inner(fp, f, delim1, delim2, NULL, wo);
+    bddprintzbddelements_inner(fp, f, delim1, delim2, NULL, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -157,7 +232,7 @@ void bddprintzbddelementswithmap(FILE* fp, bddp f, const char* delim1, const cha
                                  const char* var_name_map[])
 {
     WriteObject wo(false, false, NULL);
-    bddprintzbddelements_inner(fp, f, delim1, delim2, var_name_map, wo);
+    bddprintzbddelements_inner(fp, f, delim1, delim2, var_name_map, 0, wo);
 }
 
 #else
@@ -165,14 +240,44 @@ void bddprintzbddelementswithmap(FILE* fp, bddp f, const char* delim1, const cha
 sbddextended_INLINE_FUNC
 void bddprintzbddelements(FILE* fp, bddp f, const char* delim1, const char* delim2)
 {
-    bddprintzbddelements_inner(fp, f, delim1, delim2, NULL);
+    bddprintzbddelements_inner(fp, f, delim1, delim2, NULL, 0);
 }
 
 sbddextended_INLINE_FUNC
 void bddprintzbddelementswithmap(FILE* fp, bddp f, const char* delim1, const char* delim2,
                                  const char* var_name_map[])
 {
-    bddprintzbddelements_inner(fp, f, delim1, delim2, var_name_map);
+    bddprintzbddelements_inner(fp, f, delim1, delim2, var_name_map, 0);
+}
+
+#endif
+
+
+#ifdef __cplusplus
+
+sbddextended_INLINE_FUNC
+void printZBDDElementsAsValueList(FILE* fp, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2, int num_of_variables)
+{
+    if (num_of_variables < 0) {
+        fprintf(stderr, "num_of_variables must be at least 1\n");
+        return;
+    }
+
+    WriteObject wo(false, false, NULL);
+    bddprintzbddelements_inner(fp, zbdd.GetID(), delim1.c_str(),
+                               delim2.c_str(), NULL, num_of_variables, wo);
+}
+
+sbddextended_INLINE_FUNC
+void printZBDDElementsAsValueList(std::ostream& ost, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2, int num_of_variables)
+{
+    if (num_of_variables < 0) {
+        std::cerr << "num_of_variables must be at least 1" << std::endl;
+        return;
+    }
+
+    WriteObject wo(true, false, &ost);
+    bddprintzbddelements_inner(NULL, zbdd.GetID(), delim1.c_str(), delim2.c_str(), NULL, num_of_variables, wo);
 }
 
 #endif
@@ -181,7 +286,7 @@ sbddextended_INLINE_FUNC
 bddp bddconstructbddfromfileknuth_inner(FILE* fp, int is_hex, int root_level,
                                         int is_zdd
 #ifdef __cplusplus
-                             , const ReadLineObject& sbddextended_readLine
+                             , ReadLineObject& sbddextended_readLine
 #endif
                              )
 {
@@ -266,6 +371,10 @@ bddp bddconstructbddfromfileknuth_inner(FILE* fp, int is_hex, int root_level,
     }
 
     bddnode_buf = (bddp*)malloc(lo_vec.count * sizeof(bddp));
+    if (bddnode_buf == NULL) {
+        fprintf(stderr, "out of memory\n");
+        exit(1);
+    }
     bddnode_buf[0] = (is_zdd == 0 ? bddfalse : bddempty);
     bddnode_buf[1] = (is_zdd == 0 ? bddtrue : bddsingle);
 
@@ -316,9 +425,9 @@ bddp bddconstructbddfromfileknuth_inner(FILE* fp, int is_hex, int root_level,
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-BDD ConstructBDDFromFileKnuth(FILE* fp, bool is_hex, int root_level = -1)
+BDD constructBDDFromFileKnuth(FILE* fp, bool is_hex, int root_level = -1)
 {
-    ReadLineObject glo(false, NULL);
+    ReadLineObject glo;
     bddp p;
     p = bddconstructbddfromfileknuth_inner(fp, (is_hex ? 1 : 0),
                                            root_level, 0, glo);
@@ -326,9 +435,9 @@ BDD ConstructBDDFromFileKnuth(FILE* fp, bool is_hex, int root_level = -1)
 }
 
 sbddextended_INLINE_FUNC
-BDD ConstructBDDFromFileKnuth(std::istream& ist, bool is_hex, int root_level = -1)
+BDD constructBDDFromFileKnuth(std::istream& ist, bool is_hex, int root_level = -1)
 {
-    ReadLineObject glo(true, &ist);
+    ReadLineObject glo(&ist);
     bddp p;
     p = bddconstructbddfromfileknuth_inner(NULL, (is_hex ? 1 : 0),
                                            root_level, 0, glo);
@@ -338,7 +447,7 @@ BDD ConstructBDDFromFileKnuth(std::istream& ist, bool is_hex, int root_level = -
 sbddextended_INLINE_FUNC
 bddp bddconstructbddfromfileknuth(FILE* fp, int is_hex, int root_level = -1)
 {
-    ReadLineObject glo(false, NULL);
+    ReadLineObject glo;
     return bddconstructbddfromfileknuth_inner(fp, is_hex,
                                               root_level, 0, glo);
 }
@@ -357,9 +466,9 @@ bddp bddconstructbddfromfileknuth(FILE* fp, int is_hex, int root_level)
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-ZBDD ConstructZBDDFromFileKnuth(FILE* fp, bool is_hex, int root_level = -1)
+ZBDD constructZBDDFromFileKnuth(FILE* fp, bool is_hex, int root_level = -1)
 {
-    ReadLineObject glo(false, NULL);
+    ReadLineObject glo;
     bddp p;
     p = bddconstructbddfromfileknuth_inner(fp, (is_hex ? 1 : 0),
                                            root_level, 1, glo);
@@ -367,9 +476,9 @@ ZBDD ConstructZBDDFromFileKnuth(FILE* fp, bool is_hex, int root_level = -1)
 }
 
 sbddextended_INLINE_FUNC
-ZBDD ConstructZBDDFromFileKnuth(std::istream& ist, bool is_hex, int root_level = -1)
+ZBDD constructZBDDFromFileKnuth(std::istream& ist, bool is_hex, int root_level = -1)
 {
-    ReadLineObject glo(true, &ist);
+    ReadLineObject glo(&ist);
     bddp p;
     p = bddconstructbddfromfileknuth_inner(NULL, (is_hex ? 1 : 0),
                                            root_level, 1, glo);
@@ -379,7 +488,7 @@ ZBDD ConstructZBDDFromFileKnuth(std::istream& ist, bool is_hex, int root_level =
 sbddextended_INLINE_FUNC
 bddp bddconstructzbddfromfileknuth(FILE* fp, int is_hex, int root_level = -1)
 {
-    ReadLineObject glo(false, NULL);
+    ReadLineObject glo;
     return bddconstructbddfromfileknuth_inner(fp, is_hex,
                                               root_level, 1, glo);
 }
@@ -390,6 +499,199 @@ sbddextended_INLINE_FUNC
 bddp bddconstructzbddfromfileknuth(FILE* fp, int is_hex, int root_level)
 {
     return bddconstructbddfromfileknuth_inner(fp, is_hex, root_level, 1);
+}
+
+#endif
+
+sbddextended_INLINE_FUNC
+bddp bddconstructzbddfromelements_inner_getoneset(const char* line, int line_len,
+                                                  const char* small_sep,
+                                                  int small_sep_len)
+{
+    char int_buf[sbddextended_MAX_LINE];
+    int mode = 0;
+    int pos;
+    int v;
+    int sep_pos = 0;
+    int sep_start = 0;
+    int num_start = 0;
+    bddvar vararr[256];
+    int vararr_size = 0;
+
+    if (line_len == 0) {
+        return bddsingle;
+    }
+
+    for (pos = 0; pos < line_len + 1; ++pos) {
+        if (pos < line_len) {
+            if (mode == 0) {
+                if (line[pos] == small_sep[0]) {
+                    mode = 1;
+                    sep_start = pos;
+                    sep_pos = 1;
+                }
+            } else if (mode == 1) {
+                if (line[pos] == small_sep[sep_pos]) {
+                    ++sep_pos;
+                } else {
+                    mode = 0;
+                }
+            }
+        }
+        if (pos >= line_len || (mode == 1 && sep_pos >= small_sep_len)) {
+            if (pos >= line_len) {
+                sep_start = pos;
+            }
+            assert(num_start < sep_start);
+            strncpy(int_buf, line + num_start, (size_t)(sep_start - num_start));
+            int_buf[sep_start - num_start] = '\0';
+            if (sscanf(int_buf, "%d", &v) != 1) {
+                fprintf(stderr, "format error in "
+                        "bddconstructzbddfromelements_inner_getoneset\n");
+            }
+            vararr[vararr_size] = (bddvar)v;
+            ++vararr_size;
+            num_start = pos + 1;
+        }
+    }
+
+    //printf("vararr_size = %d\n", vararr_size);
+    //for (v = 0; v < vararr_size; ++v) {
+    //    printf("<%d> ", vararr[v]);
+    //}
+    //printf("\n");
+
+    return bddgetsingleset(vararr, vararr_size);
+}
+
+sbddextended_INLINE_FUNC
+bddp bddconstructzbddfromelements_inner(FILE* fp, const char* large_sep,
+                                        const char* small_sep
+#ifdef __cplusplus
+                             , ReadCharObject& sbddextended_readChar
+#endif
+                             )
+{
+    char buf[sbddextended_MAX_LINE];
+    bddp p, q, r;
+    int pos;
+    int start_pos;
+    int sep_pos;
+    int c;
+    int large_sep_len;
+    int small_sep_len;
+    int mode;
+
+    p = bddfalse;
+    large_sep_len = (int)strlen(large_sep);
+    if (large_sep_len <= 0) {
+        fprintf(stderr, "large_sep_len must be at least one");
+        exit(1);
+    }
+    small_sep_len = (int)strlen(small_sep);
+    if (small_sep_len <= 0) {
+        fprintf(stderr, "small_sep_len must be at least one");
+        exit(1);
+    }
+
+    start_pos = 0;
+    sep_pos = 0;
+    mode = 0;
+    pos = 0;
+    while (1 == 1) {
+        c = sbddextended_readChar(fp);
+        if (c != -1) {
+            if (mode == 0) {
+                if (c == large_sep[0]) {
+                    mode = 1;
+                    sep_pos = 1;
+                } else {
+                    if (pos - start_pos >= sbddextended_MAX_LINE) {
+                        fprintf(stderr, "length must not exceed sbddextended_MAX_LINE");
+                        exit(1);
+                    }
+                    buf[pos - start_pos] = (char)c;
+                    ++pos;
+                }
+            } else if (mode == 1) {
+                if (c == large_sep[sep_pos]) {
+                    ++sep_pos;
+                } else {
+                    if (pos - start_pos + sep_pos >= sbddextended_MAX_LINE) {
+                        fprintf(stderr, "length must not exceed sbddextended_MAX_LINE");
+                        exit(1);
+                    }
+                    memcpy(buf + pos - start_pos, large_sep, (size_t)sep_pos);
+                    pos += sep_pos;
+                    sep_pos = 0;
+                }
+            }
+        }
+        if (c == -1 || sep_pos >= large_sep_len) {
+            buf[pos - start_pos] = '\0';
+
+            //fprintf(stderr,"<<%s>>\n", buf);
+            // obtain buf
+            q = bddconstructzbddfromelements_inner_getoneset(buf,
+                                                             pos - start_pos,
+                                                             small_sep,
+                                                             small_sep_len);
+            r = bddunion(p, q);
+            bddfree(p);
+            bddfree(q);
+            p = r;
+            if (c == -1) {
+                break;
+            }
+            start_pos = pos + sep_pos + 1;
+            pos += sep_pos + 1;
+            mode = 0;
+            sep_pos = 0;
+        }
+    }
+    return p;
+}
+
+#ifdef __cplusplus
+
+sbddextended_INLINE_FUNC
+ZBDD constructZBDDFromElements(FILE* fp, const char* large_sep,
+                              const char* small_sep)
+{
+    ReadLineObject glo;
+    bddp p;
+    p = bddconstructzbddfromelements_inner(fp, large_sep, small_sep,
+                                           glo);
+    return ZBDD_ID(p);
+}
+
+sbddextended_INLINE_FUNC
+ZBDD constructZBDDFromElements(std::istream& ist, const char* large_sep,
+                              const char* small_sep)
+{
+    ReadLineObject glo(&ist);
+    bddp p;
+    p = bddconstructzbddfromelements_inner(NULL, large_sep, small_sep,
+                                           glo);
+    return ZBDD_ID(p);
+}
+
+sbddextended_INLINE_FUNC
+bddp bddconstructzbddfromelements(FILE* fp, const char* large_sep,
+                                  const char* small_sep)
+{
+    ReadLineObject glo;
+    return bddconstructzbddfromelements_inner(fp, large_sep, small_sep,
+                                              glo);
+}
+
+#else
+
+sbddextended_INLINE_FUNC
+bddp bddconstructzbddfromelements(FILE* fp, const char* large_sep,
+                                  const char* small_sep)
+{
+    return bddconstructzbddfromelements_inner(fp, large_sep, small_sep);
 }
 
 #endif
@@ -468,14 +770,14 @@ void bddwritezbddtofileknuth_inner(FILE* fp, bddp f, int is_hex
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-void WriteZBDDToFileKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex)
+void writeZBDDToFileKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex)
 {
     WriteObject wo(false, true, NULL);
     bddwritezbddtofileknuth_inner(fp, zbdd.GetID(), (is_hex ? 1 : 0), wo);
 }
 
 sbddextended_INLINE_FUNC
-void WriteZBDDToFileKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex)
+void writeZBDDToFileKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex)
 {
     WriteObject wo(true, true, &ost);
     bddwritezbddtofileknuth_inner(NULL, zbdd.GetID(), (is_hex ? 1 : 0), wo);
@@ -498,7 +800,7 @@ void bddwritezbddtofileknuth(FILE* fp, bddp f, int is_hex)
 
 #endif
 
-void bddoutputbddforgraphviz(FILE* fp, bddp f, bddNodeIndex* index)
+void bddoutputbddforgraphviz(FILE* fp, bddp f, bddNodeIndex* index, int is_zbdd)
 {
     int i, k, c, clevel;
     llint cvalue;
@@ -507,12 +809,16 @@ void bddoutputbddforgraphviz(FILE* fp, bddp f, bddNodeIndex* index)
     int is_making_index = 0;
     if (index == NULL) {
         is_making_index = 1;
-        index = bddNodeIndex_makeIndexBWithoutCount(f);
+        if (is_zbdd != 0) {
+            index = bddNodeIndex_makeIndexZWithoutCount(f);
+        } else {
+            index = bddNodeIndex_makeIndexBWithoutCount(f);
+        }
     }
 
     fprintf(fp, "digraph {\n");
-    fprintf(fp, "\tt0 [label = \"0\", shape = box];\n");
-    fprintf(fp, "\tt1 [label = \"1\", shape = box];\n");
+    fprintf(fp, "\tt0 [label = \"0\", shape = box, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, width = 0.4, height = 0.6, fontsize = 24];\n");
+    fprintf(fp, "\tt1 [label = \"1\", shape = box, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, width = 0.4, height = 0.6, fontsize = 24];\n");
 
     fprintf(fp, "\tr%d [style = invis]\n", index->height);
     for (i = index->height; i >= 1; --i) {
@@ -525,10 +831,14 @@ void bddoutputbddforgraphviz(FILE* fp, bddp f, bddNodeIndex* index)
         for (j = 0; j < index->level_vec_arr[i].count; ++j) {
             node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i], (llint)j);
             //fprintf(stderr, " %d", node);
-            fprintf(fp, "\tv%d_%lld [shape = circle];\n", i, (llint)j);
+            fprintf(fp, "\tv%d_%lld [shape = circle, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, label = \"\"];\n", i, (llint)j);
             for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
                 //fprintf(stderr, " %d", k);
-                child = bddgetchildb(node, k);
+                if (is_zbdd != 0) {
+                    child = bddgetchildz(node, k);
+                } else {
+                    child = bddgetchildb(node, k);
+                }
                 if (!bddisterminal(child)) {
                     clevel = (int)bddgetlev(child);
                     c = sbddextended_MyDict_find(&index->node_dict_arr[clevel],
@@ -537,17 +847,19 @@ void bddoutputbddforgraphviz(FILE* fp, bddp f, bddNodeIndex* index)
 
                     fprintf(fp, "\tv%d_%lld -> v%d_%lld", i, (llint)j,
                             clevel, cvalue);
+                    fprintf(fp, " [color = \"#81B65D\", penwidth = 2.5");
                     if (k == 0) {
-                        fprintf(fp, " [style = dotted]");
+                        fprintf(fp, ", style = dotted");
                     }
-                    fprintf(fp, ";\n");
+                    fprintf(fp, "];\n");
                 } else {
                     fprintf(fp, "\tv%d_%lld -> t%d", i, (llint)j,
                             (child == bddfalse ? 0 : 1));
+                    fprintf(fp, " [color = \"#81B65D\", penwidth = 2.5");
                     if (k == 0) {
-                        fprintf(fp, " [style = dotted]");
+                        fprintf(fp, ", style = dotted");
                     }
-                    fprintf(fp, ";\n");
+                    fprintf(fp, "];\n");
                 }
             }
         }

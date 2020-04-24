@@ -1,9 +1,9 @@
 typedef struct tagbddNodeIndex {
     int is_raw;
     sbddextended_MyDict* node_dict_arr;
-    sbddextended_MyVector* level_vec_arr;
+    sbddextended_MyVector* level_vec_arr; // stores all nodes at level i
     llint* offset_arr;
-    llint* count_arr;
+    llint* count_arr; // array representing the number of solutions for node i
     int height;
     bddp f;
 } bddNodeIndex;
@@ -250,7 +250,13 @@ llint bddNodeIndex_size(const bddNodeIndex* index)
 }
 
 sbddextended_INLINE_FUNC
-void bddNodeIndex_sizeeachlevel(const bddNodeIndex* index, bddvar* arr)
+llint bddNodeIndex_sizeAtLevel(const bddNodeIndex* index, int level)
+{
+    return (llint)(index->offset_arr[level - 1] - index->offset_arr[level]);
+}
+
+sbddextended_INLINE_FUNC
+void bddNodeIndex_sizeEachLevel(const bddNodeIndex* index, bddvar* arr)
 {
     int i;
     for (i = 1; i <= index->height; ++i) {
@@ -322,12 +328,17 @@ public:
         index_ = bddNodeIndex_makeIndex_inner(f.GetID(), (is_raw ? 1 : 0), 1);
     }
 
-    llint Size()
+    llint size()
     {
         return bddNodeIndex_size(index_);
     }
 
-    void SizeEachLevel(std::vector<bddvar>& arr)
+    llint sizeAtLevel(int level)
+    {
+        return bddNodeIndex_sizeAtLevel(index_, level);
+    }
+
+    void sizeEachLevel(std::vector<bddvar>& arr)
     {
         arr.resize(index_->height + 1);
         for (int i = 1; i < index_->height; ++i) {
@@ -335,7 +346,7 @@ public:
         }
     }
 
-    llint Count()
+    llint count()
     {
         return bddNodeIndex_count(index_);
     }

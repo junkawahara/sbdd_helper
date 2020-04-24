@@ -1,8 +1,14 @@
-# SBDD_helper リファレンス
+# SBDD_helper C言語版リファレンス
 
-Version 0.02 alpha
+Version 0.03 alpha
 
 本プログラムで提供している関数は開発中であるため、予告なく仕様を変更することがある。
+
+## 変更点
+
+### Version 0.03
+
+C++ 版の関数名の先頭の大文字を小文字に変更した。（例: IsNegative -> isNegative）
 
 提供している関数
 
@@ -46,7 +52,27 @@ if (bddisconstant(f)) {
 ```
 bddp bddtakenot(bddp f)
 ```
-f の否定を反転させて得られるノードを返す。
+
+f の否定 BDD を返す。
+リファレンスカウンタは変化させない。
+
+## bddaddnot
+
+```
+bddp bddaddnot(bddp f)
+```
+
+f が否定であるときは f を返し、f が否定でないときは f の否定 BDD を返す。
+リファレンスカウンタは変化させない。
+
+## bdderasenot
+
+```
+bddp bdderasenot(bddp f)
+```
+
+f が否定であるときは f の否定を外した BDD を返し、f が否定でないときは f を返す。
+リファレンスカウンタは変化させない。
 
 ## bddis64bitversion
 
@@ -223,6 +249,16 @@ bddp bddgetchildraw(bddp f, int child)
 ```
 
 f が BDD/ZBDDノードであるとき、f の child 引数で指定した枝の子を返す。SAPPOROBDD ではBDD/ZBDDは否定枝表現が用いられているが、本関数は否定枝表現における f の child-枝の子を返す。本関数はBDD/ZBDDともに使用可能。本関数は参照カウンタを増加させないため、本関数で得られる bddp ポインタを開放（bddfree）してはいけない。
+
+## bddprimenot
+
+```
+bddp bddprimenot(bddvar v)
+```
+
+変数番号 v のリテラルの否定だけからなる論理関数に対応する BDD を返す。
+bddprime(v) の否定を取った BDD と同じ結果となる。
+変数番号 v は 1 から bddvarused() （現在使用している変数の数）以下である必要がある。
 
 ## bddgetsingleton
 

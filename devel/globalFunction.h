@@ -187,16 +187,14 @@ sbddextended_INLINE_FUNC bddp bddgetchildraw(bddp f, int child)
 sbddextended_INLINE_FUNC
 bddp bddprimenot(bddvar v)
 {
-    bddp f, g;
+    bddp f;
 
     if (v > bddvarused()) {
         fprintf(stderr, "bddprimenot: Invalid VarID %d", v);
         exit(1);
     }
     f = bddprime(v);
-    g = bddnot(f);
-    bddfree(f);
-    return g;
+    return bddaddnot(f);
 }
 
 sbddextended_INLINE_FUNC
@@ -364,167 +362,208 @@ int bddismemberz(bddp f, const bddvar* vararr, int n)
 
 #ifdef __cplusplus
 
-sbddextended_INLINE_FUNC bool IsNegative(const BDD& f)
+sbddextended_INLINE_FUNC bool isNegative(const BDD& f)
 {
     return bddisnegative(f.GetID()) != 0;
 }
 
-sbddextended_INLINE_FUNC bool IsNegative(const ZBDD& f)
+sbddextended_INLINE_FUNC bool isNegative(const ZBDD& f)
 {
     return bddisnegative(f.GetID()) != 0;
 }
 
-sbddextended_INLINE_FUNC bool IsConstant(const BDD& f)
+sbddextended_INLINE_FUNC bool isConstant(const BDD& f)
 {
     return bddisconstant(f.GetID()) != 0;
 }
 
-sbddextended_INLINE_FUNC bool IsConstant(const ZBDD& f)
+sbddextended_INLINE_FUNC bool isConstant(const ZBDD& f)
 {
     return bddisconstant(f.GetID()) != 0;
 }
 
-sbddextended_INLINE_FUNC BDD TakeNot(const BDD& f)
+sbddextended_INLINE_FUNC BDD takeNot(const BDD& f)
 {
     return BDD_ID(bddtakenot(f.GetID()));
 }
 
-sbddextended_INLINE_FUNC ZBDD TakeNot(const ZBDD& f)
+sbddextended_INLINE_FUNC ZBDD takeNot(const ZBDD& f)
 {
     return ZBDD_ID(bddtakenot(f.GetID()));
 }
 
-sbddextended_INLINE_FUNC BDD AddNot(const BDD& f)
+sbddextended_INLINE_FUNC BDD addNot(const BDD& f)
 {
     return BDD_ID(bddaddnot(f.GetID()));
 }
 
-sbddextended_INLINE_FUNC ZBDD AddNot(const ZBDD& f)
+sbddextended_INLINE_FUNC ZBDD addNot(const ZBDD& f)
 {
     return ZBDD_ID(bddaddnot(f.GetID()));
 }
 
-sbddextended_INLINE_FUNC BDD EraseNot(const BDD& f)
+sbddextended_INLINE_FUNC BDD eraseNot(const BDD& f)
 {
     return BDD_ID(bdderasenot(f.GetID()));
 }
 
-sbddextended_INLINE_FUNC ZBDD EraseNot(const ZBDD& f)
+sbddextended_INLINE_FUNC ZBDD eraseNot(const ZBDD& f)
 {
     return ZBDD_ID(bdderasenot(f.GetID()));
 }
 
-sbddextended_INLINE_FUNC bool Is64BitVersion()
+sbddextended_INLINE_FUNC bool is64BitVersion()
 {
     return bddis64bitversion() != 0;
 }
 
-sbddextended_INLINE_FUNC bool IsValid(const BDD& f)
+sbddextended_INLINE_FUNC bool isValid(const BDD& f)
 {
     return bddisvalid(f.GetID()) != 0;
 }
 
-sbddextended_INLINE_FUNC bool IsValid(const ZBDD& f)
+sbddextended_INLINE_FUNC bool isValid(const ZBDD& f)
 {
     return bddisvalid(f.GetID()) != 0;
 }
 
-sbddextended_INLINE_FUNC bool IsTerminal(const BDD& f)
+sbddextended_INLINE_FUNC bool isTerminal(const BDD& f)
 {
     return bddisterminal(f.GetID()) != 0;
 }
 
-sbddextended_INLINE_FUNC bool IsTerminal(const ZBDD& f)
+sbddextended_INLINE_FUNC bool isTerminal(const ZBDD& f)
 {
     return bddisterminal(f.GetID()) != 0;
 }
 
-sbddextended_INLINE_FUNC bddvar GetVar(const BDD& f)
+sbddextended_INLINE_FUNC bddvar getVar(const BDD& f)
 {
     return bddgetvar(f.GetID());
 }
 
-sbddextended_INLINE_FUNC bddvar GetVar(const ZBDD& f)
+sbddextended_INLINE_FUNC bddvar getVar(const ZBDD& f)
 {
     return bddgetvar(f.GetID());
 }
 
-sbddextended_INLINE_FUNC bddvar GetLev(const BDD& f)
+sbddextended_INLINE_FUNC bddvar getLev(const BDD& f)
 {
     return bddgetlev(f.GetID());
 }
 
-sbddextended_INLINE_FUNC bddvar GetLev(const ZBDD& f)
+sbddextended_INLINE_FUNC bddvar getLev(const ZBDD& f)
 {
     return bddgetlev(f.GetID());
 }
 
-sbddextended_INLINE_FUNC BDD GetChild0(const BDD& f)
+sbddextended_INLINE_FUNC BDD getChild0(const BDD& f)
 {
-    return BDD_ID(bddgetchild0b(f.GetID()));
+    bddp g;
+    g = bddat0(f.GetID(), f.Top());
+    return BDD_ID(g);
 }
 
-sbddextended_INLINE_FUNC ZBDD GetChild0(const ZBDD& f)
+sbddextended_INLINE_FUNC ZBDD getChild0(const ZBDD& f)
 {
-    return ZBDD_ID(bddgetchild0z(f.GetID()));
+    bddp g;
+    g = bddoffset(f.GetID(), f.Top());
+    return ZBDD_ID(g);
 }
 
-sbddextended_INLINE_FUNC BDD GetChild0Raw(const BDD& f)
+sbddextended_INLINE_FUNC BDD getChild0Raw(const BDD& f)
 {
-    return BDD_ID(bddgetchild0braw(f.GetID()));
+    if (isNegative(f)) {
+        return ~getChild0(f);
+    } else {
+        return getChild0(f);
+    }
 }
 
-sbddextended_INLINE_FUNC ZBDD GetChild0Raw(const ZBDD& f)
+sbddextended_INLINE_FUNC ZBDD getChild0Raw(const ZBDD& f)
 {
-    return ZBDD_ID(bddgetchild0zraw(f.GetID()));
+    if (isNegative(f)) {
+        return getChild0(f) + ZBDD(1);
+    } else {
+        return getChild0(f);
+    }
 }
 
-sbddextended_INLINE_FUNC BDD GetChild1(const BDD& f)
+sbddextended_INLINE_FUNC BDD getChild1(const BDD& f)
 {
-    return BDD_ID(bddgetchild1b(f.GetID()));
+    bddp g;
+    g = bddat1(f.GetID(), f.Top());
+    return BDD_ID(g);
 }
 
-sbddextended_INLINE_FUNC ZBDD GetChild1(const ZBDD& f)
+sbddextended_INLINE_FUNC ZBDD getChild1(const ZBDD& f)
 {
-    return ZBDD_ID(bddgetchild1z(f.GetID()));
+    bddp g;
+    g = bddonset0(f.GetID(), f.Top());
+    return ZBDD_ID(g);
 }
 
-sbddextended_INLINE_FUNC BDD GetChild1Raw(const BDD& f)
+sbddextended_INLINE_FUNC BDD getChild1Raw(const BDD& f)
 {
-    return BDD_ID(bddgetchild1braw(f.GetID()));
+    if (isNegative(f)) {
+        return ~getChild1(f);
+    } else {
+        return getChild1(f);
+    }
 }
 
-sbddextended_INLINE_FUNC ZBDD GetChild1Raw(const ZBDD& f)
+sbddextended_INLINE_FUNC ZBDD getChild1Raw(const ZBDD& f)
 {
-    return ZBDD_ID(bddgetchild1zraw(f.GetID()));
+    return getChild1(f);
 }
 
-sbddextended_INLINE_FUNC BDD GetChild(const BDD& f, int child)
+sbddextended_INLINE_FUNC BDD getChild(const BDD& f, int child)
 {
-    return BDD_ID(bddgetchildb(f.GetID(), child));
+    if (child == 1) {
+        return getChild1(f);
+    } else {
+        return getChild0(f);
+    }
 }
 
-sbddextended_INLINE_FUNC ZBDD GetChild(const ZBDD& f, int child)
+sbddextended_INLINE_FUNC ZBDD getChild(const ZBDD& f, int child)
 {
-    return ZBDD_ID(bddgetchildz(f.GetID(), child));
+    if (child == 1) {
+        return getChild1(f);
+    } else {
+        return getChild0(f);
+    }
 }
 
-sbddextended_INLINE_FUNC BDD GetChildRaw(const BDD& f, int child)
+sbddextended_INLINE_FUNC BDD getChildRaw(const BDD& f, int child)
 {
-    return BDD_ID(bddgetchildbraw(f.GetID(), child));
+    if (child == 1) {
+        return getChild1(f);
+    } else {
+        return getChild0(f);
+    }
 }
 
-sbddextended_INLINE_FUNC ZBDD GetChildRaw(const ZBDD& f, int child)
+sbddextended_INLINE_FUNC ZBDD getChildRaw(const ZBDD& f, int child)
 {
-    return ZBDD_ID(bddgetchildzraw(f.GetID(), child));
+    if (child == 1) {
+        return getChild1(f);
+    } else {
+        return getChild0(f);
+    }
 }
 
-sbddextended_INLINE_FUNC ZBDD GetSingleton(bddvar v)
+sbddextended_INLINE_FUNC BDD getPrimeNot(bddvar v)
+{
+    return BDD_ID(bddprimenot(v));
+}
+
+sbddextended_INLINE_FUNC ZBDD getSingleton(bddvar v)
 {
     return ZBDD_ID(bddgetsingleton(v));
 }
 
-sbddextended_INLINE_FUNC ZBDD GetSingleSet(const std::vector<bddvar>& vararr)
+sbddextended_INLINE_FUNC ZBDD getSingleSet(const std::vector<bddvar>& vararr)
 {
     bddp f, g;
 
@@ -538,7 +577,7 @@ sbddextended_INLINE_FUNC ZBDD GetSingleSet(const std::vector<bddvar>& vararr)
     return ZBDD_ID(f);
 }
 
-sbddextended_INLINE_FUNC ZBDD GetSingleSet(int n, ...)
+sbddextended_INLINE_FUNC ZBDD getSingleSet(int n, ...)
 {
     int i;
     bddp f, g;
@@ -563,7 +602,7 @@ sbddextended_INLINE_FUNC ZBDD GetSingleSet(int n, ...)
     return ZBDD_ID(f);
 }
 
-sbddextended_INLINE_FUNC ZBDD GetPowerSet(const std::vector<bddvar>& vararr)
+sbddextended_INLINE_FUNC ZBDD getPowerSet(const std::vector<bddvar>& vararr)
 {
     if (vararr.empty()) {
         return ZBDD(1);
@@ -588,7 +627,7 @@ sbddextended_INLINE_FUNC ZBDD GetPowerSet(const std::vector<bddvar>& vararr)
     return ZBDD_ID(f);
 }
 
-bool IsMemberZ(const ZBDD& f, const std::vector<bddvar>& vararr)
+sbddextended_INLINE_FUNC bool isMemberZ(const ZBDD& f, const std::vector<bddvar>& vararr)
 {
     if (vararr.empty()) {
         return bddisnegative(f.GetID());

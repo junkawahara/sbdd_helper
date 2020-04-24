@@ -34,6 +34,7 @@ using namespace sbddh;
 
 const char g_filename1[] = "SBDD_helper_testc_test_tempdata1.txt";
 const char g_filename2[] = "SBDD_helper_testc_test_tempdata2.txt";
+const char g_filename3[] = "SBDD_helper_testc_test_tempdata3.txt";
 
 void testfunc(llint b, int error_line)
 {
@@ -113,7 +114,7 @@ void initialize()
     }
 }
 
-bddp make_test_bdd()
+bddp make_test_zbdd()
 {
     int i;
     bddp f;
@@ -281,7 +282,7 @@ void test_bddfunctions()
     bddp f, s2;
     int i;
 
-    f = make_test_bdd();
+    f = make_test_zbdd();
 
     test(bddisconstant(bddempty));
     test(bddisconstant(bddsingle));
@@ -412,7 +413,7 @@ void test_ismemberz()
     bddp f;
     bddvar vararr[3];
 
-    f = make_test_bdd();
+    f = make_test_zbdd();
 
     vararr[0] = 1, vararr[1] = 2, vararr[2] = 3;
     test(!bddismemberz(f, vararr, 3));
@@ -462,8 +463,8 @@ void ullint_to_vararr(ullint v, bddvar* vararr, int* num)
 
 void test_at_random()
 {
-    size_t w = 30;
-    size_t N = 1000;
+    const size_t w = 30; // number of variables
+    const size_t N = 1000; // number of cardinality of the constructed ZDD
     int i, j, num, found;
     ullint w_pow, c;
     ullint* ar;
@@ -561,6 +562,28 @@ void test_at_random()
         exit(1);
     }
 
+    fp = fopen(g_filename1, "wb+");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    bddwritezbddtobinary(fp, f);
+
+    if (fseek(fp, 0, SEEK_SET) != 0) {
+        fprintf(stderr, "fseek failed\n");
+        exit(1);
+    }
+    g = bddconstructzbddfrombinary(fp, -1);
+
+    test(f == g);
+
+    fclose(fp);
+
+    if (remove(g_filename1) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+
     bddNodeIndex* index = bddNodeIndex_makeIndexZ(g);
     test_eq(bddNodeIndex_count(index), bddcard(g));
     bddNodeIndex_destruct(index);
@@ -590,7 +613,7 @@ void test_io()
         fprintf(stderr, "file cannot be opened\n");
         exit(1);
     }
-    f = make_test_bdd();
+    f = make_test_zbdd();
     bddprintzbddelements(fp1, f, "$", " ");
 
     test(is_expected_str(fp1, "3 2$3 1$2 1"));
@@ -655,12 +678,40 @@ void test_io()
               bddand(bddnot(bddor(bddprime(2), bddprime(5))),
                      bddprime(3)));
     test(f == g);
+
+    //bddconstructzbddfromelements_inner_getoneset("10 20 30 40 50", 14, " ", 1);
+    //bddconstructzbddfromelements_inner_getoneset("10,2,30,4,50", 12, ",", 1);
+    //bddconstructzbddfromelements_inner_getoneset("30!&20!&10", 10, "!&", 2);
+    //bddconstructzbddfromelements_inner_getoneset("10!!30!!20", 10, "!!", 2);
+    //bddconstructzbddfromelements_inner_getoneset("1", 1, "!&", 2);
+    //bddconstructzbddfromelements(stdin, "!", ",");
+
+    fp1 = fopen(g_filename3, "w+");
+    if (fp1 == NULL) {
+        fprintf(stderr, "file cannot be opened.\n");
+        exit(1);
+    }
+    fputs("1,2!1,3!2,3", fp1);
+
+    if (fseek(fp1, 0, SEEK_SET) != 0) {
+        fprintf(stderr, "fseek failed\n");
+        exit(1);
+    }
+    f = make_test_zbdd();
+    g = bddconstructzbddfromelements(fp1, "!", ",");
+    fclose(fp1);
+    if (remove(g_filename3) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+
+    test(f == g);
 }
 
 void test_index()
 {
     int i, count;
-    bddp f = make_test_bdd();
+    bddp f = make_test_zbdd();
     bddNodeIndex* index = bddNodeIndex_makeIndexZ(f);
     test_eq(bddNodeIndex_count(index), 3);
     test_eq(bddNodeIndex_size(index), 4);
@@ -684,7 +735,7 @@ void test_index()
     test_eq(bddNodeIndex_size(index), 40);
     bddNodeIndex_destruct(index);
 
-    f = make_test_bdd();
+    f = make_test_zbdd();
     index = bddNodeIndex_makeRawIndexZ(f);
     test_eq(bddNodeIndex_count(index), 3);
     test_eq(bddNodeIndex_size(index), 4);
@@ -697,10 +748,120 @@ void test_index()
     bddNodeIndex_destruct(index);
 }
 
+void test_elementIterator()
+{
+    bddp f = make_test_zbdd();
+    bddvar* arr = (bddvar*)malloc(bddgetlev(f) * sizeof(bddvar));
+
+    // f is expected to be {{3, 2}, {3, 1}, {2, 1}}
+
+    bddElementIterator* itor = bddElementIterator_make(f);
+    test(bddElementIterator_hasNext(itor) != 0);
+    bddElementIterator_next(itor, arr);
+    test_eq(arr[0], 3);
+    test_eq(arr[1], 2);
+    test_eq(arr[2], (bddvar)-1);
+
+    test(bddElementIterator_hasNext(itor) != 0);
+    bddElementIterator_next(itor, arr);
+    test_eq(arr[0], 3);
+    test_eq(arr[1], 1);
+    test_eq(arr[2], (bddvar)-1);
+
+    test(bddElementIterator_hasNext(itor) != 0);
+    bddElementIterator_next(itor, arr);
+    test_eq(arr[0], 2);
+    test_eq(arr[1], 1);
+    test_eq(arr[2], (bddvar)-1);
+
+    test(bddElementIterator_hasNext(itor) == 0);
+
+    bddElementIterator_destruct(itor);
+
+    bddp g = bddunion(f, bddsingle);
+    // g is expected to be {{}, {3, 2}, {3, 1}, {2, 1}}
+
+    itor = bddElementIterator_make(g);
+    test(bddElementIterator_hasNext(itor) != 0);
+    bddElementIterator_next(itor, arr);
+    test_eq(arr[0], 3);
+    test_eq(arr[1], 2);
+    test_eq(arr[2], (bddvar)-1);
+
+    test(bddElementIterator_hasNext(itor) != 0);
+    bddElementIterator_next(itor, arr);
+    test(bddElementIterator_hasNext(itor) != 0);
+    bddElementIterator_next(itor, arr);
+    test(bddElementIterator_hasNext(itor) != 0);
+    bddElementIterator_next(itor, arr);
+    test_eq(arr[0], (bddvar)-1);
+    test(bddElementIterator_hasNext(itor) == 0);
+
+    bddElementIterator_destruct(itor);
+
+    // bddempty test
+    itor = bddElementIterator_make(bddempty);
+    test(bddElementIterator_hasNext(itor) == 0);
+    bddElementIterator_destruct(itor);
+
+    // bddsingle test
+    itor = bddElementIterator_make(bddsingle);
+    test(bddElementIterator_hasNext(itor) != 0);
+    bddElementIterator_next(itor, arr);
+    test_eq(arr[0], (bddvar)-1);
+    test(bddElementIterator_hasNext(itor) == 0);
+    bddElementIterator_destruct(itor);
+
+    free(arr);
+}
+
+void test_bddbinaryformat_f(bddp f)
+{
+    bddp g;
+    FILE* fp;
+
+    fp = fopen(g_filename1, "wb+");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    bddwritezbddtobinary(fp, f);
+
+    if (fseek(fp, 0, SEEK_SET) != 0) {
+        fprintf(stderr, "fseek failed\n");
+        exit(1);
+    }
+    g = bddconstructzbddfrombinary(fp, -1);
+
+    fclose(fp);
+    if (remove(g_filename1) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+
+    test(f == g);
+}
+
+void test_bddbinaryformat()
+{
+    bddp f;
+
+    test_bddbinaryformat_f(bddempty);
+    test_bddbinaryformat_f(bddsingle);
+
+    f = bddgetsingleton(1);
+    test_bddbinaryformat_f(f);
+    bddfree(f);
+
+    f = make_test_zbdd();
+    test_bddbinaryformat_f(f);
+    bddfree(f);
+}
+
 void start_test()
 {
     srand(1);
-    
+
     initialize();
 
     test_MyVector();
@@ -711,4 +872,6 @@ void start_test()
     test_io();
     test_at_random();
     test_index();
+    test_elementIterator();
+    test_bddbinaryformat();
 }

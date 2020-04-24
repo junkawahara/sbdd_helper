@@ -6,7 +6,7 @@ typedef struct tagsbddextended_MyDictNode {
 } sbddextended_MyDictNode;
 
 sbddextended_INLINE_FUNC
-sbddextended_MyDictNode* sbddextended_MyDictNode_MakeNewNode(llint key,
+sbddextended_MyDictNode* sbddextended_MyDictNode_makeNewNode(llint key,
                                                              llint value)
 {
     sbddextended_MyDictNode* node;
@@ -118,7 +118,7 @@ void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
 {
     sbddextended_MyDictNode* node;
     if (d->root == NULL) {
-        d->root = sbddextended_MyDictNode_MakeNewNode(key, value);
+        d->root = sbddextended_MyDictNode_makeNewNode(key, value);
         ++d->count;
     } else {
         node = d->root;
@@ -130,7 +130,7 @@ void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
                 if (node->left != NULL) {
                     node = node->left;
                 } else {
-                    node->left = sbddextended_MyDictNode_MakeNewNode(key,
+                    node->left = sbddextended_MyDictNode_makeNewNode(key,
                                                                      value);
                     ++d->count;
                     break;
@@ -139,7 +139,7 @@ void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
                 if (node->right != NULL) {
                     node = node->right;
                 } else {
-                    node->right = sbddextended_MyDictNode_MakeNewNode(key,
+                    node->right = sbddextended_MyDictNode_makeNewNode(key,
                                                                       value);
                     ++d->count;
                     break;
@@ -213,7 +213,7 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
         return;
     }
 
-    dest->root = sbddextended_MyDictNode_MakeNewNode(src->root->key,
+    dest->root = sbddextended_MyDictNode_makeNewNode(src->root->key,
                                                      src->root->value);
     dest->root->key = src->root->key;
     dest->root->value = src->root->value;
@@ -249,7 +249,7 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
         if (op <= 1) {
             ++sp;
             node_stack[sp] = child;
-            dest_node_stack[sp] = sbddextended_MyDictNode_MakeNewNode(child->key,
+            dest_node_stack[sp] = sbddextended_MyDictNode_makeNewNode(child->key,
                                                                       child->value);
             op_stack[sp] = 0;
 

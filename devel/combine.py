@@ -1,9 +1,12 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 from __future__ import print_function, unicode_literals,\
     absolute_import, division
 
+# usage: (at devel directory) python combine.py
 
-
-if __name__ == "__main__":
+def main():
 
     with open("SBDD_helper.h") as f:
         with open("../SBDD_helper.h", "w") as fout:
@@ -18,3 +21,5 @@ if __name__ == "__main__":
                 else:
                     fout.write(line)
                 
+if __name__ == "__main__":
+    main()

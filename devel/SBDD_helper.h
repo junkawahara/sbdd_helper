@@ -33,6 +33,8 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <set>
+#include <algorithm>
 
 #else
 
@@ -71,7 +73,9 @@ typedef unsigned long long int ullint;
 #include "globalFunction.h"
 #include "NodeIndex.h"
 #include "NodeIterator.h"
+#include "ElementIterator.h"
 #include "io.h"
+#include "bddbinaryformat.h"
 
 #ifdef __cplusplus
 } // end of namespace sbddh

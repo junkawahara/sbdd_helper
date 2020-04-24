@@ -24,7 +24,7 @@ int bddiszbdd(bddp f)
 
 // need to free the returned value
 sbddextended_INLINE_FUNC
-const char** sbddextended_strvector_to_array(const std::vector<std::string>& vec)
+const char** sbddextended_strVectorToArray(const std::vector<std::string>& vec)
 {
     const char** arr;
 
