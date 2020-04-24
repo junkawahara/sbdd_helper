@@ -75,7 +75,8 @@ int main()
 
 ## リファレンス
 
-[リファレンス](documents/reference.md)
+[C++言語版リファレンス](documents/reference_cpp.md)
+[C言語版リファレンス](documents/reference_c.md)
 
 ## 免責事項
 
