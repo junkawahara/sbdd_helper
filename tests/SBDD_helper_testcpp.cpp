@@ -175,6 +175,18 @@ void test_index_cpp()
     test_eq(index.count(), 3);
     test_eq(index.size(), 4);
 
+    test_eq(index.sizeAtLevel(1), 1);
+    test_eq(index.sizeAtLevel(2), 2);
+    test_eq(index.sizeAtLevel(3), 1);
+
+    std::vector<bddvar> vec;
+    index.sizeEachLevel(vec);
+
+    test_eq(vec.size(), 4);
+    test_eq(vec[1], 1);
+    test_eq(vec[2], 2);
+    test_eq(vec[3], 1);
+
     DDNodeIndex::DDNodeIterator itor = index.begin();
     int count = 0;
     while (itor != index.end()) {
@@ -247,83 +259,83 @@ void test_elementIterator_cpp()
     s123.insert(1); s123.insert(2); s123.insert(3);
 
     {
-        ElementIteratorMaker eim(f);
-        ElementIterator itor = eim.begin();
-        test(itor != eim.end());
+        ElementIteratorHolder eih(f);
+        ElementIterator itor = eih.begin();
+        test(itor != eih.end());
         test(*itor == s23);
 
         ++itor;
-        test(itor != eim.end());
+        test(itor != eih.end());
         test(*itor == s13);
 
         ++itor;
-        test(itor != eim.end());
+        test(itor != eih.end());
         test(*itor == s12);
 
         ++itor;
-        test(itor == eim.end());
+        test(itor == eih.end());
     } // itor destructed
 
     {
         ZBDD g = f + ZBDD(1);
         // g is expected to be {{}, {3, 2}, {3, 1}, {2, 1}}
-        ElementIteratorMaker eim(g);
-        ElementIterator itor = eim.begin();
-        test(itor != eim.end());
+        ElementIteratorHolder eih(g);
+        ElementIterator itor = eih.begin();
+        test(itor != eih.end());
         test(*itor == s23);
 
         ++itor;
-        test(itor != eim.end());
+        test(itor != eih.end());
         test(*itor == s13);
 
         ++itor;
-        test(itor != eim.end());
+        test(itor != eih.end());
         test(*itor == s12);
 
         ++itor;
-        test(itor != eim.end());
+        test(itor != eih.end());
         test_eq(itor->size(), 0);
 
         ++itor;
-        test(itor == eim.end());
+        test(itor == eih.end());
     } // itor destructed
 
     // bddempty test
     {
-        ElementIteratorMaker eim(ZBDD(0));
-        ElementIterator itor = eim.begin();
-        test(itor == eim.end());
+        ElementIteratorHolder eih(ZBDD(0));
+        ElementIterator itor = eih.begin();
+        test(itor == eih.end());
     }
 
     // bddsingle test
     {
-        ElementIteratorMaker eim(ZBDD(1));
-        ElementIterator itor = eim.begin();
-        test(itor != eim.end());
+        ElementIteratorHolder eih(ZBDD(1));
+        ElementIterator itor = eih.begin();
+        test(itor != eih.end());
         test_eq(itor->size(), 0);
         ++itor;
-        test(itor == eim.end());
+        test(itor == eih.end());
     }
 
     // algorithm start
     {
-        ElementIteratorMaker eim(f);
-        ElementIterator itor = std::find(eim.begin(), eim.end(), s13);
-        test(itor != eim.end()); // found
+        ElementIteratorHolder eih(f);
+        ElementIterator itor = std::find(eih.begin(), eih.end(), s13);
+        test(itor != eih.end()); // found
 
-        itor = std::find(eim.begin(), eim.end(), s123);
-        test(itor == eim.end()); // not found
+        itor = std::find(eih.begin(), eih.end(), s123);
+        test(itor == eih.end()); // not found
 
-        test_eq(std::count(eim.begin(), eim.end(), s12), 1);
-        test_eq(std::count(eim.begin(), eim.end(), s13), 1);
-        test_eq(std::count(eim.begin(), eim.end(), s23), 1);
-        test_eq(std::count(eim.begin(), eim.end(), s123), 0);
+        test_eq(std::count(eih.begin(), eih.end(), s12), 1);
+        test_eq(std::count(eih.begin(), eih.end(), s13), 1);
+        test_eq(std::count(eih.begin(), eih.end(), s23), 1);
+        test_eq(std::count(eih.begin(), eih.end(), s123), 0);
 
-        test_eq(std::count_if(eim.begin(), eim.end(), test_count_if_size1), 0);
-        test_eq(std::count_if(eim.begin(), eim.end(), test_count_if_size2), 3);
-        test_eq(std::count_if(eim.begin(), eim.end(), test_count_if_size3), 0);
+        test_eq(std::count_if(eih.begin(), eih.end(), test_count_if_size1), 0);
+        test_eq(std::count_if(eih.begin(), eih.end(), test_count_if_size2), 3);
+        test_eq(std::count_if(eih.begin(), eih.end(), test_count_if_size3), 0);
 
-        std::for_each(eim.begin(), eim.end(), test_for_each);
+        std::for_each(eih.begin(), eih.end(), test_for_each);
     }
 }
 

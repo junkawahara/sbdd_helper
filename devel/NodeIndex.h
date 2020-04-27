@@ -341,7 +341,7 @@ public:
     void sizeEachLevel(std::vector<bddvar>& arr)
     {
         arr.resize(index_->height + 1);
-        for (int i = 1; i < index_->height; ++i) {
+        for (int i = 1; i <= index_->height; ++i) {
             arr[i] = (bddvar)(index_->offset_arr[i - 1] - index_->offset_arr[i]);
         }
     }

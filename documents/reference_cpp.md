@@ -12,21 +12,26 @@ C++ 版では、C 版の全ての関数も使用可能である（[C言語版リ
 
 C++ 版の関数名の先頭の大文字を小文字に変更した。（例: IsNegative -> isNegative）
 
-提供している関数
+## 提供しているクラス
+
+[DDNodeIndex](reference_cpp_DDNodeIndex.md)
+[ElementIterator と ElementIteratorHolder](reference_cpp_ElementIterator.md)
+
+## 提供している関数
 
 ## IsNegative
 
 ```
-bool IsNegative(const BDD& f)
-bool IsNegative(const ZBDD& f)
+bool isNegative(const BDD& f)
+bool isNegative(const ZBDD& f)
 ```
 f が否定表現であるかを返す。f が否定表現であるなら true を、否定表現でないなら false を返す。
 
 ### 使用例
 
 ```
-bddp f = ...;  // 何らかの方法で f を作成
-if (bddisnegative(f)) {
+ZBDD f = ...;  // 何らかの方法で f を作成
+if (isNegative(f)) {
    // f は否定表現である
    // ... 処理
 }
@@ -44,8 +49,8 @@ f が定数関数（bddfalse, bddtrue, bddempty, bddsingle のいずれか）、
 ### 使用例
 
 ```
-bddp f = ...;  // 何らかの方法で f を作成
-if (bddisconstant(f)) {
+ZBDD f = ...;  // 何らかの方法で f を作成
+if (isConstant(f)) {
    // f は定数関数である
    // ... 処理
 }
@@ -228,6 +233,73 @@ bool isMemberZ(const ZBDD& f, const std::vector<bddvar>& vararr)
 引数で指定した vector vararr が表す集合が、ZBDD f が表す集合族に含まれるかどうかを判定する。含まれるなら 1 を、含まれないなら 0 を返す。vararr の各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。vararr はソートされている必要はない。vararr の大きさが 0 の場合、空集合が f に含まれるかを判定する。
 
 
+## printZBDDElements
+
+```
+void printZBDDElements(FILE* fp, const ZBDD& zbdd)
+void printZBDDElements(FILE* fp, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2)
+void printZBDDElements(FILE* fp, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2, const std::vector<std::string>& var_name_map)
+void printZBDDElements(std::ostream& ost, const ZBDD& zbdd)
+void printZBDDElements(std::ostream& ost, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2)
+void printZBDDElements(std::ostream& ost, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2, const std::vector<std::string>& var_name_map)
+```
+
+ZBDD zbdd が表す集合族を指定したストリームに出力する。
+例えば、"{4,2,1},{3,1},{1},{}" のような出力が得られる。
+zbdd が bddnull のときは "N" と出力し、bddempty のときは
+"E" と出力する。
+
+
+## printZBDDElementsAsValueList
+
+```
+void printZBDDElementsAsValueList(FILE* fp, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2, int num_of_variables)
+void printZBDDElementsAsValueList(std::ostream& ost, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2, int num_of_variables)
+```
+
+ZBDD zbdd が表す集合族を value list 形式で指定したストリームに出力する。
+value list 形式では、1行で1つの集合を表す。1行は 0/1 の列からなり、
+i 個目（i = 1,...,number_of_variables）の数が 1 であるときに
+i 番目の変数が集合に含まれ、0 であるときには含まれない。
+zbdd が bddnull のときは "N" と出力し、bddempty のときは
+"E" と出力する。
+
+## constructBDDFromFileKnuth
+
+```
+BDD constructBDDFromFileKnuth(FILE* fp, bool is_hex, int root_level = -1)
+BDD constructBDDFromFileKnuth(std::istream& ist, bool is_hex, int root_level = -1)
+```
+
+引数 fp または ist で指定した（ファイル等の）ストリームから、
+Knuth 形式を読み込み、BDD を構築して返す。
+root_level に正の数を指定すると、根のレベルが root_level になる。
+is_hex を true にすると、値を16進数として、false にすると、値を10進数として
+読み込む。
+
+## constructZBDDFromFileKnuth
+
+```
+ZBDD constructZBDDFromFileKnuth(FILE* fp, bool is_hex, int root_level = -1)
+ZBDD constructZBDDFromFileKnuth(std::istream& ist, bool is_hex, int root_level = -1)
+```
+
+引数 fp または ist で指定した（ファイル等の）ストリームから、
+Knuth 形式を読み込み、ZBDD を構築して返す。
+root_level に正の数を指定すると、根のレベルが root_level になる。
+is_hex を true にすると、値を16進数として、false にすると、値を10進数として
+読み込む。
+
+
+## constructZBDDFromElements
+
+```
+ZBDD constructZBDDFromElements(FILE* fp, const char* large_sep, const char* small_sep)
+ZBDD constructZBDDFromElements(std::istream& ist, const char* large_sep, const char* small_sep)
+```
+
+要素の集合の集合から ZBDD を作成する。
+
 ## constructZBDDFromBinary
 
 ```
@@ -246,6 +318,17 @@ std::ifstream ifs("zbdd.dat");
 ZBDD f = constructZBDDFromBinary(ifs);
 ifs.close();
 ```
+
+## writeZBDDToFileKnuth
+
+```
+void writeZBDDToFileKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex)
+void writeZBDDToFileKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex)
+```
+
+引数 fp または ost で指定した（ファイル等の）ストリームに、
+ZBDD を、Knuth 形式 で書き込む。
+is_hex を true にすると16進数を、false にすると10進数を書き込む。
 
 ## writeZBDDToBinary
 

@@ -233,15 +233,15 @@ public:
     }
 };
 
-class ElementIteratorMaker {
+class ElementIteratorHolder {
 private:
     bddp f_;
 public:
-    ElementIteratorMaker(bddp f) {
+    ElementIteratorHolder(bddp f) {
         f_ = f;
     }
 
-    ElementIteratorMaker(const ZBDD& f) {
+    ElementIteratorHolder(const ZBDD& f) {
         f_ = f.GetID();
     }
 
