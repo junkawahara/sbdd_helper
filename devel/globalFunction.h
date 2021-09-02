@@ -563,14 +563,16 @@ sbddextended_INLINE_FUNC ZBDD getSingleton(bddvar v)
     return ZBDD_ID(bddgetsingleton(v));
 }
 
-sbddextended_INLINE_FUNC ZBDD getSingleSet(const std::vector<bddvar>& vararr)
+template<typename T>
+sbddextended_INLINE_FUNC ZBDD getSingleSet(const T& variables)
 {
     bddp f, g;
 
     f = bddsingle;
-    for (size_t i = 0; i < vararr.size(); ++i) {
-        assert(1 <= vararr[i] && vararr[i] <= bddvarused());
-        g = bddchange(f, vararr[i]);
+    for (typename T::const_iterator itor = variables.begin();
+         itor != variables.end(); ++itor) {
+        assert(1 <= *itor && *itor <= bddvarused());
+        g = bddchange(f, *itor);
         bddfree(f);
         f = g;
     }
@@ -602,13 +604,19 @@ sbddextended_INLINE_FUNC ZBDD getSingleSet(int n, ...)
     return ZBDD_ID(f);
 }
 
-sbddextended_INLINE_FUNC ZBDD getPowerSet(const std::vector<bddvar>& vararr)
+template<typename T>
+sbddextended_INLINE_FUNC ZBDD getPowerSet(const T& variables)
 {
-    if (vararr.empty()) {
-        return ZBDD(1);
+    int n = 0;
+
+    for (typename T::const_iterator itor = variables.begin();
+         itor != variables.end(); ++itor) {
+        ++n;
     }
 
-    int n = static_cast<int>(vararr.size());
+    if (n == 0) {
+        return ZBDD(1);
+    }
 
     bddvar* ar = new bddvar[n];
     if (ar == NULL) {
@@ -616,8 +624,11 @@ sbddextended_INLINE_FUNC ZBDD getPowerSet(const std::vector<bddvar>& vararr)
         return false;
     }
 
-    for (int i = 0; i < n; ++i) {
-        ar[i] = vararr[i];
+    int c = 0;
+    for (typename T::const_iterator itor = variables.begin();
+         itor != variables.end(); ++itor) {
+        ar[c] = *itor;
+        ++c;
     }
 
     bddp f = bddgetpowerset(ar, n);
@@ -627,13 +638,19 @@ sbddextended_INLINE_FUNC ZBDD getPowerSet(const std::vector<bddvar>& vararr)
     return ZBDD_ID(f);
 }
 
-sbddextended_INLINE_FUNC bool isMemberZ(const ZBDD& f, const std::vector<bddvar>& vararr)
+template<typename T>
+sbddextended_INLINE_FUNC bool isMemberZ(const ZBDD& f, const T& variables)
 {
-    if (vararr.empty()) {
-        return bddisnegative(f.GetID());
+    int n = 0;
+
+    for (typename T::const_iterator itor = variables.begin();
+         itor != variables.end(); ++itor) {
+        ++n;
     }
 
-    int n = static_cast<int>(vararr.size());
+    if (n == 0) {
+        return bddisnegative(f.GetID());
+    }
 
     bddvar* ar = new bddvar[n];
     if (ar == NULL) {
@@ -642,8 +659,11 @@ sbddextended_INLINE_FUNC bool isMemberZ(const ZBDD& f, const std::vector<bddvar>
     }
 
     // translate varIDs to levels
-    for (int i = 0; i < n; ++i) {
-        ar[i] = bddlevofvar(vararr[i]);
+    int c = 0;
+    for (typename T::const_iterator itor = variables.begin();
+         itor != variables.end(); ++itor) {
+        ar[c] = bddlevofvar(*itor);
+        ++c;
     }
 
     sbddextended_sort_array(ar, n);

@@ -1,8 +1,8 @@
 //
 // One header library for SAPPOROBDD C/C++ version
-// version 0.02 alpha
+// version 0.04 alpha
 //
-// Copyright (c) 2017 Jun Kawahara
+// Copyright (c) 2017 -- 2021 Jun Kawahara
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software
 // and associated documentation files (the "Software"), to deal in the Software without

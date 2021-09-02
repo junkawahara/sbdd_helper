@@ -1,8 +1,8 @@
 //
 // One header library for SAPPOROBDD C/C++ version
-// version 0.02 alpha
+// version 0.04 alpha
 //
-// Copyright (c) 2017 Jun Kawahara
+// Copyright (c) 2017 -- 2021 Jun Kawahara
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software
 // and associated documentation files (the "Software"), to deal in the Software without
@@ -1350,62 +1350,98 @@ sbddextended_INLINE_FUNC bddvar getLev(const ZBDD& f)
 
 sbddextended_INLINE_FUNC BDD getChild0(const BDD& f)
 {
-    return BDD_ID(bddgetchild0b(f.GetID()));
+    bddp g;
+    g = bddat0(f.GetID(), f.Top());
+    return BDD_ID(g);
 }
 
 sbddextended_INLINE_FUNC ZBDD getChild0(const ZBDD& f)
 {
-    return ZBDD_ID(bddgetchild0z(f.GetID()));
+    bddp g;
+    g = bddoffset(f.GetID(), f.Top());
+    return ZBDD_ID(g);
 }
 
 sbddextended_INLINE_FUNC BDD getChild0Raw(const BDD& f)
 {
-    return BDD_ID(bddgetchild0braw(f.GetID()));
+    if (isNegative(f)) {
+        return ~getChild0(f);
+    } else {
+        return getChild0(f);
+    }
 }
 
 sbddextended_INLINE_FUNC ZBDD getChild0Raw(const ZBDD& f)
 {
-    return ZBDD_ID(bddgetchild0zraw(f.GetID()));
+    if (isNegative(f)) {
+        return getChild0(f) + ZBDD(1);
+    } else {
+        return getChild0(f);
+    }
 }
 
 sbddextended_INLINE_FUNC BDD getChild1(const BDD& f)
 {
-    return BDD_ID(bddgetchild1b(f.GetID()));
+    bddp g;
+    g = bddat1(f.GetID(), f.Top());
+    return BDD_ID(g);
 }
 
 sbddextended_INLINE_FUNC ZBDD getChild1(const ZBDD& f)
 {
-    return ZBDD_ID(bddgetchild1z(f.GetID()));
+    bddp g;
+    g = bddonset0(f.GetID(), f.Top());
+    return ZBDD_ID(g);
 }
 
 sbddextended_INLINE_FUNC BDD getChild1Raw(const BDD& f)
 {
-    return BDD_ID(bddgetchild1braw(f.GetID()));
+    if (isNegative(f)) {
+        return ~getChild1(f);
+    } else {
+        return getChild1(f);
+    }
 }
 
 sbddextended_INLINE_FUNC ZBDD getChild1Raw(const ZBDD& f)
 {
-    return ZBDD_ID(bddgetchild1zraw(f.GetID()));
+    return getChild1(f);
 }
 
 sbddextended_INLINE_FUNC BDD getChild(const BDD& f, int child)
 {
-    return BDD_ID(bddgetchildb(f.GetID(), child));
+    if (child == 1) {
+        return getChild1(f);
+    } else {
+        return getChild0(f);
+    }
 }
 
 sbddextended_INLINE_FUNC ZBDD getChild(const ZBDD& f, int child)
 {
-    return ZBDD_ID(bddgetchildz(f.GetID(), child));
+    if (child == 1) {
+        return getChild1(f);
+    } else {
+        return getChild0(f);
+    }
 }
 
 sbddextended_INLINE_FUNC BDD getChildRaw(const BDD& f, int child)
 {
-    return BDD_ID(bddgetchildbraw(f.GetID(), child));
+    if (child == 1) {
+        return getChild1(f);
+    } else {
+        return getChild0(f);
+    }
 }
 
 sbddextended_INLINE_FUNC ZBDD getChildRaw(const ZBDD& f, int child)
 {
-    return ZBDD_ID(bddgetchildzraw(f.GetID(), child));
+    if (child == 1) {
+        return getChild1(f);
+    } else {
+        return getChild0(f);
+    }
 }
 
 sbddextended_INLINE_FUNC BDD getPrimeNot(bddvar v)
@@ -1418,14 +1454,16 @@ sbddextended_INLINE_FUNC ZBDD getSingleton(bddvar v)
     return ZBDD_ID(bddgetsingleton(v));
 }
 
-sbddextended_INLINE_FUNC ZBDD getSingleSet(const std::vector<bddvar>& vararr)
+template<typename T>
+sbddextended_INLINE_FUNC ZBDD getSingleSet(const T& variables)
 {
     bddp f, g;
 
     f = bddsingle;
-    for (size_t i = 0; i < vararr.size(); ++i) {
-        assert(1 <= vararr[i] && vararr[i] <= bddvarused());
-        g = bddchange(f, vararr[i]);
+    for (typename T::const_iterator itor = variables.begin();
+         itor != variables.end(); ++itor) {
+        assert(1 <= *itor && *itor <= bddvarused());
+        g = bddchange(f, *itor);
         bddfree(f);
         f = g;
     }
@@ -1457,13 +1495,19 @@ sbddextended_INLINE_FUNC ZBDD getSingleSet(int n, ...)
     return ZBDD_ID(f);
 }
 
-sbddextended_INLINE_FUNC ZBDD getPowerSet(const std::vector<bddvar>& vararr)
+template<typename T>
+sbddextended_INLINE_FUNC ZBDD getPowerSet(const T& variables)
 {
-    if (vararr.empty()) {
-        return ZBDD(1);
+    int n = 0;
+
+    for (typename T::const_iterator itor = variables.begin();
+         itor != variables.end(); ++itor) {
+        ++n;
     }
 
-    int n = static_cast<int>(vararr.size());
+    if (n == 0) {
+        return ZBDD(1);
+    }
 
     bddvar* ar = new bddvar[n];
     if (ar == NULL) {
@@ -1471,8 +1515,11 @@ sbddextended_INLINE_FUNC ZBDD getPowerSet(const std::vector<bddvar>& vararr)
         return false;
     }
 
-    for (int i = 0; i < n; ++i) {
-        ar[i] = vararr[i];
+    int c = 0;
+    for (typename T::const_iterator itor = variables.begin();
+         itor != variables.end(); ++itor) {
+        ar[c] = *itor;
+        ++c;
     }
 
     bddp f = bddgetpowerset(ar, n);
@@ -1482,13 +1529,19 @@ sbddextended_INLINE_FUNC ZBDD getPowerSet(const std::vector<bddvar>& vararr)
     return ZBDD_ID(f);
 }
 
-sbddextended_INLINE_FUNC bool isMemberZ(const ZBDD& f, const std::vector<bddvar>& vararr)
+template<typename T>
+sbddextended_INLINE_FUNC bool isMemberZ(const ZBDD& f, const T& variables)
 {
-    if (vararr.empty()) {
-        return bddisnegative(f.GetID());
+    int n = 0;
+
+    for (typename T::const_iterator itor = variables.begin();
+         itor != variables.end(); ++itor) {
+        ++n;
     }
 
-    int n = static_cast<int>(vararr.size());
+    if (n == 0) {
+        return bddisnegative(f.GetID());
+    }
 
     bddvar* ar = new bddvar[n];
     if (ar == NULL) {
@@ -1497,8 +1550,11 @@ sbddextended_INLINE_FUNC bool isMemberZ(const ZBDD& f, const std::vector<bddvar>
     }
 
     // translate varIDs to levels
-    for (int i = 0; i < n; ++i) {
-        ar[i] = bddlevofvar(vararr[i]);
+    int c = 0;
+    for (typename T::const_iterator itor = variables.begin();
+         itor != variables.end(); ++itor) {
+        ar[c] = bddlevofvar(*itor);
+        ++c;
     }
 
     sbddextended_sort_array(ar, n);
@@ -1855,7 +1911,7 @@ public:
     void sizeEachLevel(std::vector<bddvar>& arr)
     {
         arr.resize(index_->height + 1);
-        for (int i = 1; i < index_->height; ++i) {
+        for (int i = 1; i <= index_->height; ++i) {
             arr[i] = (bddvar)(index_->offset_arr[i - 1] - index_->offset_arr[i]);
         }
     }
@@ -2231,15 +2287,15 @@ public:
     }
 };
 
-class ElementIteratorMaker {
+class ElementIteratorHolder {
 private:
     bddp f_;
 public:
-    ElementIteratorMaker(bddp f) {
+    ElementIteratorHolder(bddp f) {
         f_ = f;
     }
 
-    ElementIteratorMaker(const ZBDD& f) {
+    ElementIteratorHolder(const ZBDD& f) {
         f_ = f.GetID();
     }
 
@@ -2760,6 +2816,142 @@ bddp bddconstructzbddfromfileknuth(FILE* fp, int is_hex, int root_level)
 #endif
 
 sbddextended_INLINE_FUNC
+bddp bddconstructbddfromgraphillion_inner(FILE* fp, int root_level, int is_zdd
+#ifdef __cplusplus
+                             , ReadLineObject& sbddextended_readLine
+#endif
+                             )
+{
+    int c, level = 0;
+    llint i, id, lo, hi, line_count = 0;
+    llint max_node_id = 0, root_node_id = 0;
+    bddvar var;
+    char buf[sbddextended_MAX_LINE];
+    char buf1[sbddextended_MAX_LINE];
+    char buf2[sbddextended_MAX_LINE];
+    char buf3[sbddextended_MAX_LINE];
+    char buf4[sbddextended_MAX_LINE];
+    bddp p, p0, p1, pf, pfn;
+    bddp* bddnode_buf;
+    sbddextended_MyVector node_vec, level_vec, lo_vec, hi_vec;
+
+    sbddextended_MyVector_initialize(&node_vec);
+    sbddextended_MyVector_initialize(&level_vec);
+    sbddextended_MyVector_initialize(&lo_vec);
+    sbddextended_MyVector_initialize(&hi_vec);
+
+    while (sbddextended_readLine(buf, fp)) {
+        ++line_count;
+        if (buf[0] == '.') { // end of file
+            break;
+        }
+        // # Fix ME!  buffer over run
+        c = sscanf(buf, "%s %s %s %s", buf1, buf2, buf3, buf4);
+        if (c < 4) {
+            fprintf(stderr, "Format error in line %lld\n", line_count);
+            exit(1);
+        }
+        if (buf3[0] == 'B') {
+            lo = 0;
+        } else if (buf3[0] == 'T') {
+            lo = 1;
+        } else { // # Fix ME! atoi -> atoll ?
+            lo = atoi(buf3) + 2;
+        }
+        if (buf4[0] == 'B') {
+            hi = 0;
+        } else if (buf4[0] == 'T') {
+            hi = 1;
+        } else { // # Fix ME! atoi -> atoll ?
+            hi = atoi(buf4) + 2;
+        }
+        sbddextended_MyVector_add(&node_vec, (llint)atoi(buf1) + 2);
+        sbddextended_MyVector_add(&level_vec, (llint)atoi(buf2));
+        sbddextended_MyVector_add(&lo_vec, (llint)lo);
+        sbddextended_MyVector_add(&hi_vec, (llint)hi);
+        if (max_node_id < (llint)atoi(buf1) + 2) {
+            max_node_id = (llint)atoi(buf1) + 2;
+        }
+        if (level < (llint)atoi(buf2)) {
+            level = (llint)atoi(buf2);
+        }
+    }
+
+    if (root_level < 0) {
+        root_level = level;
+    } else if (root_level < level) {
+        fprintf(stderr, "The argument \"root_level\" must be "
+                "larger than the height of the ZBDD.\n");
+        exit(1);
+    }
+
+    while ((int)bddvarused() < level) {
+        bddnewvar();
+    }
+
+    bddnode_buf = (bddp*)malloc((ullint)(max_node_id + 1) * sizeof(bddp));
+    bddnode_buf[0] = (is_zdd == 0 ? bddfalse : bddempty);
+    bddnode_buf[1] = (is_zdd == 0 ? bddtrue : bddsingle);
+
+    for (i = 0; i < (llint)node_vec.count; ++i) {
+        id = sbddextended_MyVector_get(&node_vec, i);
+        level = (int)sbddextended_MyVector_get(&level_vec, i);
+        lo = sbddextended_MyVector_get(&lo_vec, i);
+        hi = sbddextended_MyVector_get(&hi_vec, i);
+        var = bddvaroflev((bddvar)(root_level - level + 1));
+        if (is_zdd == 0) { // BDD
+            pf = bddprime(var);
+            pfn = bddnot(pf);
+            p0 = bddand(bddnode_buf[lo], pfn);
+            p1 = bddand(bddnode_buf[hi], pf);
+            bddnode_buf[id] = bddor(p0, p1);
+            bddfree(pf);
+            bddfree(pfn);
+            bddfree(p0);
+            bddfree(p1);
+        } else { // ZDD
+            p0 = bddnode_buf[lo];
+            p1 = bddchange(bddnode_buf[hi], var);
+            bddnode_buf[id] = bddunion(p0, p1);
+            bddfree(p1);
+        }
+        if (level == 1) {
+            root_node_id = id;
+        }
+    }
+    // # FIX ME: need bddfree
+    //for (i = (llint)lo_vec.count - 1;
+    //     i >= sbddextended_BDDNODE_START + 1; --i) {
+    //    bddfree(bddnode_buf[i]);
+    //}
+
+    p = bddnode_buf[root_node_id];
+
+    free(bddnode_buf);
+
+    sbddextended_MyVector_deinitialize(&hi_vec);
+    sbddextended_MyVector_deinitialize(&lo_vec);
+    sbddextended_MyVector_deinitialize(&level_vec);
+    sbddextended_MyVector_deinitialize(&node_vec);
+
+    return p;
+}
+
+#ifdef __cplusplus
+
+sbddextended_INLINE_FUNC
+ZBDD constructZBDDFromGraphillion(std::istream& ist, int root_level = -1)
+{
+    ReadLineObject glo(&ist);
+    bddp p;
+    p = bddconstructbddfromgraphillion_inner(NULL, root_level, 1, glo);
+    return ZBDD_ID(p);
+}
+
+#endif
+
+
+sbddextended_INLINE_FUNC
 bddp bddconstructzbddfromelements_inner_getoneset(const char* line, int line_len,
                                                   const char* small_sep,
                                                   int small_sep_len)
@@ -3194,11 +3386,6 @@ bddp bddconstructbddfrombinary_inner(FILE* fp, int root_level
     unsigned short v16;
     ullint v64;
 
-    sbddextended_MyVector_initialize(&level_vec);
-
-    // level 0, unused (dummy)
-    sbddextended_MyVector_add(&level_vec, 0);
-
     // read head 'B' 'D' 'D'
     for (i = 0; i < 3; ++i) {
         sbddextended_readUint8(&v8, fp);
@@ -3263,6 +3450,23 @@ bddp bddconstructbddfrombinary_inner(FILE* fp, int root_level
     for (i = 0; i < 8; ++i) {
         sbddextended_readUint64(&v64, fp);
     }
+
+    if (max_level == 0) { // case of a constant function (0/1-terminal)
+        sbddextended_readUint64(&v64, fp);
+        if (v64 == 0) {
+            return bddempty;
+        } else if (v64 == 1) {
+            return bddsingle;
+        } else {
+            fprintf(stderr, "Currently, this function supports only 0/1-terminal.\n");
+            return bddnull;
+        }
+    }
+
+    sbddextended_MyVector_initialize(&level_vec);
+
+    // level 0, unused (dummy)
+    sbddextended_MyVector_add(&level_vec, 0);
 
     number_of_nodes = number_of_terminals;
     for (level = 1; level <= max_level; ++level) {
@@ -3398,12 +3602,6 @@ void bddwritezbddtobinary_inner(FILE* fp, bddp f
 
     max_level = (ullint)bddgetlev(f);
 
-    id_prefix = (ullint*)malloc((max_level + 1) * sizeof(ullint));
-    if (id_prefix == NULL) {
-        fprintf(stderr, "out of memory\n");
-        return;
-    }
-
     // start header
 
     sbddextended_writeUint8((unsigned char)'B', fp);
@@ -3434,6 +3632,17 @@ void bddwritezbddtobinary_inner(FILE* fp, bddp f
 
     // end header
 
+    if (max_level == 0) { // case of a constant function (0/1-terminal)
+        if (f == bddempty) {
+            sbddextended_writeUint64((ullint)0ull, fp);
+        } else if (f == bddsingle) {
+            sbddextended_writeUint64((ullint)1ull, fp);
+        } else {
+            assert(0);
+        }
+        return;
+    }
+
     index = bddNodeIndex_makeRawIndexZWithoutCount(f);
 
     assert((ullint)index->height == max_level);
@@ -3442,6 +3651,12 @@ void bddwritezbddtobinary_inner(FILE* fp, bddp f
     for (i = 1; i <= max_level; ++i) {
         sbddextended_writeUint64((ullint)index->level_vec_arr[i].count, fp);
         number_of_nodes += (ullint)index->level_vec_arr[i].count;
+    }
+
+    id_prefix = (ullint*)malloc((max_level + 1) * sizeof(ullint));
+    if (id_prefix == NULL) {
+        fprintf(stderr, "out of memory\n");
+        return;
     }
 
     id_prefix[1] = number_of_terminals;

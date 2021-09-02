@@ -1,6 +1,6 @@
 # SBDD_helper C++言語版リファレンス
 
-Version 0.03 alpha
+Version 0.04 alpha
 
 本プログラムで提供している関数は開発中であるため、予告なく仕様を変更することがある。
 
@@ -8,18 +8,24 @@ C++ 版では、C 版の全ての関数も使用可能である（[C言語版リ
 
 ## 変更点
 
+### Version 0.04
+
+getSingleSet, getPowerSet, isMemberZ の引数を const std::vector<bddvar>& から、
+const T& に変更した。T は、T::const_iterator を持つ任意の型（例えば
+std::vector<bddvar> や std::set<bddvar>）をサポート。
+
 ### Version 0.03
 
 C++ 版の関数名の先頭の大文字を小文字に変更した。（例: IsNegative -> isNegative）
 
 ## 提供しているクラス
 
-[DDNodeIndex](reference_cpp_DDNodeIndex.md)
-[ElementIterator と ElementIteratorHolder](reference_cpp_ElementIterator.md)
+* [DDNodeIndex](reference_cpp_DDNodeIndex.md)
+* [ElementIterator と ElementIteratorHolder](reference_cpp_ElementIterator.md)
 
 ## 提供している関数
 
-## IsNegative
+## isNegative
 
 ```
 bool isNegative(const BDD& f)
@@ -203,10 +209,11 @@ ZBDD getSingleton(bddvar v)
 ## getSingleSet
 
 ```
-ZBDD getSingleSet(const std::vector<bddvar>& vararr)
+template<typename T>
+ZBDD getSingleSet(const T& variables)
 ```
 
-引数で指定した vector vararr が表す集合だけからなる集合族を表すZBDDを返す。すなわち、vararr が [a1, a2,..., an] なら、{{a1, a2,..., an}} を表すZBDDを返す。vararr は少なくとも大きさが n の配列でなければならない。vararr の各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。vararr はソートされている必要はない。vararr の大きさが0のときは空集合 (bddsingle) を返すが、空集合は bddsingle 定数から得られるため、bddgetsingleset(NULL, 0) を呼び出す実質的な意味は無い。
+引数で指定した variables が表す集合だけからなる集合族を表すZBDDを返す。すなわち、variables が [a1, a2,..., an] なら、{{a1, a2,..., an}} を表すZBDDを返す。variables  の型 T は std::vector<bddvar> や std::set<bddvar> など、bddvar 型のコンテナ型である。variables の各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。variables はソートされている必要はない。variables の大きさが0のときは空集合 (bddsingle) を返すが、空集合は bddsingle 定数から得られるため、bddgetsingleset(NULL, 0) を呼び出す実質的な意味は無い。
 
 ## getSingleSet
 
@@ -219,18 +226,20 @@ ZBDD getSingleSet(int n, ...)
 ## getPowerSet
 
 ```
-ZBDD getPowerSet(const std::vector<bddvar>& vararr)
+template<typename T>
+ZBDD getPowerSet(const T& variables)
 ```
 
-引数で指定した vector vararr（を集合とみなしたとき）のべき集合族を表すZBDDを返す。すなわち、vararr が [a1, a2,..., an] なら、{a1, a2,..., an} のすべての部分集合（空集合、全体集合も含む）からなる集合族を表すZBDDを返す。vararr の各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。vararr はソートされている必要はない。
+引数で指定した vector variables（を集合とみなしたとき）のべき集合族を表すZBDDを返す。すなわち、variables が [a1, a2,..., an] なら、{a1, a2,..., an} のすべての部分集合（空集合、全体集合も含む）からなる集合族を表すZBDDを返す。variables  の型 T は std::vector<bddvar> や std::set<bddvar> など、bddvar 型のコンテナ型である。variables の各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。variables はソートされている必要はない。
 
 ## isMemberZ
 
 ```
-bool isMemberZ(const ZBDD& f, const std::vector<bddvar>& vararr)
+template<typename T>
+bool isMemberZ(const ZBDD& f, const T& variables)
 ```
 
-引数で指定した vector vararr が表す集合が、ZBDD f が表す集合族に含まれるかどうかを判定する。含まれるなら 1 を、含まれないなら 0 を返す。vararr の各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。vararr はソートされている必要はない。vararr の大きさが 0 の場合、空集合が f に含まれるかを判定する。
+引数で指定した vector variables が表す集合が、ZBDD f が表す集合族に含まれるかどうかを判定する。含まれるなら 1 を、含まれないなら 0 を返す。variables  の型 T は std::vector<bddvar> や std::set<bddvar> など、bddvar 型のコンテナ型である。variables の各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。variables はソートされている必要はない。variables の大きさが 0 の場合、空集合が f に含まれるかを判定する。
 
 
 ## printZBDDElements

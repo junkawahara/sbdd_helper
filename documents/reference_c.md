@@ -1,16 +1,22 @@
 # SBDD_helper C言語版リファレンス
 
-Version 0.03 alpha
+Version 0.04 alpha
 
 本プログラムで提供している関数は開発中であるため、予告なく仕様を変更することがある。
 
 ## 変更点
 
+### Version 0.04
+
+getSingleSet, getPowerSet, isMemberZ の引数を const std::vector<bddvar>& から、
+const T& に変更した。T は、T::const_iterator を持つ任意の型（例えば
+std::vector<bddvar> や std::set<bddvar>）をサポート。
+
 ### Version 0.03
 
 C++ 版の関数名の先頭の大文字を小文字に変更した。（例: IsNegative -> isNegative）
 
-提供している関数
+## 提供している関数
 
 ## bddisnegative
 
