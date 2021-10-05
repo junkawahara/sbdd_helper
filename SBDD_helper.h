@@ -32,6 +32,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <set>
 #include <algorithm>
@@ -2590,6 +2591,14 @@ void printZBDDElementsAsValueList(std::ostream& ost, const ZBDD& zbdd, const std
 
     WriteObject wo(true, false, &ost);
     bddprintzbddelements_inner(NULL, zbdd.GetID(), delim1.c_str(), delim2.c_str(), NULL, num_of_variables, wo);
+}
+
+sbddextended_INLINE_FUNC
+std::string ZStr(const ZBDD& zbdd)
+{
+    std::ostringstream ost;
+    printZBDDElements(ost, zbdd);
+    return ost.str();
 }
 
 #endif

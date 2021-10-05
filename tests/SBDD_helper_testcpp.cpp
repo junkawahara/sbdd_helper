@@ -167,6 +167,11 @@ void test_at_random_cpp()
     free(ar);
 }
 
+void test_io_cpp()
+{
+    ZBDD f = ZBDD_ID(make_test_zbdd());
+    test(ZStr(f) == std::string("{3, 2}, {3, 1}, {2, 1}"));
+}
 
 void test_index_cpp()
 {
@@ -342,6 +347,7 @@ void test_elementIterator_cpp()
 void start_test_cpp()
 {
     test_at_random_cpp();
+    test_io_cpp();
     test_index_cpp();
     test_elementIterator_cpp();
 }

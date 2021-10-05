@@ -32,6 +32,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <set>
 #include <algorithm>
