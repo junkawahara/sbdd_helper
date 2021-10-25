@@ -633,7 +633,7 @@ sbddextended_INLINE_FUNC ZBDD getPowerSet(const T& variables)
 
     bddp f = bddgetpowerset(ar, n);
 
-    delete ar;
+    delete[] ar;
 
     return ZBDD_ID(f);
 }
@@ -670,7 +670,7 @@ sbddextended_INLINE_FUNC bool isMemberZ(const ZBDD& f, const T& variables)
 
     int b = bddismemberz_inner(f.GetID(), ar, n);
 
-    delete ar;
+    delete[] ar;
 
     return b != 0;
 }

@@ -1,6 +1,6 @@
 # One header library for SAPPOROBDD
 
-このツールは SAPPOROBDD について知っている人向けです。
+このツールは [SAPPOROBDD](https://github.com/Shin-ichi-Minato/SAPPOROBDD) について知っている人向けです。
 SAPPOROBDD を使用する際に便利な関数を提供しています。
 ライブラリは1つのヘッダファイルだけから構成されているため、
 インクルードするだけで使用できます。C/C++ 言語の両方に
@@ -74,9 +74,10 @@ int main()
 
 ## リファレンス
 
+* [SAPPOROBDD](https://github.com/Shin-ichi-Minato/SAPPOROBDD)
 * [C++言語版リファレンス](documents/reference_cpp.md)
 * [C言語版リファレンス](documents/reference_c.md)
 
 ## 免責事項
 
-本プログラムの使用に関して、作者は一切の責任を負いません。本プログラムは SAPPOROBDD と同様、MIT ライセンスで提供しています。
+本プログラムの使用に関して、作者は一切の責任を負いません。本プログラムは [SAPPOROBDD](https://github.com/Shin-ichi-Minato/SAPPOROBDD) と同様、[MIT ライセンス](https://en.wikipedia.org/wiki/MIT_License)で提供しています。
