@@ -213,7 +213,15 @@ template<typename T>
 ZBDD getSingleSet(const T& variables)
 ```
 
-引数で指定した variables が表す集合だけからなる集合族を表すZBDDを返す。すなわち、variables が [a1, a2,..., an] なら、{{a1, a2,..., an}} を表すZBDDを返す。variables  の型 T は std::vector<bddvar> や std::set<bddvar> など、bddvar 型のコンテナ型である。variables の各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。variables はソートされている必要はない。variables の大きさが0のときは空集合 (bddsingle) を返すが、空集合は bddsingle 定数から得られるため、bddgetsingleset(NULL, 0) を呼び出す実質的な意味は無い。
+引数で指定した variables が表す集合だけからなる集合族を表すZBDDを返す。すなわち、variables が [a1, a2,..., an] なら、{{a1, a2,..., an}} を表すZBDDを返す。variables  の型 T は std::vector<bddvar> や std::set<bddvar> など、bddvar 型のコンテナ型である。variables の各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。variables はソートされている必要はなく、重複する要素を含んでもよい（1つの要素とみなされる）。variables の大きさが0のときは空集合 (bddsingle) を返すが、空集合は bddsingle 定数から得られるため、bddgetsingleset(NULL, 0) を呼び出す実質的な意味は無い。
+
+### 使用例
+
+```
+std::vector<bddvar> vararr;
+vararr.push_back(2); vararr.push_back(3); vararr.push_back(5);
+ZBDD f = getSingleSet(vararr); // f は {{2, 3, 5}} を表す ZBDD
+```
 
 ## getSingleSet
 
@@ -221,16 +229,34 @@ ZBDD getSingleSet(const T& variables)
 ZBDD getSingleSet(int n, ...)
 ```
 
-引数で指定した要素からなる集合だけからなる集合族を表すZBDDを返す。第1引数の n で要素の数を表す。第2引数以降を a1, a2,..., an とするとき、{{a1, a2,..., an}} を表すZBDDを返す。引数の個数は n + 1 でなければならない。各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。引数の各値 はソートされている必要はない。n = 0 を指定すると、空集合 (bddsingle) を返すが、空集合は bddsingle 定数から得られるため、bddgetsinglesetv(0) を呼び出す実質的な意味は無い。
+引数で指定した要素からなる集合だけからなる集合族を表すZBDDを返す。第1引数の n で要素の数を表す。第2引数以降を a1, a2,..., an とするとき、{{a1, a2,..., an}} を表すZBDDを返す。引数の個数は n + 1 でなければならない。各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。引数の各値 はソートされている必要はないが、重複する要素を含んではいけない。n = 0 を指定すると、空集合 (bddsingle) を返すが、空集合は bddsingle 定数から得られるため、bddgetsinglesetv(0) を呼び出す実質的な意味は無い。
+
+### 使用例
+
+```
+ZBDD f = getSingleSet(3, 2, 3, 5); // f は {{2, 3, 5}} を表す ZBDD
+```
 
 ## getPowerSet
 
 ```
 template<typename T>
 ZBDD getPowerSet(const T& variables)
+ZBDD getPowerSet(int n)
 ```
 
-引数で指定した vector variables（を集合とみなしたとき）のべき集合族を表すZBDDを返す。すなわち、variables が [a1, a2,..., an] なら、{a1, a2,..., an} のすべての部分集合（空集合、全体集合も含む）からなる集合族を表すZBDDを返す。variables  の型 T は std::vector<bddvar> や std::set<bddvar> など、bddvar 型のコンテナ型である。variables の各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。variables はソートされている必要はない。
+引数で vector variables を指定した場合、variables（を集合とみなしたとき）のべき集合族を表すZBDDを返す。すなわち、variables が [a1, a2,..., an] なら、{a1, a2,..., an} のすべての部分集合（空集合、全体集合も含む）からなる集合族を表すZBDDを返す。引数で自然数 n を指定した場合、{1,...,n} のべき集合族を表すZBDDを返す。variables  の型 T は std::vector<bddvar> や std::set<bddvar> など、bddvar 型のコンテナ型である。variables の各要素や n は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。variables はソートされている必要はない。
+
+### 使用例
+
+```
+std::vector<bddvar> vararr;
+vararr.push_back(2); vararr.push_back(3); vararr.push_back(5);
+// f は {{},{2},{3},{5},{2,3},{2,5},{3,5},{2,3,5}} を表す ZBDD
+ZBDD f = getPowerSet(vararr);
+// g は {{},{1},{2},{3},{1,2},{1,3},{2,3},{1,2,3}} を表す ZBDD
+ZBDD g = getPowerSet(3);
+```
 
 ## isMemberZ
 
@@ -241,6 +267,19 @@ bool isMemberZ(const ZBDD& f, const T& variables)
 
 引数で指定した vector variables が表す集合が、ZBDD f が表す集合族に含まれるかどうかを判定する。含まれるなら 1 を、含まれないなら 0 を返す。variables  の型 T は std::vector<bddvar> や std::set<bddvar> など、bddvar 型のコンテナ型である。variables の各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。variables はソートされている必要はない。variables の大きさが 0 の場合、空集合が f に含まれるかを判定する。
 
+### 使用例
+
+```
+std::vector<bddvar> variables;
+variables.push_back(2); variables.push_back(3); variables.push_back(5);
+
+ZBDD f = getPowerSet(3);
+
+if (isMemberZ(f, variables)) { // {2, 3, 5} は f に含まれないので false
+    std::cout << "variables in f" << std::endl;
+} else {
+    std::cout << "variables not in f" << std::endl;
+}
 
 ## printZBDDElements
 

@@ -280,7 +280,7 @@ bddp bddgetsingleton(bddvar v)
 bddp bddgetsingleset(bddvar* vararr, int n)
 ```
 
-引数で指定した大きさ n の配列 vararr を要素とする集合だけからなる集合族を表すZBDDを返す。すなわち、vararr が [a1, a2,..., an] なら、{{a1, a2,..., an}} を表すZBDDを返す。vararr は少なくとも大きさが n の配列でなければならない。vararr の各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。vararr はソートされている必要はない。n = 0 を指定すると、空集合 (bddsingle) を返すが、空集合は bddsingle 定数から得られるため、bddgetsingleset(NULL, 0) を呼び出す実質的な意味は無い。
+引数で指定した大きさ n の配列 vararr を要素とする集合だけからなる集合族を表すZBDDを返す。すなわち、vararr が [a1, a2,..., an] なら、{{a1, a2,..., an}} を表すZBDDを返す。vararr は少なくとも大きさが n の配列でなければならない。vararr の各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。vararr はソートされている必要はななく、重複する要素を含んでもよい（1つの要素とみなされる）。n = 0 を指定すると、空集合 (bddsingle) を返すが、空集合は bddsingle 定数から得られるため、bddgetsingleset(NULL, 0) を呼び出す実質的な意味は無い。
 
 ### 使用例
 
@@ -295,13 +295,12 @@ bddp f = bddgetsingleset(vararr, 3); // f は {{2, 3, 5}} を表す ZBDD
 bddp bddgetsinglesetv(int n, ...)
 ```
 
-引数で指定した要素からなる集合だけからなる集合族を表すZBDDを返す。第1引数の n で要素の数を表す。第2引数以降を a1, a2,..., an とするとき、{{a1, a2,..., an}} を表すZBDDを返す。引数の個数は n + 1 でなければならない。各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。引数の各値 はソートされている必要はない。n = 0 を指定すると、空集合 (bddsingle) を返すが、空集合は bddsingle 定数から得られるため、bddgetsinglesetv(0) を呼び出す実質的な意味は無い。
+引数で指定した要素からなる集合だけからなる集合族を表すZBDDを返す。第1引数の n で要素の数を表す。第2引数以降を a1, a2,..., an とするとき、{{a1, a2,..., an}} を表すZBDDを返す。引数の個数は n + 1 でなければならない。各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。引数の各値 はソートされている必要はないが、重複する要素を含んではいけない。n = 0 を指定すると、空集合 (bddsingle) を返すが、空集合は bddsingle 定数から得られるため、bddgetsinglesetv(0) を呼び出す実質的な意味は無い。
 
 ### 使用例
 
 ```
-bddvar vararr[3] = {2, 3, 5};
-bddp f = bddgetsingleset(vararr, 3); // f は {{2, 3, 5}} を表す ZBDD
+bddp f = bddgetsinglesetv(3, 2, 3, 5); // f は {{2, 3, 5}} を表す ZBDD
 ```
 
 ## bddgetpowerset
@@ -317,7 +316,22 @@ bddp bddgetpowerset(bddvar* vararr, int n)
 ```
 bddvar vararr[3] = {2, 3, 5};
 // f は {{},{2},{3},{5},{2,3},{2,5},{3,5},{2,3,5}} を表す ZBDD
-bddp f = bddgetsingleset(vararr, 3);
+bddp f = bddgetpowerset(vararr, 3);
+```
+
+## bddgetpowersetn
+
+```
+bddp bddgetpowersetn(int n)
+```
+
+引数で指定した n について、{1,...,n} のべき集合族を表すZBDDを返す。すなわち、{1,...,n} のすべての部分集合（空集合、全体集合も含む）からなる集合族を表すZBDDを返す。n は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。
+
+### 使用例
+
+```
+// f は {{},{1},{2},{3},{1,2},{1,3},{2,3},{1,2,3}} を表す ZBDD
+bddp f = bddgetpowersetn(3);
 ```
 
 ## bddismemberz

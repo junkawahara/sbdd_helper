@@ -1102,12 +1102,17 @@ bddp bddgetsingleton(bddvar v)
 sbddextended_INLINE_FUNC
 bddp bddgetsingleset(bddvar* vararr, int n)
 {
-    int i;
+    int i, j;
     bddp f, g;
 
     f = bddsingle;
     for (i = 0; i < n; ++i) {
         assert(1 <= vararr[i] && vararr[i] <= bddvarused());
+        for (j = 0; j < i; ++j) { // check duplicate
+            if (vararr[j] == vararr[i]) {
+                continue;
+            }
+        }
         g = bddchange(f, vararr[i]);
         bddfree(f);
         f = g;
@@ -1188,6 +1193,7 @@ bddp bddgetpowerset(const bddvar* vararr, int n)
     int i;
     bddp f, g, h;
     bddvar* ar;
+    bddvar v;
 
     ar = sbddextended_getsortedarraybylevel_inner(vararr, n);
     if (ar == NULL) {
@@ -1196,14 +1202,33 @@ bddp bddgetpowerset(const bddvar* vararr, int n)
 
     f = bddsingle;
     for (i = 0; i < n; ++i) {
-        assert(1 <= ar[i] && ar[i] <= bddvarused());
-        g = bddchange(f, ar[i]);
+        v = bddvaroflev(ar[i]);
+        assert(1 <= v && v <= bddvarused());
+        g = bddchange(f, v);
         h = bddunion(f, g);
         bddfree(g);
         bddfree(f);
         f = h;
     }
     free(ar);
+    return f;
+}
+
+sbddextended_INLINE_FUNC
+bddp bddgetpowersetn(int n)
+{
+    bddp f, g, h;
+    bddvar v;
+
+    f = bddsingle;
+    for (v = 1; v <= (bddvar)n; ++v) {
+        assert(1 <= v && v <= bddvarused());
+        g = bddchange(f, v);
+        h = bddunion(f, g);
+        bddfree(g);
+        bddfree(f);
+        f = h;
+    }
     return f;
 }
 
@@ -1231,11 +1256,17 @@ int bddismemberz_inner(bddp f, const bddvar* levarr, int n)
 sbddextended_INLINE_FUNC
 int bddismemberz(bddp f, const bddvar* vararr, int n)
 {
-    int c;
+    int i, c;
     bddvar* ar;
 
     if (n == 0) {
         return bddisnegative(f);
+    }
+
+    for (i = 0; i < n; ++i) {
+        if (!(1 <= vararr[i] && vararr[i] <= bddvarused())) {
+            return 0;
+        }
     }
 
     ar = sbddextended_getsortedarraybylevel_inner(vararr, n);
@@ -1530,6 +1561,12 @@ sbddextended_INLINE_FUNC ZBDD getPowerSet(const T& variables)
     return ZBDD_ID(f);
 }
 
+sbddextended_INLINE_FUNC ZBDD getPowerSet(int n)
+{
+    bddp f = bddgetpowersetn(n);
+    return ZBDD_ID(f);
+}
+
 template<typename T>
 sbddextended_INLINE_FUNC bool isMemberZ(const ZBDD& f, const T& variables)
 {
@@ -1537,6 +1574,9 @@ sbddextended_INLINE_FUNC bool isMemberZ(const ZBDD& f, const T& variables)
 
     for (typename T::const_iterator itor = variables.begin();
          itor != variables.end(); ++itor) {
+        if (!(1 <= *itor && *itor <= bddvarused())) {
+            return false;
+        }
         ++n;
     }
 

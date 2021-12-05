@@ -337,7 +337,7 @@ void test_getsingleandpowerset()
     bddvar* vararr;
     FILE* fp;
 
-    vararr = (bddvar*)malloc((size_t)N * sizeof(vararr));
+    vararr = (bddvar*)malloc((size_t)N * sizeof(vararr) + 3);
     if (vararr == NULL) {
         fprintf(stderr, "out of memory\n");
         exit(1);
@@ -346,6 +346,10 @@ void test_getsingleandpowerset()
     for (i = 0; i < N; ++i) {
         vararr[i] = 2 * (bddvar)i + 1;
     }
+    // add duplicated values in purpose
+    vararr[N] = (bddvar)(2 * (135 % N) + 1);
+    vararr[N + 1] = (bddvar)(2 * (223 % N) + 1);
+    vararr[N + 2] = (bddvar)(2 * (157 % N) + 1);
 
     // test getsingleset
     f = bddgetsingleset(vararr, N);

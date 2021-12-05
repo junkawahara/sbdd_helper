@@ -227,6 +227,11 @@ void test_index_cpp()
     DDNodeIndex index4(f, false);
     test_eq(index4.count(), 1ll << 40);
     test_eq(index4.size(), f.Size());
+
+    f = getPowerSet(50);
+    DDNodeIndex index5(f, false);
+    test_eq(index5.count(), 1ll << 50);
+    test_eq(index5.size(), 50);
 }
 
 bool test_count_if_size1(std::set<bddvar> s)
