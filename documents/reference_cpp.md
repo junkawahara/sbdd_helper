@@ -280,6 +280,7 @@ if (isMemberZ(f, variables)) { // {2, 3, 5} は f に含まれないので false
 } else {
     std::cout << "variables not in f" << std::endl;
 }
+```
 
 ## printZBDDElements
 
@@ -397,7 +398,7 @@ void writeZBDDToBinary(FILE* fp, const ZBDD& zbdd)
 void writeZBDDToBinary(std::ostream& ost, const ZBDD& zbdd)
 ```
 
-引数 fp または ist で指定した（ファイル等の）ストリームに、
+引数 fp または ost で指定した（ファイル等の）ストリームに、
 ZBDD を、[BDD バイナリ形式](bdd_binary_format.md) で書き込む。
 
 ### 使用例
@@ -407,5 +408,47 @@ ZBDD f = ...; // f は何らかの方法で作成
 
 std::ofstream ofs("zbdd.dat");
 writeZBDDToBinary(ofs, f);
+ofs.close();
+```
+
+
+## writeZBDDForGraphillion
+
+```
+void writeZBDDForGraphillion(FILE* fp, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+void writeZBDDForGraphillion(std::ostream& ost, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+```
+
+引数 fp または ost で指定した（ファイル等の）ストリームに、
+ZBDD を、[graphillion 形式](graphillion_format.md)で書き込む。
+
+### 使用例
+
+```
+ZBDD f = ...; // f は何らかの方法で作成
+
+std::ofstream ofs("zbdd_for_graphillion.dat");
+writeZBDDForGraphillion(ofs, f);
+ofs.close();
+```
+
+
+## writeZBDDForGraphviz
+
+```
+void writeZBDDForGraphviz(FILE* fp, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+void writeZBDDForGraphviz(std::ostream& ost, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+```
+
+引数 fp または ost で指定した（ファイル等の）ストリームに、
+ZBDD を、Graphviz の dot 形式で書き込む。
+
+### 使用例
+
+```
+ZBDD f = ...; // f は何らかの方法で作成
+
+std::ofstream ofs("zbdd_for_graphviz.dat");
+writeZBDDForGraphviz(ofs, f);
 ofs.close();
 ```

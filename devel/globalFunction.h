@@ -597,11 +597,14 @@ sbddextended_INLINE_FUNC ZBDD getSingleton(bddvar v)
 template<typename T>
 sbddextended_INLINE_FUNC ZBDD getSingleSet(const T& variables)
 {
+    // use set to remove duplicated elements
+    std::set<bddvar> s(variables.begin(), variables.end());
+
     bddp f, g;
 
     f = bddsingle;
-    for (typename T::const_iterator itor = variables.begin();
-         itor != variables.end(); ++itor) {
+    for (std::set<bddvar>::const_iterator itor = s.begin();
+         itor != s.end(); ++itor) {
         assert(1 <= *itor && *itor <= bddvarused());
         g = bddchange(f, *itor);
         bddfree(f);

@@ -48,8 +48,8 @@ int sbddextended_writeUint64_inner(ullint v, FILE* fp)
 
 class WriteObject {
 private:
-    bool is_fstream_;
-    bool is_ln_;
+    const bool is_fstream_;
+    const bool is_ln_;
     std::ostream* ost_;
 
 public:
@@ -67,6 +67,7 @@ public:
                 }
             }
         } else {
+            assert(fp != NULL);
             if (is_ln_) {
                 return sbddextended_writeLine_inner(buf, fp) != 0;
             } else {
@@ -84,6 +85,7 @@ public:
             }
             ost_->write(reinterpret_cast<char*>(&v), sizeof(unsigned char));
         } else {
+            assert(fp != NULL);
             return sbddextended_writeUint8_inner(v, fp) != 0;
         }
         return true;
@@ -97,6 +99,7 @@ public:
             }
             ost_->write(reinterpret_cast<char*>(&v), sizeof(unsigned short));
         } else {
+            assert(fp != NULL);
             return sbddextended_writeUint16_inner(v, fp) != 0;
         }
         return true;
@@ -110,6 +113,7 @@ public:
             }
             ost_->write(reinterpret_cast<char*>(&v), sizeof(unsigned int));
         } else {
+            assert(fp != NULL);
             return sbddextended_writeUint32_inner(v, fp) != 0;
         }
         return true;
@@ -123,6 +127,7 @@ public:
             }
             ost_->write(reinterpret_cast<char*>(&v), sizeof(ullint));
         } else {
+            assert(fp != NULL);
             return sbddextended_writeUint64_inner(v, fp) != 0;
         }
         return true;

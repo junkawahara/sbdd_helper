@@ -67,27 +67,6 @@ typedef unsigned long long int ullint;
 #define sbddextended_TEMP_BUFSIZE 1024
 
 
-// bddisbdd/bddiszbdd is not supported until version 185 of SAPPOROBDD.
-// It may be impossible to implement them unless touching the inner
-// structure of SAPPOROBDD.
-#if SBDD_VERSION < 185
-
-sbddextended_INLINE_FUNC
-int bddisbdd(bddp f)
-{
-    unused(f);
-    fprintf(stderr, "bddisbdd is not supported in the one header library.\n");
-    exit(1);
-}
-
-sbddextended_INLINE_FUNC
-int bddiszbdd(bddp f)
-{
-    return bddisbdd(f);
-}
-
-#endif
-
 #ifdef __cplusplus
 
 // need to free the returned value
@@ -768,8 +747,8 @@ int sbddextended_writeUint64_inner(ullint v, FILE* fp)
 
 class WriteObject {
 private:
-    bool is_fstream_;
-    bool is_ln_;
+    const bool is_fstream_;
+    const bool is_ln_;
     std::ostream* ost_;
 
 public:
@@ -787,6 +766,7 @@ public:
                 }
             }
         } else {
+            assert(fp != NULL);
             if (is_ln_) {
                 return sbddextended_writeLine_inner(buf, fp) != 0;
             } else {
@@ -804,6 +784,7 @@ public:
             }
             ost_->write(reinterpret_cast<char*>(&v), sizeof(unsigned char));
         } else {
+            assert(fp != NULL);
             return sbddextended_writeUint8_inner(v, fp) != 0;
         }
         return true;
@@ -817,6 +798,7 @@ public:
             }
             ost_->write(reinterpret_cast<char*>(&v), sizeof(unsigned short));
         } else {
+            assert(fp != NULL);
             return sbddextended_writeUint16_inner(v, fp) != 0;
         }
         return true;
@@ -830,6 +812,7 @@ public:
             }
             ost_->write(reinterpret_cast<char*>(&v), sizeof(unsigned int));
         } else {
+            assert(fp != NULL);
             return sbddextended_writeUint32_inner(v, fp) != 0;
         }
         return true;
@@ -843,6 +826,7 @@ public:
             }
             ost_->write(reinterpret_cast<char*>(&v), sizeof(ullint));
         } else {
+            assert(fp != NULL);
             return sbddextended_writeUint64_inner(v, fp) != 0;
         }
         return true;
@@ -1489,11 +1473,14 @@ sbddextended_INLINE_FUNC ZBDD getSingleton(bddvar v)
 template<typename T>
 sbddextended_INLINE_FUNC ZBDD getSingleSet(const T& variables)
 {
+    // use set to remove duplicated elements
+    std::set<bddvar> s(variables.begin(), variables.end());
+
     bddp f, g;
 
     f = bddsingle;
-    for (typename T::const_iterator itor = variables.begin();
-         itor != variables.end(); ++itor) {
+    for (std::set<bddvar>::const_iterator itor = s.begin();
+         itor != s.end(); ++itor) {
         assert(1 <= *itor && *itor <= bddvarused());
         g = bddchange(f, *itor);
         bddfree(f);
@@ -3297,14 +3284,33 @@ void bddwritezbddtofileknuth(FILE* fp, bddp f, int is_hex)
 
 #endif
 
-void bddoutputbddforgraphviz(FILE* fp, bddp f, bddNodeIndex* index, int is_zbdd)
+sbddextended_INLINE_FUNC
+void bddwritebddforgraphillion_inner(FILE* fp, bddp f,
+                                   bddNodeIndex* index, int is_zbdd
+#ifdef __cplusplus
+                        , const WriteObject& sbddextended_writeLine
+#endif
+                             )
 {
-    int i, k, c, clevel;
-    llint cvalue;
+    int i, k, n;
     size_t j;
     bddp node, child;
     int is_making_index = 0;
-    if (index == NULL) {
+    char ss[sbddextended_TEMP_BUFSIZE];
+
+    if (f == bddnull) {
+        return;
+    }
+
+    if (is_zbdd < 0 && !(f == bddempty || f == bddsingle)) {
+        if (bddiszbdd(f) != 0) {
+            is_zbdd = 1;
+        } else {
+            is_zbdd = 0;
+        }
+    }
+
+    if (index == NULL && !(f == bddempty || f == bddsingle)) {
         is_making_index = 1;
         if (is_zbdd != 0) {
             index = bddNodeIndex_makeIndexZWithoutCount(f);
@@ -3313,24 +3319,154 @@ void bddoutputbddforgraphviz(FILE* fp, bddp f, bddNodeIndex* index, int is_zbdd)
         }
     }
 
-    fprintf(fp, "digraph {\n");
-    fprintf(fp, "\tt0 [label = \"0\", shape = box, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, width = 0.4, height = 0.6, fontsize = 24];\n");
-    fprintf(fp, "\tt1 [label = \"1\", shape = box, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, width = 0.4, height = 0.6, fontsize = 24];\n");
+    if (f == bddempty) {
+        sbddextended_writeLine("B", fp);
+        sbddextended_writeLine(".", fp);
+        return;
+    } else if (f == bddsingle) {
+        sbddextended_writeLine("T", fp);
+        sbddextended_writeLine(".", fp);
+        return;
+    }
 
-    fprintf(fp, "\tr%d [style = invis]\n", index->height);
+    for (i = 1; i <= index->height; ++i) {
+        for (j = 0; j < index->level_vec_arr[i].count; ++j) {
+            node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i], (llint)j);
+            n = sprintf(ss, "%lld %d", (llint)node, i);
+            for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
+                if (is_zbdd != 0) {
+                    child = bddgetchildz(node, k);
+                } else {
+                    child = bddgetchildb(node, k);
+                }
+                if (!bddisterminal(child)) {
+                    n += sprintf(ss + n, " %lld", (llint)child);
+                } else if (child == bddempty) {
+                    n += sprintf(ss + n, " B");
+                } else if (child == bddsingle) {
+                    n += sprintf(ss + n, " T");
+                }
+            }
+            sbddextended_writeLine(ss, fp);
+        }
+    }
+
+    sbddextended_writeLine(".", fp);
+
+    if (is_making_index) {
+        bddNodeIndex_destruct(index);
+    }
+}
+
+#ifdef __cplusplus
+
+sbddextended_INLINE_FUNC
+void writeZBDDForGraphillion(FILE* fp, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+{
+    WriteObject wo(false, true, NULL);
+    bddwritebddforgraphillion_inner(fp, zbdd.GetID(), index, 1, wo);
+}
+
+sbddextended_INLINE_FUNC
+void writeZBDDForGraphillion(std::ostream& ost, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+{
+    WriteObject wo(true, true, &ost);
+    bddwritebddforgraphillion_inner(NULL, zbdd.GetID(), index, 1, wo);
+}
+
+sbddextended_INLINE_FUNC
+void bddwritebddforgraphillion(FILE* fp, bddp f,
+                               bddNodeIndex* index)
+{
+    WriteObject wo(false, true, NULL);
+    bddwritebddforgraphillion_inner(fp, f, index, -1, wo);
+}
+
+#else
+
+sbddextended_INLINE_FUNC
+void bddwritebddforgraphillion(FILE* fp, bddp f,
+                               bddNodeIndex* index)
+{
+    bddwritebddforgraphillion_inner(fp, f, index, -1);
+}
+
+#endif
+
+
+sbddextended_INLINE_FUNC
+void bddwritebddforgraphviz_inner(FILE* fp, bddp f,
+                                   bddNodeIndex* index, int is_zbdd
+#ifdef __cplusplus
+                        , const WriteObject& sbddextended_writeLine
+#endif
+                             )
+{
+    int i, k, c, clevel, n;
+    llint cvalue;
+    size_t j;
+    bddp node, child;
+    int is_making_index = 0;
+    char ss[sbddextended_TEMP_BUFSIZE];
+
+    if (f == bddnull) {
+        return;
+    }
+
+    if (is_zbdd < 0 && !(f == bddempty || f == bddsingle)) {
+        if (bddiszbdd(f) != 0) {
+            is_zbdd = 1;
+        } else {
+            is_zbdd = 0;
+        }
+    }
+
+    if (index == NULL && !(f == bddempty || f == bddsingle)) {
+        is_making_index = 1;
+        if (is_zbdd != 0) {
+            index = bddNodeIndex_makeIndexZWithoutCount(f);
+        } else {
+            index = bddNodeIndex_makeIndexBWithoutCount(f);
+        }
+    }
+
+    sbddextended_writeLine("digraph {", fp);
+    // print terminals
+    if (f != bddsingle) {
+        sbddextended_writeLine("\tt0 [label = \"0\", shape = box, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, width = 0.4, height = 0.6, fontsize = 24];", fp);
+    }
+    if (f != bddempty) {
+        sbddextended_writeLine("\tt1 [label = \"1\", shape = box, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, width = 0.4, height = 0.6, fontsize = 24];", fp);
+    }
+    if (f == bddempty || f == bddsingle) {
+        sbddextended_writeLine("}", fp);
+        return;
+    }
+
+    // print vars and levels
+    sprintf(ss, "\tr%d [shape = plaintext, label = \"var level\"]", index->height + 1);
+    sbddextended_writeLine(ss, fp);
+    sprintf(ss, "\tr%d [shape = plaintext, label = \"%4d%7d\"]", index->height, bddvaroflev((bddvar)index->height), index->height);
+    sbddextended_writeLine(ss, fp);
+    sprintf(ss, "\tr%d -> r%d [style = invis];", index->height + 1, index->height);
+    sbddextended_writeLine(ss, fp);
     for (i = index->height; i >= 1; --i) {
-        fprintf(fp, "\tr%d [style = invis];\n", i - 1);
-        fprintf(fp, "\tr%d -> r%d [style = invis];\n", i, i - 1);
+        if (i > 1) {
+            sprintf(ss, "\tr%d [shape = plaintext, label = \"%4d%7d\"];", i - 1, bddvaroflev((bddvar)(i - 1)), i - 1);
+            sbddextended_writeLine(ss, fp);
+        } else {
+            sbddextended_writeLine("\tr0 [style = invis];", fp);
+        }
+        sprintf(ss, "\tr%d -> r%d [style = invis];", i, i - 1);
+        sbddextended_writeLine(ss, fp);
     }
 
     for (i = index->height; i >= 1; --i) {
-        //fprintf(stderr, "%d", i);
         for (j = 0; j < index->level_vec_arr[i].count; ++j) {
             node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i], (llint)j);
-            //fprintf(stderr, " %d", node);
-            fprintf(fp, "\tv%d_%lld [shape = circle, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, label = \"\"];\n", i, (llint)j);
+            sprintf(ss, "\tv%d_%lld [shape = circle, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, label = \"\"];", i, (llint)j);
+            sbddextended_writeLine(ss, fp);
             for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
-                //fprintf(stderr, " %d", k);
                 if (is_zbdd != 0) {
                     child = bddgetchildz(node, k);
                 } else {
@@ -3342,38 +3478,76 @@ void bddoutputbddforgraphviz(FILE* fp, bddp f, bddNodeIndex* index, int is_zbdd)
                                                  (llint)child, &cvalue);
                     assert(c != 0);
 
-                    fprintf(fp, "\tv%d_%lld -> v%d_%lld", i, (llint)j,
-                            clevel, cvalue);
-                    fprintf(fp, " [color = \"#81B65D\", penwidth = 2.5");
+                    n = sprintf(ss, "\tv%d_%lld -> v%d_%lld", i, (llint)j,
+                                clevel, cvalue);
+                    n += sprintf(ss + n, " [color = \"#81B65D\", penwidth = 2.5");
                     if (k == 0) {
-                        fprintf(fp, ", style = dotted");
+                        n += sprintf(ss + n, ", style = dotted");
                     }
-                    fprintf(fp, "];\n");
+                    sprintf(ss + n, "];");
+                    sbddextended_writeLine(ss, fp);
                 } else {
-                    fprintf(fp, "\tv%d_%lld -> t%d", i, (llint)j,
+                    n = sprintf(ss, "\tv%d_%lld -> t%d", i, (llint)j,
                             (child == bddfalse ? 0 : 1));
-                    fprintf(fp, " [color = \"#81B65D\", penwidth = 2.5");
+                    n += sprintf(ss + n, " [color = \"#81B65D\", penwidth = 2.5");
                     if (k == 0) {
-                        fprintf(fp, ", style = dotted");
+                        n += sprintf(ss + n, ", style = dotted");
                     }
-                    fprintf(fp, "];\n");
+                    sprintf(ss + n, "];");
+                    sbddextended_writeLine(ss, fp);
                 }
             }
         }
-        fprintf(fp, "\t{rank = same; r%d; ", i);
+        n = sprintf(ss, "\t{rank = same; r%d; ", i);
         for (j = 0; j < index->level_vec_arr[i].count; ++j) {
-            fprintf(fp, "v%d_%lld; ", i, (llint)j);
+            n += sprintf(ss + n, "v%d_%lld; ", i, (llint)j);
         }
-        fprintf(fp, "}\n");
+        n += sprintf(ss + n, "}");
+        sbddextended_writeLine(ss, fp);
     }
 
-    fprintf(fp, "\t{rank = same; r0; t0; t1; }\n");
-    fprintf(fp, "}\n");
+    sbddextended_writeLine("\t{rank = same; r0; t0; t1; }", fp);
+    sbddextended_writeLine("}", fp);
 
     if (is_making_index) {
         bddNodeIndex_destruct(index);
     }
 }
+
+#ifdef __cplusplus
+
+sbddextended_INLINE_FUNC
+void writeZBDDForGraphviz(FILE* fp, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+{
+    WriteObject wo(false, true, NULL);
+    bddwritebddforgraphviz_inner(fp, zbdd.GetID(), index, 1, wo);
+}
+
+sbddextended_INLINE_FUNC
+void writeZBDDForGraphviz(std::ostream& ost, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+{
+    WriteObject wo(true, true, &ost);
+    bddwritebddforgraphviz_inner(NULL, zbdd.GetID(), index, 1, wo);
+}
+
+sbddextended_INLINE_FUNC
+void bddwritebddforgraphviz(FILE* fp, bddp f,
+                            bddNodeIndex* index)
+{
+    WriteObject wo(false, true, NULL);
+    bddwritebddforgraphviz_inner(fp, f, index, -1, wo);
+}
+
+#else
+
+sbddextended_INLINE_FUNC
+void bddwritebddforgraphviz(FILE* fp, bddp f,
+                            bddNodeIndex* index)
+{
+    bddwritebddforgraphviz_inner(fp, f, index, -1);
+}
+
+#endif
 
 // table size should be at least 2^n and vararr size should be at least n
 bddp bddtruthtabletobdd(const unsigned char* table, const bddvar* vararr, int n)
