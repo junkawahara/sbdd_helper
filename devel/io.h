@@ -1021,17 +1021,25 @@ void bddwritebddforgraphillion_inner(FILE* fp, bddp f,
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-void writeZBDDForGraphillion(FILE* fp, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+void writeZBDDForGraphillion(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 {
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
     WriteObject wo(false, true, NULL);
-    bddwritebddforgraphillion_inner(fp, zbdd.GetID(), index, 1, wo);
+    bddwritebddforgraphillion_inner(fp, zbdd.GetID(), bindex, 1, wo);
 }
 
 sbddextended_INLINE_FUNC
-void writeZBDDForGraphillion(std::ostream& ost, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+void writeZBDDForGraphillion(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 {
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
     WriteObject wo(true, true, &ost);
-    bddwritebddforgraphillion_inner(NULL, zbdd.GetID(), index, 1, wo);
+    bddwritebddforgraphillion_inner(NULL, zbdd.GetID(), bindex, 1, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -1177,17 +1185,25 @@ void bddwritebddforgraphviz_inner(FILE* fp, bddp f,
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-void writeZBDDForGraphviz(FILE* fp, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+void writeZBDDForGraphviz(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 {
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
     WriteObject wo(false, true, NULL);
-    bddwritebddforgraphviz_inner(fp, zbdd.GetID(), index, 1, wo);
+    bddwritebddforgraphviz_inner(fp, zbdd.GetID(), bindex, 1, wo);
 }
 
 sbddextended_INLINE_FUNC
-void writeZBDDForGraphviz(std::ostream& ost, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+void writeZBDDForGraphviz(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 {
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
     WriteObject wo(true, true, &ost);
-    bddwritebddforgraphviz_inner(NULL, zbdd.GetID(), index, 1, wo);
+    bddwritebddforgraphviz_inner(NULL, zbdd.GetID(), bindex, 1, wo);
 }
 
 sbddextended_INLINE_FUNC

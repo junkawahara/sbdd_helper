@@ -1,8 +1,8 @@
 //
 // One header library for SAPPOROBDD C/C++ version
-// version 0.04 alpha
+// version 0.05 alpha
 //
-// Copyright (c) 2017 -- 2021 Jun Kawahara
+// Copyright (c) 2017 -- 2022 Jun Kawahara
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software
 // and associated documentation files (the "Software"), to deal in the Software without
@@ -1926,6 +1926,11 @@ public:
         index_ = bddNodeIndex_makeIndex_inner(f.GetID(), (is_raw ? 1 : 0), 1);
     }
 
+    bddNodeIndex* getRawPointer()
+    {
+        return index_;
+    }
+
     llint size()
     {
         return bddNodeIndex_size(index_);
@@ -3361,17 +3366,25 @@ void bddwritebddforgraphillion_inner(FILE* fp, bddp f,
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-void writeZBDDForGraphillion(FILE* fp, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+void writeZBDDForGraphillion(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 {
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
     WriteObject wo(false, true, NULL);
-    bddwritebddforgraphillion_inner(fp, zbdd.GetID(), index, 1, wo);
+    bddwritebddforgraphillion_inner(fp, zbdd.GetID(), bindex, 1, wo);
 }
 
 sbddextended_INLINE_FUNC
-void writeZBDDForGraphillion(std::ostream& ost, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+void writeZBDDForGraphillion(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 {
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
     WriteObject wo(true, true, &ost);
-    bddwritebddforgraphillion_inner(NULL, zbdd.GetID(), index, 1, wo);
+    bddwritebddforgraphillion_inner(NULL, zbdd.GetID(), bindex, 1, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -3517,17 +3530,25 @@ void bddwritebddforgraphviz_inner(FILE* fp, bddp f,
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-void writeZBDDForGraphviz(FILE* fp, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+void writeZBDDForGraphviz(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 {
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
     WriteObject wo(false, true, NULL);
-    bddwritebddforgraphviz_inner(fp, zbdd.GetID(), index, 1, wo);
+    bddwritebddforgraphviz_inner(fp, zbdd.GetID(), bindex, 1, wo);
 }
 
 sbddextended_INLINE_FUNC
-void writeZBDDForGraphviz(std::ostream& ost, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+void writeZBDDForGraphviz(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 {
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
     WriteObject wo(true, true, &ost);
-    bddwritebddforgraphviz_inner(NULL, zbdd.GetID(), index, 1, wo);
+    bddwritebddforgraphviz_inner(NULL, zbdd.GetID(), bindex, 1, wo);
 }
 
 sbddextended_INLINE_FUNC

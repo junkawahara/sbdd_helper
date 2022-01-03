@@ -415,12 +415,15 @@ ofs.close();
 ## writeZBDDForGraphillion
 
 ```
-void writeZBDDForGraphillion(FILE* fp, const ZBDD& zbdd, bddNodeIndex* index = NULL)
-void writeZBDDForGraphillion(std::ostream& ost, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+void writeZBDDForGraphillion(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
+void writeZBDDForGraphillion(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 ```
 
 引数 fp または ost で指定した（ファイル等の）ストリームに、
 ZBDD を、[graphillion 形式](graphillion_format.md)で書き込む。
+事前に DDNodeIndex を構築している場合は引数に指定できる。
+構築していない場合は index を NULL にすることで、関数内部で自動的に構築される
+（関数終了後、自動的に破棄される）。
 
 ### 使用例
 
@@ -436,12 +439,16 @@ ofs.close();
 ## writeZBDDForGraphviz
 
 ```
-void writeZBDDForGraphviz(FILE* fp, const ZBDD& zbdd, bddNodeIndex* index = NULL)
-void writeZBDDForGraphviz(std::ostream& ost, const ZBDD& zbdd, bddNodeIndex* index = NULL)
+void writeZBDDForGraphviz(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
+void writeZBDDForGraphviz(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 ```
 
 引数 fp または ost で指定した（ファイル等の）ストリームに、
-ZBDD を、Graphviz の dot 形式で書き込む。
+ZBDD を、[Graphviz](https://www.graphviz.org/) の
+[dot 形式](https://www.graphviz.org/doc/info/lang.html)で書き込む。
+事前に DDNodeIndex を構築している場合は引数に指定できる。
+構築していない場合は index を NULL にすることで、関数内部で自動的に構築される
+（関数終了後、自動的に破棄される）。
 
 ### 使用例
 
@@ -451,4 +458,10 @@ ZBDD f = ...; // f は何らかの方法で作成
 std::ofstream ofs("zbdd_for_graphviz.dat");
 writeZBDDForGraphviz(ofs, f);
 ofs.close();
+```
+
+Graphviz の dot を以下のコマンドで呼び出すことで、ZBDD が描画される。
+
+```
+dot -Tpng -o zbdd.png < zbdd_for_graphviz.dat
 ```

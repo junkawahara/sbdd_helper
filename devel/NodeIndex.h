@@ -328,6 +328,11 @@ public:
         index_ = bddNodeIndex_makeIndex_inner(f.GetID(), (is_raw ? 1 : 0), 1);
     }
 
+    bddNodeIndex* getRawPointer()
+    {
+        return index_;
+    }
+
     llint size()
     {
         return bddNodeIndex_size(index_);
