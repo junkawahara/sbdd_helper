@@ -152,6 +152,76 @@ void test_at_random_cpp()
 
     test(f == g);
 
+    f = getAllPowerSetsIncluding(3, 2);
+    test(f.Card() == 4);
+    test(f.OnSet(2).Card() == 4);
+    test(f.OffSet(2).Card() == 0);
+
+    std::vector<bddvar> bv;
+    bv.push_back(2);
+    bv.push_back(3);
+    f = getAllPowerSetsIncluding(5, bv);
+    test(f.Card() == 8);
+    test(f.OnSet(3).Card() == 8);
+    test(f.OffSet(3).Card() == 0);
+    test(f.OnSet(4).Card() == 4);
+    test(f.OffSet(4).Card() == 4);
+
+    std::vector<bddvar> basev;
+    basev.push_back(2);
+    basev.push_back(4);
+    basev.push_back(6);
+
+    f = getAllSetsIncluding(basev, 3);
+    test(f.Card() == 8);
+    test(f.OnSet(3).Card() == 8);
+    test(f.OffSet(3).Card() == 0);
+    test(f.OnSet(4).Card() == 4);
+    test(f.OffSet(4).Card() == 4);
+
+    f = getAllSetsIncluding(basev, bv);
+    test(f.Card() == 4);
+    test(f.OnSet(3).Card() == 4);
+    test(f.OffSet(3).Card() == 0);
+    test(f.OnSet(4).Card() == 2);
+    test(f.OffSet(4).Card() == 2);
+
+
+    f = getAllPowerSetsNotIncluding(3, 2);
+    test(f.Card() == 4);
+    test(f.OnSet(2).Card() == 0);
+    test(f.OffSet(2).Card() == 4);
+
+    f = getAllPowerSetsNotIncluding(5, bv);
+    test(f.Card() == 8);
+    test(f.OnSet(3).Card() == 0);
+    test(f.OffSet(3).Card() == 8);
+    test(f.OnSet(4).Card() == 4);
+    test(f.OffSet(4).Card() == 4);
+
+    f = getAllSetsWithCard(basev, 0);
+    test(f.Card() == 1);
+    f = getAllSetsWithCard(basev, 1);
+    test(f.Card() == 3);
+    f = getAllSetsWithCard(basev, 2);
+    test(f.Card() == 3);
+    f = getAllSetsWithCard(basev, 3);
+    test(f.Card() == 1);
+
+    f = getAllPowerSetsWithCard(5, 2);
+    test(f.Card() == 10);
+
+    std::vector<bddvar> sv;
+    sv.push_back(1);
+    sv.push_back(3);
+    sv.push_back(5);
+    f = makeDontCare(getSingleSet(basev), sv);
+    //printZBDDElements(std::cout, f);
+    test(f.Card() == 8);
+    test(f.OnSet(3).Card() == 4);
+    test(f.OffSet(3).Card() == 4);
+    test(f.OnSet(4).Card() == 8);
+    test(f.OffSet(4).Card() == 0);
 
     /*
     bddNodeIndex* index = bddNodeIndex_makeIndexZ(g);

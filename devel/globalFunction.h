@@ -638,24 +638,26 @@ sbddextended_INLINE_FUNC ZBDD getSingleSet(int n, ...)
     return ZBDD_ID(f);
 }
 
+// need to delete[] the returned pointer
 template<typename T>
-sbddextended_INLINE_FUNC ZBDD getPowerSet(const T& variables)
+sbddextended_INLINE_FUNC bddvar* containerToArray(const T& variables,
+                                                  int* n)
 {
-    int n = 0;
+    *n = 0;
 
     for (typename T::const_iterator itor = variables.begin();
          itor != variables.end(); ++itor) {
-        ++n;
+        ++(*n);
     }
 
-    if (n == 0) {
-        return ZBDD(1);
+    if (*n == 0) {
+        return NULL;
     }
 
-    bddvar* ar = new bddvar[n];
+    bddvar* ar = new bddvar[*n];
     if (ar == NULL) {
         fprintf(stderr, "out of memory\n");
-        return false;
+        exit(1);
     }
 
     int c = 0;
@@ -663,6 +665,17 @@ sbddextended_INLINE_FUNC ZBDD getPowerSet(const T& variables)
          itor != variables.end(); ++itor) {
         ar[c] = *itor;
         ++c;
+    }
+    return ar;
+}
+
+template<typename T>
+sbddextended_INLINE_FUNC ZBDD getPowerSet(const T& variables)
+{
+    int n;
+    bddvar* ar = containerToArray(variables, &n);
+    if (n == 0) {
+        return ZBDD(0);
     }
 
     bddp f = bddgetpowerset(ar, n);
@@ -676,6 +689,177 @@ sbddextended_INLINE_FUNC ZBDD getPowerSet(int n)
 {
     bddp f = bddgetpowersetn(n);
     return ZBDD_ID(f);
+}
+
+template<typename T1, typename T2>
+sbddextended_INLINE_FUNC ZBDD getAllSetsIncluding_inner(const T1& base_variables,
+                                                        const T2& target_variables)
+{
+    ZBDD f = getPowerSet(base_variables);
+
+    bddvar c = 0;
+    for (typename T2::const_iterator itor = target_variables.begin();
+         itor != target_variables.end(); ++itor) {
+        c = *itor;
+        if (std::find(base_variables.begin(), base_variables.end(), c) !=
+            base_variables.end()) { // c found
+            f = f.OnSet(c);
+        } else {
+            f = f.Change(c);
+        }
+    }
+    return f;
+}
+
+
+template<typename T>
+sbddextended_INLINE_FUNC ZBDD getAllSetsIncluding(const T& base_variables,
+                                                  const std::vector<bddvar>& target_variables)
+{
+    return getAllSetsIncluding_inner(base_variables, target_variables);
+}
+
+template<typename T>
+sbddextended_INLINE_FUNC ZBDD getAllSetsIncluding(const T& base_variables,
+                                                  const std::set<bddvar>& target_variables)
+{
+    return getAllSetsIncluding_inner(base_variables, target_variables);
+}
+
+template<typename T>
+sbddextended_INLINE_FUNC ZBDD getAllSetsIncluding(const T& base_variables,
+                                                  int v)
+{
+    std::vector<bddvar> target_variables;
+    target_variables.push_back(v);
+
+    return getAllSetsIncluding(base_variables, target_variables);
+}
+
+sbddextended_INLINE_FUNC ZBDD getAllPowerSetsIncluding(int n,
+                                                       const std::vector<bddvar>& target_variables)
+{
+    std::vector<bddvar> base_variables;
+    for (int v = 1; v <= n; ++v) {
+        base_variables.push_back(v);
+    }
+
+    return getAllSetsIncluding(base_variables, target_variables);
+}
+
+sbddextended_INLINE_FUNC ZBDD getAllPowerSetsIncluding(int n,
+                                                       const std::set<bddvar>& target_variables)
+{
+    std::vector<bddvar> base_variables;
+    for (int v = 1; v <= n; ++v) {
+        base_variables.push_back(v);
+    }
+
+    return getAllSetsIncluding(base_variables, target_variables);
+}
+
+sbddextended_INLINE_FUNC ZBDD getAllPowerSetsIncluding(int n, int v)
+{
+    std::vector<bddvar> target_variables;
+    target_variables.push_back(v);
+
+    return getAllPowerSetsIncluding(n, target_variables);
+}
+
+template<typename T>
+sbddextended_INLINE_FUNC ZBDD getAllPowerSetsNotIncluding_inner(int n,
+                                                                const T& target_variables)
+{
+    ZBDD f = getPowerSet(n);
+
+    for (typename T::const_iterator itor = target_variables.begin();
+         itor != target_variables.end(); ++itor) {
+        f = f.OffSet(*itor);
+    }
+    return f;
+}
+
+sbddextended_INLINE_FUNC ZBDD getAllPowerSetsNotIncluding(int n,
+                                                          const std::vector<bddvar>& target_variables)
+{
+    return getAllPowerSetsNotIncluding_inner(n, target_variables);
+}
+
+sbddextended_INLINE_FUNC ZBDD getAllPowerSetsNotIncluding(int n,
+                                                          const std::set<bddvar>& target_variables)
+{
+    return getAllPowerSetsNotIncluding_inner(n, target_variables);
+}
+
+sbddextended_INLINE_FUNC ZBDD getAllPowerSetsNotIncluding(int n, int v)
+{
+    ZBDD f = getPowerSet(n);
+    f = f.OffSet(v);
+    return f;
+}
+
+template<typename T>
+sbddextended_INLINE_FUNC ZBDD getAllSetsWithCard(const T& variables, int k)
+{
+    int n;
+    bddvar* ar = containerToArray(variables, &n);
+    if (n < k) {
+        if (ar != NULL) {
+            delete[] ar;
+        }
+        return ZBDD(0);
+    }
+    for (int i = 0; i < n; ++i) {
+        ar[i] = bddlevofvar(ar[i]);
+    }
+
+    sbddextended_sort_array(ar, n);
+
+    std::vector<ZBDD> current;
+    std::vector<ZBDD> next(k + 1);
+
+    for (int i = 0; i < k; ++i) {
+        current.push_back(ZBDD(0));
+    }
+    current.push_back(ZBDD(1));
+
+    for (int i = 0; i < n; ++i) {
+        int v = bddvaroflev(ar[i]);
+        for (int j = 0; j <= std::min(n - i - 1, k); ++j) {
+            if (j < k) {
+                next[j] = current[j] + current[j + 1].Change(v);
+            } else {
+                next[j] = current[j];
+            }
+        }
+        current = next;
+    }
+    delete[] ar;
+    return current[0];
+}
+
+sbddextended_INLINE_FUNC ZBDD getAllPowerSetsWithCard(int n, int k)
+{
+    std::vector<bddvar> variables;
+    for (int v = 1; v <= n; ++v) {
+        variables.push_back(v);
+    }
+    return getAllSetsWithCard(variables, k);
+}
+
+
+template<typename T>
+sbddextended_INLINE_FUNC ZBDD makeDontCare(const ZBDD& f, const T& variables)
+{
+    ZBDD g = f;
+    for (typename T::const_iterator itor = variables.begin();
+         itor != variables.end(); ++itor) {
+        if (!(1 <= *itor && *itor <= bddvarused())) {
+            return ZBDD(-1);
+        }
+        g = g + g.Change(*itor);
+    }
+    return g;
 }
 
 template<typename T>

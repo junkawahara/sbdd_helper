@@ -258,6 +258,115 @@ ZBDD f = getPowerSet(vararr);
 ZBDD g = getPowerSet(3);
 ```
 
+## getAllSetsIncluding
+
+```
+template<typename T>
+getAllSetsIncluding(const T& base_variables, const std::vector<bddvar>& target_variables)
+template<typename T>
+getAllSetsIncluding(const T& base_variables, const std::set<bddvar>& target_variables)
+getAllSetsIncluding(const T& base_variables, int v)
+```
+
+base_variables（を集合とみなしたとき）のべき集合族のうち、第2引数で指定した target_variables をすべて含む、または、変数 v を含むZBDDを返す。すなわち、base_variables が [a1, a2,..., an]、target_variables が [b1, b2,..., bm] なら、{a1, a2,..., an} のすべての部分集合（空集合、全体集合も含む）からなる集合族のうち、b1, b2,...,bm をすべて含む集合からなる族を表すZBDDを返す。base_variables  の型 T は std::vector<bddvar> や std::set<bddvar> など、bddvar 型のコンテナ型である。base_variables, target_variables の各要素や v は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。base_variables や target_variables はソートされている必要はない。base_variables は target_variables の要素を含んでいても、含んでいなくても正しく動作する。
+
+### 使用例
+
+```
+std::vector<bddvar> base_variables;
+base_variables.push_back(2); base_variables.push_back(3);
+// f は {{5},{2, 5},{3, 5},{2, 3, 5}} を表す ZBDD
+ZBDD f = getAllSetsIncluding(base_variables, 5);
+```
+
+## getAllPowerSetsIncluding
+
+```
+getAllPowerSetsIncluding(int n, const std::vector<bddvar>& target_variables)
+getAllPowerSetsIncluding(int n, const std::set<bddvar>& target_variables)
+getAllPowerSetsIncluding(int n, int v)
+```
+
+{1,...,n} のべき集合族のうち、第2引数で指定した target_variables をすべて含む、または、変数 v を含むZBDDを返す。すなわち、target_variables が [b1, b2,..., bm] なら、{1,...,n} のすべての部分集合（空集合、全体集合も含む）からなる集合族のうち、b1, b2,...,bm をすべて含む集合からなる族を表すZBDDを返す。target_variables の各要素や v は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。target_variables はソートされている必要はない。
+
+### 使用例
+
+```
+// f は {{1},{1, 2},{1, 3},{1, 2, 3}} を表す ZBDD
+ZBDD f = getAllPowerSetsIncluding(3, 1);
+```
+
+## getAllPowerSetsNotIncluding
+
+```
+getAllPowerSetsNotIncluding(int n, const std::vector<bddvar>& target_variables)
+getAllPowerSetsNotIncluding(int n, const std::set<bddvar>& target_variables)
+getAllPowerSetsNotIncluding(int n, int v)
+```
+
+{1,...,n} のべき集合族のうち、第2引数で指定した target_variables をいずれも含まない、または、変数 v を含まないZBDDを返す。すなわち、target_variables が [b1, b2,..., bm] なら、{1,...,n} のすべての部分集合（空集合、全体集合も含む）からなる集合族のうち、b1, b2,...,bm をいずれも含まない集合からなる族を表すZBDDを返す。target_variables の各要素や v は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。target_variables はソートされている必要はない。
+
+### 使用例
+
+```
+// f は {{},{2},{3},{2, 3}} を表す ZBDD
+ZBDD f = getAllPowerSetsNotIncluding(3, 1);
+```
+
+## getAllSetsWithCard
+
+```
+getAllSetsWithCard(const T& variables, int k)
+```
+
+variables（を集合とみなしたとき）のべき集合族のうち、要素数が k である集合の族を表すZBDDを返す。variables の各要素や v は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。variables はソートされている必要はない。
+
+### 使用例
+
+```
+std::vector<bddvar> variables;
+variables.push_back(2); variables.push_back(3); variables.push_back(3);
+// f は {{2, 3},{2, 5},{3, 5}} を表す ZBDD
+ZBDD f = getAllSetsWithCard(variables, 2);
+```
+
+## getAllPowerSetsWithCard
+
+```
+getAllPowerSetsWithCard(int n, int k)
+```
+
+{1,...,n} のべき集合族のうち、要素数が k である集合の族を表すZBDDを返す。
+
+### 使用例
+
+```
+// f は {{1, 2},{1, 3},{2, 3}} を表す ZBDD
+ZBDD f = getAllPowerSetsWithCard(3, 2);
+```
+
+## makeDontCare
+
+```
+makeDontCare(const ZBDD& f, const T& variables)
+```
+
+f の各要素について、variables の各要素を含む集合と含まない集合の両方からなる
+集合族を表す ZBDD を返す。
+
+
+### 使用例
+
+```
+// f は {{1}, {2, 3}} を表す ZBDD
+ZBDD f = ...;
+std::vector<bddvar> variables;
+variables.push_back(4); variables.push_back(5);
+// g は {{1}, {1, 4}, {1, 5}, {1, 4, 5}, {2, 3}, {2, 3, 4}, {2, 3, 5}, {2, 3, 4, 5}} を
+// 表す ZBDD
+ZBDD g = makeDontCare(f, variables);
+```
+
 ## isMemberZ
 
 ```
