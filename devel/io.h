@@ -283,9 +283,21 @@ void printZBDDElementsAsValueList(std::ostream& ost, const ZBDD& zbdd, const std
 sbddextended_INLINE_FUNC
 std::string ZStr(const ZBDD& zbdd)
 {
-    std::ostringstream ost;
-    printZBDDElements(ost, zbdd);
-    return ost.str();
+    if (zbdd == ZBDD(-1)) { // null
+        return std::string("N");
+    } if (zbdd == ZBDD(0)) { // 0-terminal
+        return std::string("E");
+    } else {
+        std::ostringstream ost;
+        printZBDDElements(ost, zbdd);
+        return ost.str();
+    }
+}
+
+sbddextended_INLINE_FUNC
+std::string zstr(const ZBDD& zbdd)
+{
+    return ZStr(zbdd);
 }
 
 #endif

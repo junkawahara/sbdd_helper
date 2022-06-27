@@ -241,6 +241,10 @@ void test_io_cpp()
 {
     ZBDD f = ZBDD_ID(make_test_zbdd());
     test(ZStr(f) == std::string("{3, 2}, {3, 1}, {2, 1}"));
+    test(zstr(f) == std::string("{3, 2}, {3, 1}, {2, 1}"));
+    test(ZStr(ZBDD(-1)) == std::string("N"));
+    test(ZStr(ZBDD(0)) == std::string("E"));
+    test(ZStr(ZBDD(1)) == std::string("{}"));
 }
 
 void test_index_cpp()
@@ -279,14 +283,15 @@ void test_index_cpp()
                    bddgetchild1z(bddgetchild0z(f.GetID()))) != index.end());
     test(std::find(index.begin(), index.end(), g.GetID()) == index.end());
 
+    int nn = 40;
     std::vector<bddvar> vararr;
-    for (int i = 0; i < 40; ++i) {
+    for (int i = 0; i < nn; ++i) {
         vararr.push_back(i + 1);
     }
     f = getPowerSet(vararr);
     DDNodeIndex index2(f, false);
-    test_eq(index2.count(), 1ll << 40);
-    test_eq(index2.size(), 40);
+    test_eq(index2.count(), 1ll << nn);
+    test_eq(index2.size(), nn);
 
     f = ZBDD_ID(make_test_zbdd());
     DDNodeIndex index3(f, true);
@@ -295,13 +300,22 @@ void test_index_cpp()
 
     f = getPowerSet(vararr);
     DDNodeIndex index4(f, false);
-    test_eq(index4.count(), 1ll << 40);
+    test_eq(index4.count(), 1ll << nn);
     test_eq(index4.size(), f.Size());
 
-    f = getPowerSet(50);
+    int mm = 50;
+    f = getPowerSet(mm);
     DDNodeIndex index5(f, false);
-    test_eq(index5.count(), 1ll << 50);
-    test_eq(index5.size(), 50);
+    test_eq(index5.count(), 1ll << mm);
+    test_eq(index5.size(), mm);
+
+    DDNodeIndex index6(ZBDD(0), false);
+    test_eq(index6.count(), 0);
+    test_eq(index6.size(), 0);
+
+    DDNodeIndex index7(ZBDD(1), false);
+    test_eq(index7.count(), 1);
+    test_eq(index7.size(), 0);
 }
 
 bool test_count_if_size1(std::set<bddvar> s)

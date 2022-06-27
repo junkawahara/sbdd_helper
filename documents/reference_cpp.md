@@ -325,7 +325,7 @@ variables（を集合とみなしたとき）のべき集合族のうち、要�
 
 ```
 std::vector<bddvar> variables;
-variables.push_back(2); variables.push_back(3); variables.push_back(3);
+variables.push_back(2); variables.push_back(3); variables.push_back(5);
 // f は {{2, 3},{2, 5},{3, 5}} を表す ZBDD
 ZBDD f = getAllSetsWithCard(variables, 2);
 ```
@@ -432,7 +432,25 @@ zbdd が bddnull のときは "N" と出力し、bddempty のときは
 std::string ZStr(const ZBDD& zbdd)
 ```
 
-ZBDD zbdd が表す集合族を文字列として返す。例えば、"{4,2,1},{3,1},{1},{}" のような文字列が返される。
+ZBDD zbdd が表す集合族を文字列として返す。例えば、"{4, 2, 1},{3, 1},{1},{}" のような文字列が返される。
+zbdd が 0 終端のときは "E" を、1 終端のときは "{}" を出力する。
+
+### 使用例
+
+```
+// f は {3, 2}, {3, 1}, {2, 1} を表す ZBDD
+ZBDD f = getAllPowerSetsWithCard(3, 2);
+// "{3, 2}, {3, 1}, {2, 1}" が出力される
+std::cout << ZStr(f) << std::endl;
+```
+
+## ZStr
+
+```
+std::string zstr(const ZBDD& zbdd)
+```
+
+ZStr 関数の別名である。
 
 ## constructBDDFromFileKnuth
 

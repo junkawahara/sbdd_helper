@@ -1782,6 +1782,7 @@ sbddextended_INLINE_FUNC bool isMemberZ(const ZBDD& f, const T& variables)
 
 typedef struct tagbddNodeIndex {
     int is_raw;
+    // All of the following four pointers are NULL if f is a terminal or bddnull.
     sbddextended_MyDict* node_dict_arr;
     sbddextended_MyVector* level_vec_arr; // stores all nodes at level i
     llint* offset_arr;
@@ -1806,6 +1807,14 @@ bddNodeIndex* bddNodeIndex_makeIndexWithoutCount_inner(bddp f, int is_raw, int i
     index->is_raw = is_raw;
     index->f = f;
     index->height = (int)bddgetlev(f);
+
+    if (f == bddnull || f == bddfalse || f == bddtrue) {
+        index->node_dict_arr = NULL;
+        index->level_vec_arr = NULL;
+        index->offset_arr = NULL;
+        index->count_arr = NULL;
+        return index;
+    }
 
     if (is_raw) {
         f = bdderasenot(f);
@@ -1927,6 +1936,10 @@ bddNodeIndex* bddNodeIndex_makeIndex_inner(bddp f, int is_raw, int is_zdd)
 
     index = bddNodeIndex_makeIndexWithoutCount_inner(f, is_raw, is_zdd);
 
+    if (f == bddnull || f == bddfalse || f == bddtrue) {
+        return index;
+    }
+
     if (is_zdd) {
         index->count_arr = (llint*)malloc((size_t)index->offset_arr[0] * sizeof(llint));
         index->count_arr[0] = 0;
@@ -2028,12 +2041,20 @@ bddNodeIndex* bddNodeIndex_makeRawIndex(bddp f)
 sbddextended_INLINE_FUNC
 llint bddNodeIndex_size(const bddNodeIndex* index)
 {
+    if (index->f == bddnull || index->f == bddfalse || index->f == bddtrue) {
+        return 0ll;
+    }
     return (llint)index->offset_arr[0] - sbddextended_BDDNODE_START;
 }
 
 sbddextended_INLINE_FUNC
 llint bddNodeIndex_sizeAtLevel(const bddNodeIndex* index, int level)
 {
+    if (index->f == bddnull || index->f == bddfalse || index->f == bddtrue) {
+        return 0ll;
+    } else if (level <= 0 || index->height < level) {
+        return 0ll;
+    }
     return (llint)(index->offset_arr[level - 1] - index->offset_arr[level]);
 }
 
@@ -2041,14 +2062,21 @@ sbddextended_INLINE_FUNC
 void bddNodeIndex_sizeEachLevel(const bddNodeIndex* index, bddvar* arr)
 {
     int i;
-    for (i = 1; i <= index->height; ++i) {
-        arr[i] = (bddvar)(index->offset_arr[i - 1] - index->offset_arr[i]);
+    if (!(index->f == bddnull || index->f == bddfalse || index->f == bddtrue)) {
+        for (i = 1; i <= index->height; ++i) {
+            arr[i] = (bddvar)(index->offset_arr[i - 1] - index->offset_arr[i]);
+        }
     }
 }
 
 sbddextended_INLINE_FUNC
 llint bddNodeIndex_count(const bddNodeIndex* index)
 {
+    if (index->f == bddnull || index->f == bddfalse) {
+        return 0ll;
+    } else if (index->f == bddtrue) {
+        return 1ll;
+    }
     if (index->is_raw) {
         if (bddisnegative(index->f)) {
             return index->count_arr[sbddextended_BDDNODE_START] + 1;
@@ -2065,13 +2093,23 @@ void bddNodeIndex_destruct(bddNodeIndex* index)
 {
     int i;
 
-    for (i = 1; i <= index->height; ++i) {
-        sbddextended_MyVector_deinitialize(&index->level_vec_arr[i]);
-        sbddextended_MyDict_deinitialize(&index->node_dict_arr[i]);
-    }
-    free(index->offset_arr);
-    if (index->count_arr != NULL) {
-        free(index->count_arr);
+    if (index != NULL) {
+        if (index->level_vec_arr != NULL) {
+            for (i = 1; i <= index->height; ++i) {
+                sbddextended_MyVector_deinitialize(&index->level_vec_arr[i]);
+            }
+        }
+        if (index->node_dict_arr != NULL) {
+            for (i = 1; i <= index->height; ++i) {
+                sbddextended_MyDict_deinitialize(&index->node_dict_arr[i]);
+            }
+        }
+        if (index->offset_arr != NULL) {
+            free(index->offset_arr);
+        }
+        if (index->count_arr != NULL) {
+            free(index->count_arr);
+        }
     }
 }
 
@@ -2080,11 +2118,25 @@ void bddNodeIndex_copy(bddNodeIndex* dest,
                        const bddNodeIndex* src)
 {
     dest->is_raw = src->is_raw;
-    sbddextended_MyDict_copy(dest->node_dict_arr, src->node_dict_arr);
-    sbddextended_MyVector_copy(dest->level_vec_arr, src->level_vec_arr);
-    memcpy(dest->offset_arr, src->offset_arr, (size_t)(src->height + 1) * sizeof(llint));
+    if (src->node_dict_arr != NULL) {
+        sbddextended_MyDict_copy(dest->node_dict_arr, src->node_dict_arr);
+    } else {
+        dest->node_dict_arr = NULL;
+    }
+    if (src->level_vec_arr != NULL) {
+        sbddextended_MyVector_copy(dest->level_vec_arr, src->level_vec_arr);
+    } else {
+        dest->level_vec_arr = NULL;
+    }
+    if (src->offset_arr != NULL) {
+        memcpy(dest->offset_arr, src->offset_arr, (size_t)(src->height + 1) * sizeof(llint));
+    } else {
+        dest->offset_arr = NULL;
+    }
     if (src->count_arr != NULL) {
         memcpy(dest->count_arr, src->count_arr, (size_t)src->offset_arr[0] * sizeof(llint));
+    } else {
+        dest->count_arr = NULL;
     }
     dest->height = src->height;
     dest->f = src->f;
@@ -2127,9 +2179,11 @@ public:
 
     void sizeEachLevel(std::vector<bddvar>& arr)
     {
-        arr.resize(index_->height + 1);
-        for (int i = 1; i <= index_->height; ++i) {
-            arr[i] = (bddvar)(index_->offset_arr[i - 1] - index_->offset_arr[i]);
+        if (!(index_->f == bddnull || index_->f == bddfalse || index_->f == bddtrue)) {
+            arr.resize(index_->height + 1);
+            for (int i = 1; i <= index_->height; ++i) {
+                arr[i] = (bddvar)(index_->offset_arr[i - 1] - index_->offset_arr[i]);
+            }
         }
     }
 
@@ -2812,9 +2866,21 @@ void printZBDDElementsAsValueList(std::ostream& ost, const ZBDD& zbdd, const std
 sbddextended_INLINE_FUNC
 std::string ZStr(const ZBDD& zbdd)
 {
-    std::ostringstream ost;
-    printZBDDElements(ost, zbdd);
-    return ost.str();
+    if (zbdd == ZBDD(-1)) { // null
+        return std::string("N");
+    } if (zbdd == ZBDD(0)) { // 0-terminal
+        return std::string("E");
+    } else {
+        std::ostringstream ost;
+        printZBDDElements(ost, zbdd);
+        return ost.str();
+    }
+}
+
+sbddextended_INLINE_FUNC
+std::string zstr(const ZBDD& zbdd)
+{
+    return ZStr(zbdd);
 }
 
 #endif
