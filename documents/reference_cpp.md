@@ -444,7 +444,7 @@ ZBDD f = getAllPowerSetsWithCard(3, 2);
 std::cout << ZStr(f) << std::endl;
 ```
 
-## ZStr
+## zstr
 
 ```
 std::string zstr(const ZBDD& zbdd)

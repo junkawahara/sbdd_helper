@@ -107,6 +107,8 @@ void sbddextended_MyDict_deinitialize(sbddextended_MyDict* d)
             ++op_stack[sp];
         }
     }
+    free(op_stack);
+    free(node_stack);
     assert(debug_count == d->count);
     d->count = 0;
     d->root = NULL;

@@ -316,11 +316,13 @@ void bddNodeIndex_destruct(bddNodeIndex* index)
             for (i = 1; i <= index->height; ++i) {
                 sbddextended_MyVector_deinitialize(&index->level_vec_arr[i]);
             }
+            free(index->level_vec_arr);
         }
         if (index->node_dict_arr != NULL) {
             for (i = 1; i <= index->height; ++i) {
                 sbddextended_MyDict_deinitialize(&index->node_dict_arr[i]);
             }
+            free(index->node_dict_arr);
         }
         if (index->offset_arr != NULL) {
             free(index->offset_arr);

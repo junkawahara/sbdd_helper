@@ -270,6 +270,8 @@ void sbddextended_MyDict_deinitialize(sbddextended_MyDict* d)
             ++op_stack[sp];
         }
     }
+    free(op_stack);
+    free(node_stack);
     assert(debug_count == d->count);
     d->count = 0;
     d->root = NULL;
@@ -2098,11 +2100,13 @@ void bddNodeIndex_destruct(bddNodeIndex* index)
             for (i = 1; i <= index->height; ++i) {
                 sbddextended_MyVector_deinitialize(&index->level_vec_arr[i]);
             }
+            free(index->level_vec_arr);
         }
         if (index->node_dict_arr != NULL) {
             for (i = 1; i <= index->height; ++i) {
                 sbddextended_MyDict_deinitialize(&index->node_dict_arr[i]);
             }
+            free(index->node_dict_arr);
         }
         if (index->offset_arr != NULL) {
             free(index->offset_arr);
