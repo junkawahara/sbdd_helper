@@ -608,8 +608,8 @@ void test_io()
     FILE* fp2;
     bddvar vararr[3];
     const char* var_name_map[] = {"dummy", "e", "d", "c", "b", "a"};
-    const unsigned char table1[] = {1, 1, 1, 1, 0, 1, 1, 1};
-    const unsigned char table2[] = {0, 0, 1, 0, 0, 1, 0, 1};
+    //const unsigned char table1[] = {1, 1, 1, 1, 0, 1, 1, 1};
+    //const unsigned char table2[] = {0, 0, 1, 0, 0, 1, 0, 1};
 
     // open as binary because treating '\n' as a normal charactor
     fp1 = fopen(g_filename1, "wb+");
@@ -673,15 +673,15 @@ void test_io()
 
     // need test bddoutputbddforgraphviz(stderr, f, NULL); here
 
-    f = bddtruthtabletobdd(table1, vararr, 3);
-    g = bddor(bddor(bddprime(2), bddprime(3)), bddnot(bddprime(5)));
-    test(f == g);
+    //f = bddtruthtabletobdd(table1, vararr, 3);
+    //g = bddor(bddor(bddprime(2), bddprime(3)), bddnot(bddprime(5)));
+    //test(f == g);
 
-    f = bddtruthtabletobdd(table2, vararr, 3);
-    g = bddor(bddand(bddprime(2), bddprime(5)),
-              bddand(bddnot(bddor(bddprime(2), bddprime(5))),
-                     bddprime(3)));
-    test(f == g);
+    //f = bddtruthtabletobdd(table2, vararr, 3);
+    //g = bddor(bddand(bddprime(2), bddprime(5)),
+    //          bddand(bddnot(bddor(bddprime(2), bddprime(5))),
+    //                 bddprime(3)));
+    //test(f == g);
 
     //bddconstructzbddfromelements_inner_getoneset("10 20 30 40 50", 14, " ", 1);
     //bddconstructzbddfromelements_inner_getoneset("10,2,30,4,50", 12, ",", 1);

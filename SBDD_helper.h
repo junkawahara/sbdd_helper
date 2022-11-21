@@ -3824,44 +3824,6 @@ void bddwritebddforgraphviz(FILE* fp, bddp f,
 
 #endif
 
-// table size should be at least 2^n and vararr size should be at least n
-bddp bddtruthtabletobdd(const unsigned char* table, const bddvar* vararr, int n)
-{
-    ullint n_pow, i;
-    int j;
-    bddp f, g, h, gp;
-    if (n > 64) {
-        fprintf(stderr, "n >= 64 not supported.\n");
-        exit(1);
-    }
-
-    f = bddfalse;
-    n_pow = (1llu << n);
-    for (i = 0; i < n_pow; ++i) {
-        if (table[i] != 0) {
-            g = bddtrue;
-            for (j = 0; j < n; ++j) {
-                gp = bddprime(vararr[j]);
-                if (((i >> j) & 1) == 0) {
-                    h = bddnot(gp);
-                    bddfree(gp);
-                    gp = h;
-                }
-                h = bddand(g, gp);
-                bddfree(g);
-                bddfree(gp);
-                g = h;
-            }
-            h = bddor(f, g);
-            bddfree(f);
-            bddfree(g);
-            f = h;
-        }
-    }
-    return f;
-}
-
-
 
 sbddextended_INLINE_FUNC
 bddp bddconstructbddfrombinary_inner(FILE* fp, int root_level
