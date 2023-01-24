@@ -1181,6 +1181,10 @@ void bddwritebddforgraphviz_inner(FILE* fp, bddp f,
         n = sprintf(ss, "\t{rank = same; r%d; ", i);
         for (j = 0; j < index->level_vec_arr[i].count; ++j) {
             n += sprintf(ss + n, "v%d_%lld; ", i, (llint)j);
+            if (j % 10 == 9 && j < index->level_vec_arr[i].count - 1) {
+                sbddextended_writeLine(ss, fp);
+                n = sprintf(ss, "\t\t");
+            }
         }
         n += sprintf(ss + n, "}");
         sbddextended_writeLine(ss, fp);

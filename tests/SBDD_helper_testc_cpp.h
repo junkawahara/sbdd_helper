@@ -29,25 +29,25 @@
 using namespace sbddh;
 #endif
 
-#define test(b) testfunc((llint)(b), __LINE__)
-#define test_eq(v1, v2) testfunc_eq((llint)(v1), (llint)(v2), __LINE__)
+#define test(b) testfunc((llint)(b), __FILE__, __LINE__)
+#define test_eq(v1, v2) testfunc_eq((llint)(v1), (llint)(v2), __FILE__, __LINE__)
 
 const char g_filename1[] = "SBDD_helper_testc_test_tempdata1.txt";
 const char g_filename2[] = "SBDD_helper_testc_test_tempdata2.txt";
 const char g_filename3[] = "SBDD_helper_testc_test_tempdata3.txt";
 
-void testfunc(llint b, int error_line)
+void testfunc(llint b, const char* filename, int error_line)
 {
     if (b == 0) {
-        fprintf(stderr, "not expected value at line %d\n", error_line);
+        fprintf(stderr, "not expected value at %s line %d\n", filename, error_line);
         exit(1);
     }
 }
 
-void testfunc_eq(llint v1, llint v2, int error_line)
+void testfunc_eq(llint v1, llint v2, const char* filename, int error_line)
 {
     if (v1 != v2) {
-        fprintf(stderr, "%lld != %lld at line %d\n", v1, v2, error_line);
+        fprintf(stderr, "%lld != %lld at %s line %d\n", v1, v2, filename, error_line);
         exit(1);
     }
 }
