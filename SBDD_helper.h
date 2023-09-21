@@ -1,8 +1,8 @@
 //
 // One header library for SAPPOROBDD C/C++ version
-// version 0.05 alpha
+// version 0.06 alpha
 //
-// Copyright (c) 2017 -- 2022 Jun Kawahara
+// Copyright (c) 2017 -- 2023 Jun Kawahara
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software
 // and associated documentation files (the "Software"), to deal in the Software without
@@ -922,6 +922,12 @@ sbddextended_INLINE_FUNC int bddisterminal(bddp f)
     return (f == bddempty || f == bddsingle || f == bddfalse || f == bddtrue) ? 1 : 0;
 }
 
+// assume that f is ZBDD
+sbddextended_INLINE_FUNC int bddisemptymember(bddp f)
+{
+    return bddisnegative(f);
+}
+
 sbddextended_INLINE_FUNC bddvar bddgetvar(bddp f)
 {
     return bddtop(f);
@@ -1344,6 +1350,11 @@ sbddextended_INLINE_FUNC bool isTerminal(const BDD& f)
 sbddextended_INLINE_FUNC bool isTerminal(const ZBDD& f)
 {
     return bddisterminal(f.GetID()) != 0;
+}
+
+sbddextended_INLINE_FUNC bool isEmptyMember(const ZBDD& f)
+{
+    return bddisemptymember(f.GetID()) != 0;
 }
 
 sbddextended_INLINE_FUNC bddvar getVar(const BDD& f)
@@ -3786,6 +3797,28 @@ void bddwritebddforgraphviz_inner(FILE* fp, bddp f,
 }
 
 #ifdef __cplusplus
+
+sbddextended_INLINE_FUNC
+void writeBDDForGraphviz(FILE* fp, const BDD& bdd, DDNodeIndex* index = NULL)
+{
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
+    WriteObject wo(false, true, NULL);
+    bddwritebddforgraphviz_inner(fp, bdd.GetID(), bindex, 0, wo);
+}
+
+sbddextended_INLINE_FUNC
+void writeBDDForGraphviz(std::ostream& ost, const BDD& bdd, DDNodeIndex* index = NULL)
+{
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
+    WriteObject wo(true, true, &ost);
+    bddwritebddforgraphviz_inner(NULL, bdd.GetID(), bindex, 0, wo);
+}
 
 sbddextended_INLINE_FUNC
 void writeZBDDForGraphviz(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)

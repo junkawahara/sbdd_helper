@@ -1201,6 +1201,28 @@ void bddwritebddforgraphviz_inner(FILE* fp, bddp f,
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
+void writeBDDForGraphviz(FILE* fp, const BDD& bdd, DDNodeIndex* index = NULL)
+{
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
+    WriteObject wo(false, true, NULL);
+    bddwritebddforgraphviz_inner(fp, bdd.GetID(), bindex, 0, wo);
+}
+
+sbddextended_INLINE_FUNC
+void writeBDDForGraphviz(std::ostream& ost, const BDD& bdd, DDNodeIndex* index = NULL)
+{
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
+    WriteObject wo(true, true, &ost);
+    bddwritebddforgraphviz_inner(NULL, bdd.GetID(), bindex, 0, wo);
+}
+
+sbddextended_INLINE_FUNC
 void writeZBDDForGraphviz(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 {
     bddNodeIndex* bindex = NULL;

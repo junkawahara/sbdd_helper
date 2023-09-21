@@ -44,6 +44,12 @@ sbddextended_INLINE_FUNC int bddisterminal(bddp f)
     return (f == bddempty || f == bddsingle || f == bddfalse || f == bddtrue) ? 1 : 0;
 }
 
+// assume that f is ZBDD
+sbddextended_INLINE_FUNC int bddisemptymember(bddp f)
+{
+    return bddisnegative(f);
+}
+
 sbddextended_INLINE_FUNC bddvar bddgetvar(bddp f)
 {
     return bddtop(f);
@@ -466,6 +472,11 @@ sbddextended_INLINE_FUNC bool isTerminal(const BDD& f)
 sbddextended_INLINE_FUNC bool isTerminal(const ZBDD& f)
 {
     return bddisterminal(f.GetID()) != 0;
+}
+
+sbddextended_INLINE_FUNC bool isEmptyMember(const ZBDD& f)
+{
+    return bddisemptymember(f.GetID()) != 0;
 }
 
 sbddextended_INLINE_FUNC bddvar getVar(const BDD& f)

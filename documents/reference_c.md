@@ -1,10 +1,26 @@
 # SBDD_helper C言語版リファレンス
 
-Version 0.04 alpha
+Version 0.06
 
 本プログラムで提供している関数は開発中であるため、予告なく仕様を変更することがある。
 
 ## 変更点
+
+### Version 0.06 (2023/9/21)
+
+* 以下の関数を追加: bddisemptymember、getAllSetsIncluding、getAllPowerSetsIncluding、
+getAllPowerSetsNotIncluding、getAllSetsWithCard、makeDontCare、zstr。
+* bddtruthtabletobdd 関数を削除。
+* bddNodeIndex に与える DD が終端や bddnull の場合の不具合を修正。
+* DD が大きい場合に bddwritebddforgraphviz がエラーになる不具合を修正。
+* 一部の関数でメモリリークを修正。
+
+### Version 0.05 (2022/1/3)
+
+* SAPPOROBDD のバージョンは 1.85 以上を必須とした。
+* bddgetpowersetn(int) 関数、getPowerSet(int) 関数の追加。
+* ZBDD の要素の文字列表現を返す関数 ZStr を追加。
+* writeZBDDForGraphillion 関数の追加。
 
 ### Version 0.04
 
@@ -95,6 +111,14 @@ int bddisterminal(bddp f)
 ```
 
 f が定数関数（bddfalse, bddtrue, bddempty, bddsingle のいずれか）、すなわちBDD/ZBDDの終端ノードであるかを返す。f が定数関数であるなら 1 を、定数関数でないなら 0 を返す。SAPPOROBDD は多値終端に対応できるように準備されているが、完全には対応していない。本関数は現在のところ、bddfalse, bddtrue, bddempty, bddsingle に対してのみ 1 を返す。
+
+## bddisemptymember
+
+```
+int bddisemptymember(bddp f)
+```
+
+f が表す集合族が空集合を含む場合は 1 を、そうでないなら 0 を返す。
 
 ## bddgetvar
 

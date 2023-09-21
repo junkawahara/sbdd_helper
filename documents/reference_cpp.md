@@ -1,6 +1,6 @@
 # SBDD_helper C++言語版リファレンス
 
-Version 0.04 alpha
+Version 0.06
 
 本プログラムで提供している関数は開発中であるため、予告なく仕様を変更することがある。
 
@@ -8,7 +8,23 @@ C++ 版では、C 版の全ての関数も使用可能である（[C言語版リ
 
 ## 変更点
 
-### Version 0.04
+### Version 0.06 (2023/9/21)
+
+* 以下の関数を追加: bddisemptymember、getAllSetsIncluding、getAllPowerSetsIncluding、
+getAllPowerSetsNotIncluding、getAllSetsWithCard、makeDontCare、zstr。
+* bddtruthtabletobdd 関数を削除。
+* bddNodeIndex に与える DD が終端や bddnull の場合の不具合を修正。
+* DD が大きい場合に bddwritebddforgraphviz がエラーになる不具合を修正。
+* 一部の関数でメモリリークを修正。
+
+### Version 0.05 (2022/1/3)
+
+* SAPPOROBDD のバージョンは 1.85 以上を必須とした。
+* bddgetpowersetn(int) 関数、getPowerSet(int) 関数の追加。
+* ZBDD の要素の文字列表現を返す関数 ZStr と zstr を追加。
+* writeZBDDForGraphillion 関数の追加。
+
+### Version 0.04 (2021/9/2)
 
 getSingleSet, getPowerSet, isMemberZ の引数を const std::vector<bddvar>& から、
 const T& に変更した。T は、T::const_iterator を持つ任意の型（例えば
@@ -50,7 +66,7 @@ bool isConstant(const BDD& f)
 bool isConstant(const ZBDD& f)
 ```
 
-f が定数関数（bddfalse, bddtrue, bddempty, bddsingle のいずれか）、すなわちBDD/ZBDDの終端ノードであるかを返す。f が定数関数であるなら 1 を、定数関数でないなら 0 を返す。
+f が定数関数（bddfalse, bddtrue, bddempty, bddsingle のいずれか）、すなわちBDD/ZBDDの終端ノードであるかを返す。f が定数関数であるなら true を、定数関数でないなら false を返す。
 
 ### 使用例
 
@@ -101,7 +117,7 @@ f が否定であるときは f の否定を外した BDD を返し、f が否�
 bool is64BitVersion()
 ```
 
-SAPPOROBDD の64ビット版でコンパイルが行われているかどうか判定する。正確には、B_64 マクロが定義されている場合、1 を返し、されていない場合、0 を返す。
+SAPPOROBDD の64ビット版でコンパイルが行われているかどうか判定する。正確には、B_64 マクロが定義されている場合、true を返し、されていない場合、false を返す。
 
 
 ## isTerminal
@@ -111,8 +127,15 @@ bool isTerminal(const BDD& f)
 bool isTerminal(const ZBDD& f)
 ```
 
-f が定数関数（bddfalse, bddtrue, bddempty, bddsingle のいずれか）、すなわちBDD/ZBDDの終端ノードであるかを返す。f が定数関数であるなら 1 を、定数関数でないなら 0 を返す。SAPPOROBDD は多値終端に対応できるように準備されているが、完全には対応していない。本関数は現在のところ、bddfalse, bddtrue, bddempty, bddsingle に対してのみ 1 を返す。
+f が定数関数（bddfalse, bddtrue, bddempty, bddsingle のいずれか）、すなわちBDD/ZBDDの終端ノードであるかを返す。f が定数関数であるなら true を、定数関数でないなら false を返す。SAPPOROBDD は多値終端に対応できるように準備されているが、完全には対応していない。本関数は現在のところ、bddfalse, bddtrue, bddempty, bddsingle に対してのみ true を返す。
 
+## isEmptyMember
+
+```
+bool isEmptyMember(const ZBDD& f)
+```
+
+f が表す集合族が空集合を含む場合は true を、そうでないなら false を返す。
 
 ## getVar
 

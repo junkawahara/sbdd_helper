@@ -297,6 +297,11 @@ void test_bddfunctions()
     test(bddisterminal(bddsingle));
     test(!bddisterminal(f));
 
+    test(!bddisemptymember(bddempty));
+    test(bddisemptymember(bddsingle));
+    test(!bddisemptymember(f));
+    test(bddisemptymember(bddunion(f, bddsingle)));
+
     test_eq(bddgetvar(bddempty), 0);
     test_eq(bddgetvar(bddsingle), 0);
     test_eq(bddgetvar(f), 3);
@@ -719,7 +724,6 @@ void test_index()
     bddNodeIndex* index = bddNodeIndex_makeIndexZ(f);
     test_eq(bddNodeIndex_count(index), 3);
     test_eq(bddNodeIndex_size(index), 4);
-    bddNodeIndex_destruct(index);
 
     bddNodeIterator* itor = bddNodeIterator_make(index);
     count = 0;
@@ -728,6 +732,7 @@ void test_index()
         ++count;
     }
     test_eq(count, 4);
+    bddNodeIndex_destruct(index);
 
     bddvar vararr[40];
     for (i = 0; i < 40; ++i) {
