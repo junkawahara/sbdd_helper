@@ -1,10 +1,15 @@
 # SBDD_helper C言語版リファレンス
 
-Version 0.06
+Version 0.07
 
 本プログラムで提供している関数は開発中であるため、予告なく仕様を変更することがある。
 
 ## 変更点
+
+### Version 0.07 (2023/9/22)
+
+* 以下の関数を追加: bddmakenodeb、bddmakenodez、bddMakeNode。
+* isMemberZ を isMember にリネーム（isMemberZ も残している）。
 
 ### Version 0.06 (2023/9/21)
 
@@ -279,6 +284,26 @@ bddp bddgetchildraw(bddp f, int child)
 ```
 
 f が BDD/ZBDDノードであるとき、f の child 引数で指定した枝の子を返す。SAPPOROBDD ではBDD/ZBDDは否定枝表現が用いられているが、本関数は否定枝表現における f の child-枝の子を返す。本関数はBDD/ZBDDともに使用可能。本関数は参照カウンタを増加させないため、本関数で得られる bddp ポインタを開放（bddfree）してはいけない。
+
+## bddmakenodeb
+
+```
+bddp bddmakenodeb(bddvar v, bddp f0, bddp f1)
+```
+
+根ノードの変数番号が v、0-枝側が f0、1-枝側が f1 である BDD を構築し、それを指すインデックスを返す。
+計算結果と同じ BDD がすでに存在していれば共有し、参照カウンタの値を1増やす。
+f0、f1 の根ノードのレベルは、変数番号 v のレベルより小さくなければならない。
+
+## bddmakenodez
+
+```
+bddp bddmakenodez(bddvar v, bddp f0, bddp f1)
+```
+
+根ノードの変数番号が v、0-枝側が f0、1-枝側が f1 である ZBDD を構築し、それを指すインデックスを返す。
+計算結果と同じ ZBDD がすでに存在していれば共有し、参照カウンタの値を1増やす。
+f0、f1 の根ノードのレベルは、変数番号 v のレベルより小さくなければならない。
 
 ## bddprimenot
 

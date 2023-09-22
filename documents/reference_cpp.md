@@ -1,12 +1,17 @@
 # SBDD_helper C++言語版リファレンス
 
-Version 0.06
+Version 0.07
 
 本プログラムで提供している関数は開発中であるため、予告なく仕様を変更することがある。
 
 C++ 版では、C 版の全ての関数も使用可能である（[C言語版リファレンス](reference_c.md)）。
 
 ## 変更点
+
+### Version 0.07 (2023/9/22)
+
+* 以下の関数を追加: bddmakenodeb、bddmakenodez、bddMakeNode。
+* isMemberZ を isMember にリネーム（isMemberZ も残している）。
 
 ### Version 0.06 (2023/9/21)
 
@@ -211,6 +216,16 @@ ZBDD getChildRaw(const ZBDD& f, int child)
 
 f が BDD/ZBDDノードであるとき、f の child 引数で指定した枝の子を返す。SAPPOROBDD ではBDD/ZBDDは否定枝表現が用いられているが、本関数は否定枝表現における f の child-枝の子を返す。
 
+## makeNode
+
+```
+BDD makeNode(bddvar v, const BDD& f0, const BDD& f1)
+ZBDD makeNode(bddvar v, const ZBDD& f0, const ZBDD& f1)
+```
+
+根ノードの変数番号が v、0-枝側が f0、1-枝側が f1 である BDD/ZBDD を構築し、それを返す。
+f0、f1 の根ノードのレベルは、変数番号 v のレベルより小さくなければならない。
+
 ## getPrimeNot
 
 ```
@@ -390,14 +405,14 @@ variables.push_back(4); variables.push_back(5);
 ZBDD g = makeDontCare(f, variables);
 ```
 
-## isMemberZ
+## isMember
 
 ```
 template<typename T>
-bool isMemberZ(const ZBDD& f, const T& variables)
+bool isMember(const ZBDD& f, const T& variables)
 ```
 
-引数で指定した vector variables が表す集合が、ZBDD f が表す集合族に含まれるかどうかを判定する。含まれるなら 1 を、含まれないなら 0 を返す。variables  の型 T は std::vector<bddvar> や std::set<bddvar> など、bddvar 型のコンテナ型である。variables の各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。variables はソートされている必要はない。variables の大きさが 0 の場合、空集合が f に含まれるかを判定する。
+引数で指定した vector variables が表す集合が、ZBDD f が表す集合族に含まれるかどうかを判定する。含まれるなら 1 を、含まれないなら 0 を返す。variables の型 T は std::vector<bddvar> や std::set<bddvar> など、bddvar 型のコンテナ型である。variables の各要素は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。variables はソートされている必要はない。variables の大きさが 0 の場合、空集合が f に含まれるかを判定する。
 
 ### 使用例
 
@@ -407,12 +422,21 @@ variables.push_back(2); variables.push_back(3); variables.push_back(5);
 
 ZBDD f = getPowerSet(3);
 
-if (isMemberZ(f, variables)) { // {2, 3, 5} は f に含まれないので false
+if (isMember(f, variables)) { // {2, 3, 5} は f に含まれないので false
     std::cout << "variables in f" << std::endl;
 } else {
     std::cout << "variables not in f" << std::endl;
 }
 ```
+
+## isMemberZ
+
+```
+template<typename T>
+bool isMemberZ(const ZBDD& f, const T& variables)
+```
+
+isMember の旧名である。
 
 ## printZBDDElements
 

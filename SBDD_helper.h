@@ -1,6 +1,6 @@
 //
 // One header library for SAPPOROBDD C/C++ version
-// version 0.06 alpha
+// version 0.07 alpha
 //
 // Copyright (c) 2017 -- 2023 Jun Kawahara
 //
@@ -1069,6 +1069,46 @@ sbddextended_INLINE_FUNC bddp bddgetchildraw(bddp f, int child)
 }
 
 sbddextended_INLINE_FUNC
+bddp bddmakenodeb(bddvar v, bddp f0, bddp f1)
+{
+    bddp p, pn, g0, g1, g;
+
+    if (v > bddvarused()) {
+        fprintf(stderr, "bddprimenot: Invalid VarID %d", v);
+        exit(1);
+    }
+    assert(bddlevofvar(v) > bddgetlev(f0));
+    assert(bddlevofvar(v) > bddgetlev(f1));
+    p = bddprime(v);
+    pn = bddnot(p);
+    g0 = bddand(f0, pn);
+    bddfree(pn);
+    g1 = bddand(f1, p);
+    bddfree(p);
+    g = bddor(g0, g1);
+    bddfree(g0);
+    bddfree(g1);
+    return g;
+}
+
+sbddextended_INLINE_FUNC
+bddp bddmakenodez(bddvar v, bddp f0, bddp f1)
+{
+    bddp g1, g;
+
+    if (v > bddvarused()) {
+        fprintf(stderr, "bddprimenot: Invalid VarID %d", v);
+        exit(1);
+    }
+    assert(bddlevofvar(v) > bddgetlev(f0));
+    assert(bddlevofvar(v) > bddgetlev(f1));
+    g1 = bddchange(f1, v);
+    g = bddunion(f0, g1);
+    bddfree(g1);
+    return g;
+}
+
+sbddextended_INLINE_FUNC
 bddp bddprimenot(bddvar v)
 {
     bddp f;
@@ -1473,6 +1513,22 @@ sbddextended_INLINE_FUNC ZBDD getChildRaw(const ZBDD& f, int child)
     }
 }
 
+sbddextended_INLINE_FUNC
+BDD makeNode(bddvar v, const BDD& f0, const BDD& f1)
+{
+    assert(bddlevofvar(v) > getLev(f0));
+    assert(bddlevofvar(v) > getLev(f1));
+    return (f0 & ~BDDvar(v)) | (f1 & BDDvar(v));
+}
+
+sbddextended_INLINE_FUNC
+ZBDD makeNode(bddvar v, const ZBDD& f0, const ZBDD& f1)
+{
+    assert(bddlevofvar(v) > getLev(f0));
+    assert(bddlevofvar(v) > getLev(f1));
+    return f0 + f1.Change(v);
+}
+
 sbddextended_INLINE_FUNC BDD getPrimeNot(bddvar v)
 {
     return BDD_ID(bddprimenot(v));
@@ -1789,6 +1845,12 @@ sbddextended_INLINE_FUNC bool isMemberZ(const ZBDD& f, const T& variables)
     delete[] ar;
 
     return b != 0;
+}
+
+template<typename T>
+sbddextended_INLINE_FUNC bool isMember(const ZBDD& f, const T& variables)
+{
+    return isMemberZ(f, variables);
 }
 
 #endif

@@ -279,7 +279,7 @@ bddp construct_singleton()
 
 void test_bddfunctions()
 {
-    bddp f, s2;
+    bddp f, s2, g1, g2, g3, g4;
     int i;
 
     f = make_test_zbdd();
@@ -312,6 +312,12 @@ void test_bddfunctions()
 
     test(bddgetchild1z(bddgetchild0z(f))
          == bddgetchild0z(bddgetchild1z(f)));
+
+    g1 = bddmakenodez(1, bddempty, bddsingle);
+    g2 = bddmakenodez(2, bddempty, g1);
+    g3 = bddmakenodez(2, g1, bddsingle);
+    g4 = bddmakenodez(3, g2, g3);
+    test(g4 == f);
 
     s2 = construct_singleton();
     test(s2 == bddgetsingleton(2));

@@ -47,6 +47,19 @@ std::vector<bddvar> ullint_to_varvec(ullint v)
     return vec;
 }
 
+void test_BDD_functions()
+{
+    ZBDD f = getSingleSet(2, 1, 2);
+    f += getSingleSet(2, 1, 3);
+    f += getSingleSet(2, 2, 3);
+
+    ZBDD g1 = makeNode(1, ZBDD(0), ZBDD(1));
+    ZBDD g2 = makeNode(2, ZBDD(0), g1);
+    ZBDD g3 = makeNode(2, g1, ZBDD(1));
+    ZBDD g4 = makeNode(3, g2, g3);
+
+    test(f == g4);
+}
 
 void test_at_random_cpp()
 {
@@ -98,6 +111,7 @@ void test_at_random_cpp()
 
     for (i = 0; i < (int)N; ++i) {
         test(isMemberZ(f, ullint_to_varvec(ar[i])));
+        test(isMember(f, ullint_to_varvec(ar[i])));
     }
 
     for (i = 0; i < 2 * (int)N; ++i) {
@@ -110,11 +124,14 @@ void test_at_random_cpp()
             }
         }
         test(isMemberZ(f, ullint_to_varvec(c)) == found);
+        test(isMember(f, ullint_to_varvec(c)) == found);
     }
     test(!isMemberZ(f, std::vector<bddvar>()));
+    test(!isMember(f, std::vector<bddvar>()));
 
     f += ZBDD(1);
     test(isMemberZ(f, std::vector<bddvar>()));
+    test(isMember(f, std::vector<bddvar>()));
 
     ofs.open(g_filename1);
     if (!ofs) {
@@ -435,6 +452,7 @@ void test_elementIterator_cpp()
 
 void start_test_cpp()
 {
+    test_BDD_functions();
     test_at_random_cpp();
     test_io_cpp();
     test_index_cpp();
