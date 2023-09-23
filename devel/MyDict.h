@@ -1,3 +1,5 @@
+#ifndef __cplusplus
+
 typedef struct tagsbddextended_MyDictNode {
     struct tagsbddextended_MyDictNode* left;
     struct tagsbddextended_MyDictNode* right;
@@ -7,7 +9,7 @@ typedef struct tagsbddextended_MyDictNode {
 
 sbddextended_INLINE_FUNC
 sbddextended_MyDictNode* sbddextended_MyDictNode_makeNewNode(llint key,
-                                                             llint value)
+                                                                llint value)
 {
     sbddextended_MyDictNode* node;
 
@@ -23,21 +25,38 @@ sbddextended_MyDictNode* sbddextended_MyDictNode_makeNewNode(llint key,
     return node;
 }
 
+#endif
+
 typedef struct tagsbddextended_MyDict {
+#ifdef __cplusplus
+    std::map<llint, llint>* dict;
+#endif
     size_t count;
+#ifndef __cplusplus
     sbddextended_MyDictNode* root;
+#endif
 } sbddextended_MyDict;
 
 sbddextended_INLINE_FUNC
 void sbddextended_MyDict_initialize(sbddextended_MyDict* d)
 {
+#ifdef __cplusplus
+    d->dict = new std::map<llint, llint>();
+    d->count = 0;
+#else
     d->count = 0;
     d->root = NULL;
+#endif
 }
 
 sbddextended_INLINE_FUNC
 void sbddextended_MyDict_deinitialize(sbddextended_MyDict* d)
 {
+#ifdef __cplusplus
+    d->dict->clear();
+    delete d->dict;
+    d->count = 0;
+#else
     sbddextended_MyDictNode** node_stack;
     char* op_stack;
     char op;
@@ -112,12 +131,21 @@ void sbddextended_MyDict_deinitialize(sbddextended_MyDict* d)
     assert(debug_count == d->count);
     d->count = 0;
     d->root = NULL;
+#endif
 }
 
 
 sbddextended_INLINE_FUNC
 void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
 {
+#ifdef __cplusplus
+    std::map<llint, llint>::const_iterator itor = d->dict->find(key);
+    if (itor == d->dict->end()) { // not found
+        ++d->count;
+    }
+    (*d->dict)[key] = value;
+    assert(d->dict->size() == static_cast<size_t>(d->count));
+#else
     sbddextended_MyDictNode* node;
     if (d->root == NULL) {
         d->root = sbddextended_MyDictNode_makeNewNode(key, value);
@@ -132,8 +160,8 @@ void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
                 if (node->left != NULL) {
                     node = node->left;
                 } else {
-                    node->left = sbddextended_MyDictNode_makeNewNode(key,
-                                                                     value);
+                    node->left =
+                        sbddextended_MyDictNode_makeNewNode(key, value);
                     ++d->count;
                     break;
                 }
@@ -141,14 +169,15 @@ void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
                 if (node->right != NULL) {
                     node = node->right;
                 } else {
-                    node->right = sbddextended_MyDictNode_makeNewNode(key,
-                                                                      value);
+                    node->right =
+                        sbddextended_MyDictNode_makeNewNode(key, value);
                     ++d->count;
                     break;
                 }
             }
         }
     }
+#endif
 }
 
 // returned value: 1 -> found, 0 -> not found
@@ -156,6 +185,17 @@ void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
 sbddextended_INLINE_FUNC
 int sbddextended_MyDict_find(const sbddextended_MyDict* d, llint key, llint* value)
 {
+#ifdef __cplusplus
+    std::map<llint, llint>::const_iterator itor = d->dict->find(key);
+    if (itor != d->dict->end()) {
+        if (value != NULL) {
+            *value = itor->second;
+        }
+        return 1;
+    } else {
+        return 0;
+    }
+#else
     sbddextended_MyDictNode* node;
     node = d->root;
     while (node != NULL) {
@@ -171,12 +211,17 @@ int sbddextended_MyDict_find(const sbddextended_MyDict* d, llint key, llint* val
         }
     }
     return 0;
+#endif
 }
 
 sbddextended_INLINE_FUNC
 void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
-                              const sbddextended_MyDict* src)
+                                const sbddextended_MyDict* src)
 {
+#ifdef __cplusplus
+    *dest->dict = *src->dict;
+    dest->count = src->count;
+#else
     sbddextended_MyDictNode** node_stack;
     sbddextended_MyDictNode** dest_node_stack;
     char* op_stack;
@@ -216,7 +261,7 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
     }
 
     dest->root = sbddextended_MyDictNode_makeNewNode(src->root->key,
-                                                     src->root->value);
+                                                        src->root->value);
     dest->root->key = src->root->key;
     dest->root->value = src->root->value;
 
@@ -251,8 +296,8 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
         if (op <= 1) {
             ++sp;
             node_stack[sp] = child;
-            dest_node_stack[sp] = sbddextended_MyDictNode_makeNewNode(child->key,
-                                                                      child->value);
+            dest_node_stack[sp] =
+                sbddextended_MyDictNode_makeNewNode(child->key, child->value);
             op_stack[sp] = 0;
 
             if (op == 0) {
@@ -271,4 +316,5 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
     }
     assert(debug_count == src->count);
     dest->count = src->count;
+#endif
 }
