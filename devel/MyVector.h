@@ -108,3 +108,14 @@ void sbddextended_MyVector_copy(sbddextended_MyVector* dest,
     memcpy(dest->buf, src->buf, dest->count * sizeof(llint));
 #endif
 }
+
+sbddextended_INLINE_FUNC
+void sbddextended_MyVector_pop_back(sbddextended_MyVector* v)
+{
+#ifdef __cplusplus
+    v->vec->pop_back();
+    --v->count;
+#else
+    --v->count;
+#endif
+}

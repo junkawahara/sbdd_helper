@@ -185,6 +185,10 @@ void test_MyVector()
             test_eq(sbddextended_MyVector_get(&v1, (llint)i), (llint)i * 2);
         }
     }
+    sbddextended_MyVector_pop_back(&v1);
+    sbddextended_MyVector_pop_back(&v1);
+    sbddextended_MyVector_pop_back(&v1);
+    test_eq(v.count, v1.count + 3);
 
     sbddextended_MyVector_deinitialize(&v1);
     sbddextended_MyVector_deinitialize(&v);
