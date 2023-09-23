@@ -59,6 +59,33 @@ void test_BDD_functions()
     ZBDD g4 = makeNode(3, g2, g3);
 
     test(f == g4);
+
+    ZBDD fs[10];
+    fs[8] = makeNode(1, ZBDD(0), ZBDD(1));
+    fs[9] = makeNode(1, ZBDD(1), ZBDD(1));
+    fs[5] = makeNode(2, fs[8], fs[9]);
+    fs[6] = makeNode(2, fs[9], ZBDD(1));
+    fs[7] = makeNode(2, ZBDD(1), fs[9]);
+    fs[3] = makeNode(2, ZBDD(0), ZBDD(1));
+    fs[4] = makeNode(2, fs[9], fs[8]);
+    fs[1] = makeNode(3, fs[5], fs[6]);
+    fs[2] = makeNode(3, fs[6], fs[7]);
+
+    std::vector<ZBDD> bps;
+    test_eq(countNodes(bps, false), 0);
+    bps.push_back(fs[1]);
+    test_eq(countNodes(bps, false), 5);
+    bps.push_back(ZBDD(-1));
+    test_eq(countNodes(bps, false), 0);
+    bps[1] = fs[2];
+    test_eq(countNodes(bps, false), 7);
+    bps.push_back(fs[3]);
+    bps.push_back(fs[4]);
+    test_eq(countNodes(bps, false), 9);
+    bps.push_back(fs[8]);
+    test_eq(countNodes(bps, false), 9);
+    bps[2] = ZBDD(-1);
+    test_eq(countNodes(bps, false), 0);
 }
 
 void test_at_random_cpp()

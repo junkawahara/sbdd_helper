@@ -434,6 +434,86 @@ int bddismemberz(bddp f, const bddvar* vararr, int n)
     return c;
 }
 
+sbddextended_INLINE_FUNC
+llint bddcountnodes_inner(bddp* dds, int n, int is_zbdd, int is_raw)
+{
+    llint i, count = 0;
+    bddp f, f0, f1;
+    sbddextended_MyVector next_p;
+    sbddextended_MySet visited;
+
+    if (n == 0) {
+        return 0;
+    }
+    for (i = 0; i < n; ++i) {
+        if (dds[i] == bddnull) {
+            return 0;
+        }
+    }
+    sbddextended_MyVector_initialize(&next_p);
+    sbddextended_MySet_initialize(&visited);
+
+    for (i = n - 1; i >= 0; --i) {
+        if (!bddisconstant(dds[i])
+                && !sbddextended_MySet_exists(&visited, (llint)dds[i])) {
+            sbddextended_MyVector_add(&next_p, (llint)dds[i]);
+            sbddextended_MySet_add(&visited, (llint)dds[i]);
+            ++count;
+        }
+    }
+
+    while (next_p.count > 0) {
+        f = (bddp)sbddextended_MyVector_get(&next_p, (llint)next_p.count - 1);
+        sbddextended_MyVector_pop_back(&next_p);
+        f0 = bddgetchild0g(f, is_zbdd, is_raw);
+        if (!bddisconstant(f0)
+                && !sbddextended_MySet_exists(&visited, (llint)f0)) {
+            sbddextended_MyVector_add(&next_p, (llint)f0);
+            sbddextended_MySet_add(&visited, (llint)f0);
+            ++count;
+        }
+        f1 = bddgetchild1g(f, is_zbdd, is_raw);
+        if (!bddisconstant(f1)
+                && !sbddextended_MySet_exists(&visited, (llint)f1)) {
+            sbddextended_MyVector_add(&next_p, (llint)f1);
+            sbddextended_MySet_add(&visited, (llint)f1);
+            ++count;
+        }
+    }
+    sbddextended_MySet_deinitialize(&visited);
+    sbddextended_MyVector_deinitialize(&next_p);
+    return count;
+}
+
+sbddextended_INLINE_FUNC
+llint bddcountnodes(bddp* dds, int n, int is_raw)
+{
+    int i, is_zbdd = -1, error = 0;
+    for (i = 0; i < n; ++i) {
+        if (!bddisconstant(dds[i])) {
+            if (bddisbdd(dds[i])) {
+                if (is_zbdd == 1) {
+                    error = 1;
+                    break;
+                } else {
+                    is_zbdd = 0;
+                }
+            } else { // zbdd
+                if (is_zbdd == 0) {
+                    error = 0;
+                    break;
+                } else {
+                    is_zbdd = 1;
+                }
+            }
+        }
+    }
+    if (error != 0) {
+        fprintf(stderr, "bddcountnodes: both BDD and ZBDD exist.");
+        exit(1);
+    }
+    return bddcountnodes_inner(dds, n, is_zbdd, is_raw);
+}
 
 // *************************** C++ version start *****************************
 
@@ -973,6 +1053,102 @@ template<typename T>
 sbddextended_INLINE_FUNC bool isMember(const ZBDD& f, const T& variables)
 {
     return isMemberZ(f, variables);
+}
+
+sbddextended_INLINE_FUNC
+llint countNodes(const std::vector<bddp>& dds, bool is_raw = false)
+{
+    bddp* bps = new bddp[dds.size()];
+    int i = 0;
+    for (std::vector<bddp>::const_iterator itor = dds.begin();
+            itor != dds.end(); ++itor) {
+        bps[i] = *itor;
+        ++i;
+    }
+    llint count = bddcountnodes(bps, static_cast<int>(dds.size()),
+                                (is_raw ? 1 : 0));
+    delete[] bps;
+    return count;
+}
+
+sbddextended_INLINE_FUNC
+llint countNodes(const std::set<bddp>& dds, bool is_raw = false)
+{
+    bddp* bps = new bddp[dds.size()];
+    int i = 0;
+    for (std::set<bddp>::const_iterator itor = dds.begin();
+            itor != dds.end(); ++itor) {
+        bps[i] = *itor;
+        ++i;
+    }
+    llint count = bddcountnodes(bps, static_cast<int>(dds.size()),
+                                (is_raw ? 1 : 0));
+    delete[] bps;
+    return count;
+}
+
+sbddextended_INLINE_FUNC
+llint countNodes(const std::vector<BDD>& dds, bool is_raw = false)
+{
+    bddp* bps = new bddp[dds.size()];
+    int i = 0;
+    for (std::vector<BDD>::const_iterator itor = dds.begin();
+            itor != dds.end(); ++itor) {
+        bps[i] = itor->GetID();
+        ++i;
+    }
+    llint count = bddcountnodes_inner(bps, static_cast<int>(dds.size()),
+                                        0, (is_raw ? 1 : 0));
+    delete[] bps;
+    return count;
+}
+
+sbddextended_INLINE_FUNC
+llint countNodes(const std::set<BDD>& dds, bool is_raw = false)
+{
+    bddp* bps = new bddp[dds.size()];
+    int i = 0;
+    for (std::set<BDD>::const_iterator itor = dds.begin();
+            itor != dds.end(); ++itor) {
+        bps[i] = itor->GetID();
+        ++i;
+    }
+    llint count = bddcountnodes_inner(bps, static_cast<int>(dds.size()),
+                                        0, (is_raw ? 1 : 0));
+    delete[] bps;
+    return count;
+}
+
+sbddextended_INLINE_FUNC
+llint countNodes(const std::vector<ZBDD>& dds, bool is_raw = false)
+{
+    bddp* bps = new bddp[dds.size()];
+    int i = 0;
+    for (std::vector<ZBDD>::const_iterator itor = dds.begin();
+            itor != dds.end(); ++itor) {
+        bps[i] = itor->GetID();
+        ++i;
+    }
+    llint count = bddcountnodes_inner(bps, static_cast<int>(dds.size()),
+                                        1, (is_raw ? 1 : 0));
+    delete[] bps;
+    return count;
+}
+
+sbddextended_INLINE_FUNC
+llint countNodes(const std::set<ZBDD>& dds, bool is_raw = false)
+{
+    bddp* bps = new bddp[dds.size()];
+    int i = 0;
+    for (std::set<ZBDD>::const_iterator itor = dds.begin();
+            itor != dds.end(); ++itor) {
+        bps[i] = itor->GetID();
+        ++i;
+    }
+    llint count = bddcountnodes_inner(bps, static_cast<int>(dds.size()),
+                                        1, (is_raw ? 1 : 0));
+    delete[] bps;
+    return count;
 }
 
 #endif

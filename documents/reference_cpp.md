@@ -438,6 +438,28 @@ bool isMemberZ(const ZBDD& f, const T& variables)
 
 isMember の旧名である。
 
+## countNodes
+
+```
+llint countNodes(const std::vector<bddp>& dds, bool is_raw = false)
+llint countNodes(const std::set<bddp>& dds, bool is_raw = false)
+llint countNodes(const std::vector<BDD>& dds, bool is_raw = false)
+llint countNodes(const std::set<BDD>& dds, bool is_raw = false)
+llint countNodes(const std::vector<ZBDD>& dds, bool is_raw = false)
+llint countNodes(const std::set<ZBDD>& dds, bool is_raw = false)
+```
+
+引数で指定した大きさ n の vector/set dds が表す BDD/ZBDD 全体のノード数を返す。ノードは共有されている可能性があり、共有されているノードは 1 つと数える。is_raw は true なら否定枝表現を用いた場合のノード数を、false なら否定枝表現を用いない場合のノード数を返す。dds に bddnull が 1 つでも含まれている場合は 0 を返す。dds が BDD か ZBDD かは自動判定される。dds が BDD と ZBDD の両方を含む場合はエラーメッセージを出力して終了する。
+
+### 使用例
+
+```
+std::vector<ZBDD> dds;
+// ZBDD f0, f1, f2 は何らかの方法で作成
+dds.push_back(f0), dds.push_back(f1), dds.push_back(f2);
+printf("%d", countNodes(dds, false));
+```
+
 ## printZBDDElements
 
 ```

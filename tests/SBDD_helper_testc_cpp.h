@@ -336,6 +336,8 @@ bddp construct_singleton()
 void test_bddfunctions()
 {
     bddp f, s2, g1, g2, g3, g4;
+    bddp fs[10];
+    bddp bps[10];
     int i;
 
     f = make_test_zbdd();
@@ -394,6 +396,30 @@ void test_bddfunctions()
         test(f == bddprimenot((bddvar)i));
     }
 
+    fs[8] = bddmakenodez(1, bddempty, bddsingle);
+    fs[9] = bddmakenodez(1, bddsingle, bddsingle);
+    fs[5] = bddmakenodez(2, fs[8], fs[9]);
+    fs[6] = bddmakenodez(2, fs[9], bddsingle);
+    fs[7] = bddmakenodez(2, bddsingle, fs[9]);
+    fs[3] = bddmakenodez(2, bddempty, bddsingle);
+    fs[4] = bddmakenodez(2, fs[9], fs[8]);
+    fs[1] = bddmakenodez(3, fs[5], fs[6]);
+    fs[2] = bddmakenodez(3, fs[6], fs[7]);
+
+    bps[0] = fs[1];
+    test_eq(bddcountnodes(NULL, 0, 0), 0);
+    test_eq(bddcountnodes(bps, 1, 0), 5);
+    bps[1] = bddnull;
+    test_eq(bddcountnodes(bps, 2, 0), 0);
+    bps[1] = fs[2];
+    test_eq(bddcountnodes(bps, 2, 0), 7);
+    bps[2] = fs[3];
+    bps[3] = fs[4];
+    test_eq(bddcountnodes(bps, 4, 0), 9);
+    bps[4] = fs[8];
+    test_eq(bddcountnodes(bps, 5, 0), 9);
+    bps[2] = bddnull;
+    test_eq(bddcountnodes(bps, 5, 0), 0);
 }
 
 void test_getsingleandpowerset()

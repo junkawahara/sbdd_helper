@@ -402,6 +402,22 @@ if (bddismemberz(f, vararr, 3)) {
 }
 ```
 
+## bddcountnodes
+
+```
+llint bddcountnodes(bddp* dds, int n, int is_raw)
+```
+
+引数で指定した大きさ n の bddp 配列 dds が表す BDD/ZBDD 全体のノード数を返す。ノードは共有されている可能性があり、共有されているノードは 1 つと数える。is_raw は非 0 なら否定枝表現を用いた場合のノード数を、0 なら否定枝表現を用いない場合のノード数を返す。dds に bddnull が 1 つでも含まれている場合は 0 を返す。dds が BDD か ZBDD かは自動判定される。dds が BDD と ZBDD の両方を含む場合はエラーメッセージを出力して終了する。
+
+### 使用例
+
+```
+bddp dds[3];
+dds[0] = f0, dds[1] = f1, dds[2] = f2; // f0, f1, f2 は何らかの方法で作成
+printf("%d", bddcountnodes(dds, 3, 0));
+```
+
 ## bddprintzbddelements
 
 ```
