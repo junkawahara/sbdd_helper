@@ -246,6 +246,58 @@ void test_MyDict()
     sbddextended_MyDict_deinitialize(&d);
 }
 
+void test_MySet()
+{
+    int N = 1024 + 1;
+    llint i;
+    sbddextended_MySet s0;
+    sbddextended_MySet s;
+    sbddextended_MySet s1;
+
+    sbddextended_MySet_initialize(&s0);
+    test_eq(sbddextended_MySet_count(&s0), 0);
+    sbddextended_MySet_deinitialize(&s0);
+
+    sbddextended_MySet_initialize(&s);
+    sbddextended_MySet_initialize(&s1);
+
+    for (i = 0; i < N; ++i) {
+        sbddextended_MySet_add(&s, i * 2);
+        sbddextended_MySet_add(&s, 5 * N - i * 2);
+    }
+    test_eq(sbddextended_MySet_count(&s), N * 2);
+
+    for (i = 0; i < N; ++i) {
+        test_eq(sbddextended_MySet_exists(&s, i * 2), 1);
+        test_eq(sbddextended_MySet_exists(&s, 5 * N - i * 2), 1);
+    }
+
+    for (i = 0; i < N; ++i) {
+        test_eq(sbddextended_MySet_exists(&s, i * 2 - 1), 0);
+    }
+
+    for (i = 0; i < N; ++i) {
+        sbddextended_MySet_add(&s, i * 2);
+    }
+    test_eq(sbddextended_MySet_count(&s), N * 2);
+
+    for (i = 0; i < N; ++i) {
+        test_eq(sbddextended_MySet_exists(&s, i * 2), 1);
+    }
+
+    sbddextended_MySet_copy(&s1, &s);
+
+    test_eq(sbddextended_MySet_count(&s1),
+        sbddextended_MySet_count(&s));
+
+    for (i = 0; i < N; ++i) {
+        test_eq(sbddextended_MySet_exists(&s1, i * 2), 1);
+    }
+
+    sbddextended_MySet_deinitialize(&s1);
+    sbddextended_MySet_deinitialize(&s);
+}
+
 // make zbdd representing {{2}} from file
 bddp construct_singleton()
 {
@@ -881,6 +933,7 @@ void start_test()
 
     test_MyVector();
     test_MyDict();
+    test_MySet();
     test_bddfunctions();
     test_getsingleandpowerset();
     test_ismemberz();

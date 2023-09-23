@@ -34,6 +34,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <map>
 #include <set>
 #include <algorithm>
 
@@ -69,6 +70,7 @@ typedef unsigned long long int ullint;
 #include "utility.h"
 #include "MyVector.h"
 #include "MyDict.h"
+#include "MySet.h"
 #include "readLine.h"
 #include "writeLine.h"
 #include "globalFunction.h"
