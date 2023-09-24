@@ -460,6 +460,23 @@ dds.push_back(f0), dds.push_back(f1), dds.push_back(f2);
 printf("%d", countNodes(dds, false));
 ```
 
+## getUniformlyRandomZBDD
+
+```
+template <typename T>
+ZBDD getUniformlyRandomZBDD(int level, T& random_engine)
+```
+
+ノードレベルが最大 level である（すなわち根ノードのレベルが level 以下である）ZBDD を一様ランダムに構築して返す。
+一様ランダムとは、ノードレベルが最大 level である ZBDD が表すことのできる 2^(2^(level)) 個の集合族から一様ランダムに1つ選択し、その集合族を表す ZBDD を構築して返すという意味である。引数の T& random_engine は、乱数生成エンジンを指定する。<random> ヘッダのインクルードが必要である。この関数は C++ 版にのみ存在し、C++11 以降でコンパイルした場合のみ使用可能である。
+
+### 使用例
+
+```
+std::mt19937 mt(0);
+ZBDD f = getUniformlyRandomZBDD(10, mt);
+```
+
 ## printZBDDElements
 
 ```

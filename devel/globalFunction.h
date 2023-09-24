@@ -1191,4 +1191,37 @@ llint countNodes(const std::set<ZBDD>& dds, bool is_raw = false)
     return count;
 }
 
+#if __cplusplus >= 201103L
+
+class DDUtility {
+public:
+    template <typename T>
+    static ZBDD getUniformlyRandomZBDD(int level, T& random_engine)
+    {
+        if (level > 0) {
+            return makeNode(bddvaroflev(level),
+                            getUniformlyRandomZBDD(level - 1,
+                                                    random_engine),
+                            getUniformlyRandomZBDD(level - 1,
+                                                    random_engine));
+        } else {
+            std::uniform_int_distribution<int> dist(0, 1);
+            if (dist(random_engine) != 0) {
+                return ZBDD(1);
+            } else {
+                return ZBDD(0);
+            }
+        }
+    }
+};
+
+template <typename T>
+sbddextended_INLINE_FUNC
+ZBDD getUniformlyRandomZBDD(int level, T& random_engine)
+{
+    return DDUtility::getUniformlyRandomZBDD(level, random_engine);
+}
+
+#endif // __cplusplus >= 201103L
+
 #endif

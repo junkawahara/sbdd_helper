@@ -86,6 +86,15 @@ void test_BDD_functions()
     test_eq(countNodes(bps, false), 9);
     bps[2] = ZBDD(-1);
     test_eq(countNodes(bps, false), 0);
+
+#if __cplusplus >= 201103L // use C++ random class
+    std::mt19937 mt(1);
+    for (int i = 0; i < 10; ++i) {
+        ZBDD fx = getUniformlyRandomZBDD(i, mt);
+        test(fx.Top() <= i);
+        test(fx.Card() <= (1u << i)); // card <= 2^i
+    }
+#endif
 }
 
 void test_at_random_cpp()
