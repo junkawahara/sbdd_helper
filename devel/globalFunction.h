@@ -190,6 +190,46 @@ sbddextended_INLINE_FUNC bddp bddgetchildraw(bddp f, int child)
     return (child != 0 ? bddgetchild1raw(f) : bddgetchild0raw(f));
 }
 
+sbddextended_INLINE_FUNC bddp bddgetchild0g(bddp f, int is_zbdd, int is_raw)
+{
+    if (is_zbdd) {
+        if (is_raw) {
+            return bddgetchild0zraw(f);
+        } else {
+            return bddgetchild0z(f);
+        }
+    } else {
+        if (is_raw) {
+            return bddgetchild0braw(f);
+        } else {
+            return bddgetchild0b(f);
+        }
+    }
+}
+
+sbddextended_INLINE_FUNC bddp bddgetchild1g(bddp f, int is_zbdd, int is_raw)
+{
+    if (is_zbdd) {
+        if (is_raw) {
+            return bddgetchild1zraw(f);
+        } else {
+            return bddgetchild1z(f);
+        }
+    } else {
+        if (is_raw) {
+            return bddgetchild1braw(f);
+        } else {
+            return bddgetchild1b(f);
+        }
+    }
+}
+
+sbddextended_INLINE_FUNC bddp bddgetchildg(bddp f, int child,
+                                            int is_zbdd, int is_raw)
+{
+    return (child != 0 ? bddgetchild1g(f, is_zbdd, is_raw) : bddgetchild0g(f, is_zbdd, is_raw));
+}
+
 sbddextended_INLINE_FUNC
 bddp bddmakenodeb(bddvar v, bddp f0, bddp f1)
 {

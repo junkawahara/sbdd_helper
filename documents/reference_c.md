@@ -285,6 +285,30 @@ bddp bddgetchildraw(bddp f, int child)
 
 f が BDD/ZBDDノードであるとき、f の child 引数で指定した枝の子を返す。SAPPOROBDD ではBDD/ZBDDは否定枝表現が用いられているが、本関数は否定枝表現における f の child-枝の子を返す。本関数はBDD/ZBDDともに使用可能。本関数は参照カウンタを増加させないため、本関数で得られる bddp ポインタを開放（bddfree）してはいけない。
 
+## bddgetchild0g
+
+```
+bddp bddgetchild0g(bddp f, int is_zbdd, int is_raw)
+```
+
+f が BDD/ZBDDノードであるとき、f の 0-枝の子を返す。is_zbdd が 1 であるとき、f は ZBDD であり、is_zbdd が 0 であるとき、f は BDD である。そうではないときはエラーとなる。SAPPOROBDD ではBDD/ZBDDは否定枝表現が用いられているが、本関数は is_raw が 1 であるとき、否定枝表現における f の 0-枝の子を返す。is_raw が 0 であるとき、否定枝表現が用いられていないとみなしたときの f の 0-枝の子を返す。本関数はBDD/ZBDDともに使用可能。本関数は参照カウンタを増加させないため、本関数で得られる bddp ポインタを開放（bddfree）してはいけない。
+
+## bddgetchild1g
+
+```
+bddp bddgetchild1g(bddp f, int is_zbdd, int is_raw)
+```
+
+f が BDD/ZBDDノードであるとき、f の 1-枝の子を返す。is_zbdd が 1 であるとき、f は ZBDD であり、is_zbdd が 0 であるとき、f は BDD である。そうではないときはエラーとなる。SAPPOROBDD ではBDD/ZBDDは否定枝表現が用いられているが、本関数は is_raw が 1 であるとき、否定枝表現における f の 1-枝の子を返す。is_raw が 0 であるとき、否定枝表現が用いられていないとみなしたときの f の 1-枝の子を返す。本関数はBDD/ZBDDともに使用可能。本関数は参照カウンタを増加させないため、本関数で得られる bddp ポインタを開放（bddfree）してはいけない。
+
+## bddgetchildg
+
+```
+bddp bddgetchildg(bddp f, int child, int is_zbdd, int is_raw)
+```
+
+f が BDD/ZBDDノードであるとき、f の child-枝の子を返す。is_zbdd が 1 であるとき、f は ZBDD であり、is_zbdd が 0 であるとき、f は BDD である。そうではないときはエラーとなる。SAPPOROBDD ではBDD/ZBDDは否定枝表現が用いられているが、本関数は is_raw が 1 であるとき、否定枝表現における f の child-枝の子を返す。is_raw が 0 であるとき、否定枝表現が用いられていないとみなしたときの f の child-枝の子を返す。本関数はBDD/ZBDDともに使用可能。本関数は参照カウンタを増加させないため、本関数で得られる bddp ポインタを開放（bddfree）してはいけない。
+
 ## bddmakenodeb
 
 ```

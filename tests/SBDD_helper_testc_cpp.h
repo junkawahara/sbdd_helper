@@ -369,7 +369,13 @@ void test_bddfunctions()
     test_eq(bddgetlev(f), 3);
 
     test(bddgetchild1z(bddgetchild0z(f))
-         == bddgetchild0z(bddgetchild1z(f)));
+            == bddgetchild0z(bddgetchild1z(f)));
+
+    test(bddgetchild1g(bddgetchild0g(f, 1, 0), 1, 0)
+            == bddgetchild0g(bddgetchild1g(f, 1, 0), 1, 0));
+
+    test(bddgetchildg(bddgetchildg(f, 0, 1, 0), 1, 1, 0)
+            == bddgetchildg(bddgetchildg(f, 1, 1, 0), 0, 1, 0));
 
     g1 = bddmakenodez(1, bddempty, bddsingle);
     g2 = bddmakenodez(2, bddempty, g1);
