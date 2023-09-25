@@ -11,15 +11,22 @@ WOPT2 = -Wall -Wextra -pedantic -Wshadow -Wformat=2 -Wfloat-equal \
 #-fno-sanitize-recover
 # -pedantic-errors
 
-all: testc testcpp
+all: testc testcpp testcpp-gmp
 	./testc
 	./testcpp
+	./testcpp-gmp
 
 testc: SBDD_helper_testc_cpp.h SBDD_helper_testc.c ../devel/SBDD_helper.h ../devel/*.h $(SBDDDIR)/bddc.o
 	gcc $(OPT) $(WOPT2) -Wc++-compat $(SBDDDIR)/bddc.o SBDD_helper_testc.c -o testc
 
 testcpp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o
 	g++ $(OPT) $(WOPT2) $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o SBDD_helper_testcpp.cpp -o testcpp
+
+testcppg: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o
+	g++ -g -DB_64 $(WOPT2) $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o SBDD_helper_testcpp.cpp -o testcppg
+
+testcpp-gmp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o
+	g++ $(OPT) $(WOPT2) -DUSE_GMP $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o SBDD_helper_testcpp.cpp -lgmp -lgmpxx -o testcpp-gmp
 
 testnewc: SBDD_helper_testc_cpp.h SBDD_helper_testc.c ../devel/SBDD_helper.h ../devel/*.h $(SBDDDIR)/bddc.o
 	gcc $(OPT) $(WOPT2) -DSBDD_VERSION=185 $(SBDDDIR)/bddc.o SBDD_helper_testc.c -o testc

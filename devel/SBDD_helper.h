@@ -38,7 +38,16 @@
 #include <set>
 #include <algorithm>
 
-#else
+#if __cplusplus >= 201103L // use rand() function
+#include <random>
+#endif
+
+#ifdef USE_GMP
+#include <gmp.h>
+#include <gmpxx.h>
+#endif
+
+#else // __cplusplus
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,7 +55,7 @@
 #include <assert.h>
 #include <stdarg.h>
 
-#endif
+#endif // __cplusplus
 
 #ifdef __cplusplus
 namespace sbddh {
@@ -66,6 +75,14 @@ typedef unsigned long long int ullint;
 #define sbddextended_NUMBER_OF_CHILDREN 2
 
 #define sbddextended_TEMP_BUFSIZE 1024
+
+#ifdef USE_GMP
+    const mpz_class sbddextended_VALUE_ZERO(0);
+    const mpz_class sbddextended_VALUE_ONE(1);
+#else
+    const llint sbddextended_VALUE_ZERO = 0;
+    const llint sbddextended_VALUE_ONE = 1;
+#endif
 
 #include "utility.h"
 #include "MyVector.h"

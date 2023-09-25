@@ -486,6 +486,224 @@ void test_elementIterator_cpp()
     }
 }
 
+int compare_dict_order(const std::set<bddvar>& s1,
+                        const std::set<bddvar>& s2)
+{
+    std::vector<bddvar> v1;
+    std::vector<bddvar> v2;
+
+    std::set<bddvar>::const_iterator itor1 = s1.begin();
+    for ( ; itor1 != s1.end(); ++itor1) {
+        v1.push_back(*itor1);
+    }
+    std::set<bddvar>::const_iterator itor2 = s2.begin();
+    for ( ; itor2 != s2.end(); ++itor2) {
+        v2.push_back(*itor2);
+    }
+    std::sort(v1.rbegin(), v1.rend());
+    std::sort(v2.rbegin(), v2.rend());
+
+    size_t n = std::min(v1.size(), v2.size());
+    for (size_t i = 0; i < n; ++i) {
+        if (v1[i] > v2[i]) {
+            return -1;
+        } else if (v1[i] < v2[i]) {
+            return 1;
+        }
+    }
+    if (v1.size() < v2.size()) {
+        return -1;
+    } else if (v1.size() > v2.size()) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+llint v_to_w(bddvar v)
+{
+    return (llint)(v * v + 3 * v + 8);
+}
+
+void printSet(const std::set<bddvar>& s)
+{
+    std::set<bddvar>::const_iterator itor = s.begin();
+    for ( ; itor != s.end(); ++itor) {
+        std::cerr << *itor << " ";
+    }
+    std::cerr << std::endl;
+}
+
+void check_ddindex(const ZBDD& f, DDIndex<int>& s)
+{
+    ZBDD g(0);
+    llint card = s.count();
+#ifdef USE_GMP
+    test_eq(card, s.countMP().get_si());
+#endif
+    for (llint i = 0; i < card; ++i) {
+        std::set<bddvar> varset = s.getSet(i);
+        if (i < card - 1) {
+            // check dict order
+            test(compare_dict_order(varset, s.getSet(i + 1)) < 0);
+        }
+        g += getSingleSet(varset);
+        test(isMember(f, varset));
+        llint order = s.getOrderNumber(varset);
+        test_eq(i, order);
+#ifdef USE_GMP
+        mpz_class i_mp((int)i);
+        test(varset == s.getSet(i_mp));
+        test_eq(order, (llint)s.getOrderNumberMP(varset).get_si());
+#endif
+    }
+    test(f == g);
+
+    s.terminal(0).value = 0;
+    s.terminal(1).value = 1;
+    for (int level = 1; level <= s.height(); ++level) {
+        for (llint j = 0; j < s.size(level); ++j) {
+            auto n = s.getNode(level, j);
+            n.value = n.child(0).value + n.child(1).value;
+        }
+    }
+    test(card == s.root().value);
+
+    llint n = s.count();
+    llint max_s = -99999999;
+    llint min_s = 99999999;
+    llint sum_s = 0;
+    std::vector<llint> weights;
+    weights.push_back(0); // dummy
+    for (int v = 1; v <= f.Top(); ++v) {
+        weights.push_back(v_to_w(v));
+    }
+    for (llint i = 0; i < n; ++i) {
+        std::set<bddvar> se = s.getSet(i);
+        llint weight = 0;
+        std::set<bddvar>::const_iterator itor = se.begin();
+        for ( ; itor != se.end(); ++itor) {
+            weight += v_to_w(*itor);
+        }
+        if (weight > max_s) {
+            max_s = weight;
+        }
+        if (weight < min_s) {
+            min_s = weight;
+        }
+        sum_s += weight;
+    }
+    std::set<bddvar> ss;
+    test_eq(s.getMaximum(weights, ss), max_s);
+    test(isMember(f, ss));
+    llint w = 0;
+    std::set<bddvar>::const_iterator itor1 = ss.begin();
+    for ( ; itor1 != ss.end(); ++itor1) {
+        w += v_to_w(*itor1);
+    }
+    test_eq(w, max_s);
+
+    ss.clear();
+    test_eq(s.getMinimum(weights, ss), min_s);
+    test(isMember(f, ss));
+    w = 0;
+    itor1 = ss.begin();
+    for ( ; itor1 != ss.end(); ++itor1) {
+        w += v_to_w(*itor1);
+    }
+    test_eq(w, min_s);
+    test_eq(sum_s, s.getSum(weights));
+
+#ifdef USE_GMP
+    test_eq(sum_s, s.getSumMP(weights).get_si());
+#endif
+
+#ifdef USE_GMP // use GMP random
+    gmp_randclass random(gmp_randinit_default);
+    random.seed(1);
+    for (llint i = 0; i < 100; ++i) {
+        std::set<bddvar> varset = s.sampleRandomly(random);
+        test(isMember(f, varset));
+    }
+#else
+
+#if __cplusplus >= 201103L // use C++ random class
+    std::mt19937 mt(1);
+    for (llint i = 0; i < 100; ++i) {
+        std::set<bddvar> varset = s.sampleRandomly(mt);
+        test(isMember(f, varset));
+    }
+#else
+    for (llint i = 0; i < 100; ++i) {
+        std::set<bddvar> varset = s.sampleRandomly();
+        test(isMember(f, varset));
+    }
+#endif
+
+#endif
+
+}
+
+void test_ddindex()
+{
+    ZBDD f1 = getAllPowerSetsWithCard(5, 3);
+    DDIndex<int> s1(f1);
+    check_ddindex(f1, s1);
+    ZBDD f2 = f1 + ZBDD(1) + ZBDD(1).Change(2)
+                + ZBDD(1).Change(2).Change(3).Change(4).Change(5);
+    DDIndex<int> s2(f2);
+    check_ddindex(f2, s2);
+    ZBDD f3 = getPowerSet(8);
+    DDIndex<int> s3(f3);
+    check_ddindex(f3, s3);
+
+    //std::mt19937 mt(0);
+    //for (int i = 0; i < 1000; ++i) {
+    //    ZBDD f4 = getUniformlyRandomZBDD(8, mt);
+    //    DDIndex<int> s4(f4);
+    //    check_ddindex(f4, s4);
+    //}
+
+#ifdef USE_GMP
+    ZBDD fp = getAllPowerSetsIncluding(100, 2);
+    DDIndex<int> sp(fp);
+    // expect 2^99
+    test(sp.countMP().get_str() == "633825300114114700748351602688");
+    llint l_sum = 0;
+    std::vector<llint> weights;
+    weights.push_back(0); // dummy
+    for (llint i = 1; i <= 100; ++i) {
+        llint w = (i - 10) * (i - 10) + 15;
+        weights.push_back(w);
+        if (i != 2) {
+            l_sum += w;
+        }
+    }
+    mpz_class mp_sum(static_cast<int>(l_sum));
+    mp_sum *= mpz_class("316912650057057350374175801344"); // 2^98
+    mp_sum += mpz_class((int)(weights[2]))
+                * mpz_class("633825300114114700748351602688"); // 2^99
+    test(sp.getSumMP(weights) == mp_sum);
+
+    std::set<bddvar> ss;
+    ss.insert(1);
+    ss.insert(2); // last in dict order
+    mpz_class last_value("633825300114114700748351602687");
+    test(sp.getOrderNumberMP(ss) == last_value);
+    test(ss == sp.getSet(last_value));
+    ss.erase(1); // second last
+    last_value -= mpz_class(1);
+    test(sp.getOrderNumberMP(ss) == last_value);
+    test(ss == sp.getSet(last_value));
+    ss.insert(1);
+    ss.insert(3); // third last
+    last_value -= mpz_class(1);
+    test(sp.getOrderNumberMP(ss) == last_value);
+    test(ss == sp.getSet(last_value));
+
+#endif
+}
+
 void start_test_cpp()
 {
     test_BDD_functions();
@@ -493,6 +711,7 @@ void start_test_cpp()
     test_io_cpp();
     test_index_cpp();
     test_elementIterator_cpp();
+    test_ddindex();
 }
 
 int main()

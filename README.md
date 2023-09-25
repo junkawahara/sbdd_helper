@@ -40,6 +40,22 @@ C++ 言語（BDD, ZBDD クラスを使用）の場合、以下のように、BDD
 #include "SBDD_helper.h"
 ```
 
+## GMP について
+
+ソースコードの一部で、任意桁精度の整数を扱うためのライブラリ [GMP (GNU Multiple Precision Arithmetic Library)](https://gmplib.org/) を用いている。
+GMP を利用した機能を用いる場合、USE_GMP マクロを定義する。例えば、ソースコードで `SBDD_helper.h` をインクルードする前に、以下のようにマクロを定義する
+
+```
+#define USE_GMP
+#include "SBDD_helper.h"
+```
+
+または、g++ でコンパイルしている場合、コンパイルオプション -D を用いて定義することもできる。
+
+```
+g++ -DUSE_GMP program.cpp
+```
+
 ## 使用例
 
 C++ 言語
@@ -62,4 +78,4 @@ int main()
 
 ## 免責事項
 
-本プログラムの使用に関して、作者は一切の責任を負いません。本プログラムは [SAPPOROBDD](https://github.com/Shin-ichi-Minato/SAPPOROBDD) と同様、[MIT ライセンス](https://en.wikipedia.org/wiki/MIT_License)で提供しています。
+本プログラムの使用に関して、作者は一切の責任を負いません。本プログラムは [SAPPOROBDD](https://github.com/Shin-ichi-Minato/SAPPOROBDD) と同様、[MIT ライセンス](https://en.wikipedia.org/wiki/MIT_License)で提供しています。ソースコードの一部に [GMP (GNU Multiple Precision Arithmetic Library)](https://gmplib.org/) を用いています。GMP のライセンスは LGPL v3 です。
