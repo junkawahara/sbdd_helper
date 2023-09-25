@@ -30,6 +30,7 @@ C++ 版では、C 版の全ての関数も使用可能である。
 * constructZBDDFromElements 関数と bddconstructzbddfromelements 関数の large_sep、small_sep 引数を廃止。
 * ZBDD を SVG に出力する機能を追加（C++ 版のみ）。
 * `constructBDD*`、`writeBDD*` 系の関数を整理して、名前を `importBDD*As*`、`exportBDD*As*` に統一。
+* `getPowerSet*` 系の関数を整理して、名前を `getPowerSet*` に統一。
 * 内部で用いている vector, map を、C++ 版では std 標準ライブラリを用いるように変更。
 
 ### Version 0.07 (2023/9/22)
