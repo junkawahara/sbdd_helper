@@ -538,33 +538,6 @@ std::string zstr(const ZBDD& zbdd)
 
 ZStr 関数の別名である。
 
-## constructBDDFromFileKnuth
-
-```
-BDD constructBDDFromFileKnuth(FILE* fp, bool is_hex, int root_level = -1)
-BDD constructBDDFromFileKnuth(std::istream& ist, bool is_hex, int root_level = -1)
-```
-
-引数 fp または ist で指定した（ファイル等の）ストリームから、
-Knuth 形式を読み込み、BDD を構築して返す。
-root_level に正の数を指定すると、根のレベルが root_level になる。
-is_hex を true にすると、値を16進数として、false にすると、値を10進数として
-読み込む。
-
-## constructZBDDFromFileKnuth
-
-```
-ZBDD constructZBDDFromFileKnuth(FILE* fp, bool is_hex, int root_level = -1)
-ZBDD constructZBDDFromFileKnuth(std::istream& ist, bool is_hex, int root_level = -1)
-```
-
-引数 fp または ist で指定した（ファイル等の）ストリームから、
-Knuth 形式を読み込み、ZBDD を構築して返す。
-root_level に正の数を指定すると、根のレベルが root_level になる。
-is_hex を true にすると、値を16進数として、false にすると、値を10進数として
-読み込む。
-
-
 ## constructZBDDFromElements
 
 ```
@@ -574,45 +547,40 @@ ZBDD constructZBDDFromElements(std::istream& ist, const char* large_sep, const c
 
 要素の集合の集合から ZBDD を作成する。
 
-## constructZBDDFromBinary
+## importBDDAsBinary
 
 ```
-ZBDD constructZBDDFromBinary(FILE* fp, int root_level = -1)
-ZBDD constructZBDDFromBinary(std::istream& ist, int root_level = -1)
+BDD importBDDAsBinary(FILE* fp, int root_level = -1)
+BDD importBDDAsBinary(std::istream& ist, int root_level = -1)
+ZBDD importZBDDAsBinary(FILE* fp, int root_level = -1)
+ZBDD importZBDDAsBinary(std::istream& ist, int root_level = -1)
 ```
 
 引数 fp または ist で指定した（ファイル等の）ストリームから、
-[BDD バイナリ形式](bdd_binary_format.md) を読み込み、ZBDD を構築して返す。
+[BDD バイナリ形式](bdd_binary_format.md) を読み込み、BDD/ZBDD を構築して返す。
 root_level に正の数を指定すると、根のレベルが root_level になる。
+BDD 版は未実装である。
 
 ### 使用例
 
 ```
 std::ifstream ifs("zbdd.dat");
-ZBDD f = constructZBDDFromBinary(ifs);
+ZBDD f = importZBDDAsBinary(ifs);
 ifs.close();
 ```
 
-## writeZBDDToFileKnuth
+## exportBDDAsBinary
 
 ```
-void writeZBDDToFileKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex)
-void writeZBDDToFileKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex)
-```
-
-引数 fp または ost で指定した（ファイル等の）ストリームに、
-ZBDD を、Knuth 形式 で書き込む。
-is_hex を true にすると16進数を、false にすると10進数を書き込む。
-
-## writeZBDDToBinary
-
-```
-void writeZBDDToBinary(FILE* fp, const ZBDD& zbdd)
-void writeZBDDToBinary(std::ostream& ost, const ZBDD& zbdd)
+void exportBDDAsBinary(FILE* fp, const BDD& bdd)
+void exportBDDAsBinary(std::ostream& ost, const BDD& bdd)
+void exportZBDDAsBinary(FILE* fp, const ZBDD& zbdd)
+void exportZBDDAsBinary(std::ostream& ost, const ZBDD& zbdd)
 ```
 
 引数 fp または ost で指定した（ファイル等の）ストリームに、
-ZBDD を、[BDD バイナリ形式](bdd_binary_format.md) で書き込む。
+BDD/ZBDD を、[BDD バイナリ形式](bdd_binary_format.md) で書き込む。
+BDD 版は未実装である。
 
 ### 使用例
 
@@ -620,20 +588,34 @@ ZBDD を、[BDD バイナリ形式](bdd_binary_format.md) で書き込む。
 ZBDD f = ...; // f は何らかの方法で作成
 
 std::ofstream ofs("zbdd.dat");
-writeZBDDToBinary(ofs, f);
+exportZBDDAsBinary(ofs, f);
 ofs.close();
 ```
 
-
-## writeZBDDForGraphillion
+## importBDDAsGraphillion
 
 ```
-void writeZBDDForGraphillion(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
-void writeZBDDForGraphillion(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* index = NULL)
+BDD importBDDAsGraphillion(FILE* fp, int root_level = -1)
+BDD importBDDAsGraphillion(std::istream& ist, int root_level = -1)
+ZBDD importZBDDAsGraphillion(FILE* fp, int root_level = -1)
+ZBDD importZBDDAsGraphillion(std::istream& ist, int root_level = -1)
+```
+
+引数 fp または ist で指定した（ファイル等の）ストリームから、
+[graphillion 形式](graphillion_format.md) を読み込み、BDD/ZBDD を構築して返す。
+root_level に正の数を指定すると、根のレベルが root_level になる。
+
+## exportBDDAsGraphillion
+
+```
+void exportBDDAsGraphillion(FILE* fp, const BDD& bdd, DDNodeIndex* index = NULL)
+void exportBDDAsGraphillion(std::ostream& ost, const BDD& bdd, DDNodeIndex* index = NULL)
+void exportZBDDAsGraphillion(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
+void exportZBDDAsGraphillion(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 ```
 
 引数 fp または ost で指定した（ファイル等の）ストリームに、
-ZBDD を、[graphillion 形式](graphillion_format.md)で書き込む。
+BDD/ZBDD を、[graphillion 形式](graphillion_format.md) で書き込む。
 事前に DDNodeIndex を構築している場合は引数に指定できる。
 構築していない場合は index を NULL にすることで、関数内部で自動的に構築される
 （関数終了後、自動的に破棄される）。
@@ -648,12 +630,40 @@ writeZBDDForGraphillion(ofs, f);
 ofs.close();
 ```
 
-
-## writeZBDDForGraphviz
+## importBDDAsKnuth
 
 ```
-void writeZBDDForGraphviz(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
-void writeZBDDForGraphviz(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* index = NULL)
+BDD importBDDAsKnuth(FILE* fp, bool is_hex, int root_level = -1)
+BDD importBDDAsKnuth(std::istream& ist, bool is_hex, int root_level = -1)
+ZBDD importZBDDAsKnuth(FILE* fp, bool is_hex, int root_level = -1)
+ZBDD importZBDDAsKnuth(std::istream& ist, bool is_hex, int root_level = -1)
+```
+
+引数 fp または ist で指定した（ファイル等の）ストリームから、
+Knuth 形式を読み込み、BDD/ZBDD を構築して返す。
+root_level に正の数を指定すると、根のレベルが root_level になる。
+is_hex を true にすると、値を16進数として、false にすると、値を10進数として
+読み込む。
+
+## exportBDDAsKnuth
+
+```
+void exportBDDAsKnuth(FILE* fp, const BDD& bdd, bool is_hex)
+void exportBDDAsKnuth(std::ostream& ost, const BDD& bdd, bool is_hex)
+void exportZBDDAsKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex)
+void exportZBDDAsKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex)
+```
+
+引数 fp または ost で指定した（ファイル等の）ストリームに、
+BDD/ZBDD を、Knuth 形式 で書き込む。
+is_hex を true にすると16進数を、false にすると10進数を書き込む。
+Knuth 形式の利用は非推奨である。代わりに [graphillion 形式](graphillion_format.md) を推奨する。
+
+## exportZBDDAsGraphviz
+
+```
+void exportZBDDAsGraphviz(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
+void exportZBDDAsGraphviz(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 ```
 
 引数 fp または ost で指定した（ファイル等の）ストリームに、
@@ -678,3 +688,19 @@ Graphviz の dot を以下のコマンドで呼び出すことで、ZBDD が描�
 ```
 dot -Tpng -o zbdd.png < zbdd_for_graphviz.dat
 ```
+
+## exportZBDDAsSvg
+
+```
+template<typename T>
+void exportAsSvg(FILE* fp, const ZBDD& zbdd, DDIndex<T>* index = NULL)
+void exportAsSvg(std::ostream& ost, const ZBDD& zbdd, DDIndex<T>* index = NULL)
+```
+
+引数 fp または ost で指定した（ファイル等の）ストリームに、
+ZBDD を SVG 形式の図として書き込む。
+（SVG 形式はブラウザ等で閲覧できる。）
+事前に DDIndex<T> を構築している場合は引数に指定できる。
+構築していない場合は index を NULL にすることで、関数内部で自動的に構築される
+（関数終了後、自動的に破棄される）。
+本関数は C++ 版にのみ存在する。

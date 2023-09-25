@@ -507,13 +507,61 @@ fclose(fp);
 {},{peach,cherry,banana},{peach,cherry},{peach,banana},{peach},{cherry,banana},{cherry},{banana}
 ```
 
-## bddconstructzbddfromfileknuth
+## bddimportbddasbinary
 
 ```
-bddp bddconstructzbddfromfileknuth(FILE* fp, int is_hex, int root_level)
+bddp bddimportbddasbinary(FILE* fp, int root_level)
+bddp bddimportzbddasbinary(FILE* fp, int root_level)
 ```
 
-Knuth 形式のファイルを、引数で指定したファイルポインタ fp から読み込み、ZBDDを構築して返す。
+[BDD バイナリ形式](bdd_binary_format.md) のファイルを、引数で指定したファイルポインタ fp から読み込み、BDD/ZBDD を構築して返す。
+bddimportbddasbinary は BDD bddimportzbddasbinary は ZBDD を返す。
+root_level 引数によって、根ノードが SAPPOROBDD のどのノードレベルに取り込まれるかを
+指定することができる。-1 を指定すると、構築されたZBDDの高さと同じになる。
+
+## bddexportbddasbinary
+
+```
+void bddexportbddasbinary(FILE* fp, bddp f)
+void bddexportzbddasbinary(FILE* fp, bddp f)
+```
+
+BDD/ZBDD f を [BDD バイナリ形式](bdd_binary_format.md) で、引数で指定したファイルポインタ fp に書き込む。
+bddexportbddasknuth は BDD を、bddexportzbddasknuth は ZBDD を引数にとる。
+
+##bddimportbddasgraphillion
+
+```
+bddp bddimportbddasgraphillion(FILE* fp, int root_level)
+bddp bddimportzbddasgraphillion(FILE* fp, int root_level)
+```
+
+[graphillion 形式](graphillion_format.md) のファイルを、引数で指定したファイルポインタ fp から読み込み、BDD/ZBDD を構築して返す。
+bddimportbddasgraphillion は BDD bddimportzbddasgraphillion は ZBDD を返す。
+root_level 引数によって、根ノードが SAPPOROBDD のどのノードレベルに取り込まれるかを
+指定することができる。-1 を指定すると、構築されたZBDDの高さと同じになる。
+
+## bddexportbddasgraphillion
+
+```
+void bddexportbddasgraphillion(FILE* fp, bddp f, bddNodeIndex* index)
+void bddexportzbddasgraphillion(FILE* fp, bddp f, bddNodeIndex* index)
+```
+
+BDD/ZBDD f を [graphillion 形式](graphillion_format.md) で、引数で指定したファイルポインタ fp に書き込む。
+bddexportbddasgraphillion は BDD bddexportzbddasgraphillion は ZBDD を引数にとる。
+index が NULL なら内部で自動的にインデックスが生成される。
+index が NULL でないなら、指定したインデックスが用いられる。
+
+## bddimportbddasknuth
+
+```
+bddp bddimportbddasknuth(FILE* fp, int is_hex, int root_level)
+bddp bddimportzbddasknuth(FILE* fp, int is_hex, int root_level)
+```
+
+Knuth 形式のファイルを、引数で指定したファイルポインタ fp から読み込み、BDD/ZBDD を構築して返す。
+bddimportbddasknuth は BDD を、bddimportzbddasknuth は ZBDD を返す。
 is_hex 引数が 0 の場合、ノード番号が10進数で表現され、1 の場合、ノード番号が16進数で表現される。
 root_level 引数によって、根ノードが SAPPOROBDD のどのノードレベルに取り込まれるかを
 指定することができる。-1 を指定すると、構築されたZBDDの高さと同じになる。
@@ -533,18 +581,20 @@ input.txt の中身
 
 ```
 FILE* fp = fopen("input.txt", "r");
-bddp f = bddconstructzbddfromfileknuth(fp, 0, -1);
+bddp f = bddimportzbddasknuth(fp, 0, -1);
 fclose(fp);
 bddprintzbddelements(stdout, f, "#", " "); // 出力は 3 2#3 1#2 1
 ```
 
-## bddwritezbddtofileknuth
+## bddexportbddasknuth
 
 ```
-void bddwritezbddtofileknuth(FILE* fp, bddp f, int is_hex)
+void bddexportbddasknuth(FILE* fp, bddp f, int is_hex)
+void bddexportzbddasknuth(FILE* fp, bddp f, int is_hex)
 ```
 
-ZBDD f を Knuth 形式で、引数で指定したファイルポインタ fp に書き込む。
+BDD/ZBDD f を Knuth 形式で、引数で指定したファイルポインタ fp に書き込む。
+bddexportbddasknuth は BDD を、bddexportzbddasknuth は ZBDD を引数にとる。
 is_hex 引数が 0 の場合、ノード番号が10進数で表現され、1 の場合、ノード番号が16進数で表現される。
 
 使用例
@@ -554,7 +604,7 @@ is_hex 引数が 0 の場合、ノード番号が10進数で表現され、1 の
 bddp f = bddunion(bddgetsingleton(1), bddgetsingleton(2));
 f = bddunion(f, takenot(bddgetsingleton(3)));
 FILE* fp = fopen("output.txt", "w");
-bddwritezbddtofileknuth(fp, f, 0);
+bddexportzbddasknuth(fp, f, 0);
 fclose(fp);
 ```
 
@@ -567,3 +617,15 @@ fclose(fp);
 #3
 4:1,1
 ```
+
+## bddexportbddasgraphillion
+
+```
+void bddexportbddasgraphviz(FILE* fp, bddp f, bddNodeIndex* index)
+void bddexportzbddasgraphviz(FILE* fp, bddp f, bddNodeIndex* index)
+```
+
+BDD/ZBDD f を [graphviz の dot 形式](https://graphviz.org/doc/info/lang.html) で、引数で指定したファイルポインタ fp に書き込む。
+bddexportbddasgraphviz は BDD bddexportzbddasgraphviz は ZBDD を引数にとる。
+index が NULL なら内部で自動的にインデックスが生成される。
+index が NULL でないなら、指定したインデックスが用いられる。
