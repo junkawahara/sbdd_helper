@@ -675,14 +675,17 @@ dot -Tpng -o zbdd.png < zbdd_for_graphviz.dat
 
 ```
 template<typename T>
-void exportAsSvg(FILE* fp, const ZBDD& zbdd, DDIndex<T>* index = NULL)
-void exportAsSvg(std::ostream& ost, const ZBDD& zbdd, DDIndex<T>* index = NULL)
+void exportBDDAsSvg(FILE* fp, const BDD& bdd, DDIndex<T>* index = NULL)
+void exportBDDAsSvg(std::ostream& ost, const BDD& bdd, DDIndex<T>* index = NULL)
+void exportZBDDAsSvg(FILE* fp, const ZBDD& zbdd, DDIndex<T>* index = NULL)
+void exportZBDDAsSvg(std::ostream& ost, const ZBDD& zbdd, DDIndex<T>* index = NULL)
 ```
 
 引数 fp または ost で指定した（ファイル等の）ストリームに、
-ZBDD を SVG 形式の図として書き込む。
+BDD/ZBDD を SVG 形式の図として書き込む。
 （SVG 形式はブラウザ等で閲覧できる。）
 事前に DDIndex<T> を構築している場合は引数に指定できる。
 構築していない場合は index を NULL にすることで、関数内部で自動的に構築される
 （関数終了後、自動的に破棄される）。
 本関数は C++ 版にのみ存在する。
+BDD 版は未実装である。

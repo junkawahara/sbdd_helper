@@ -173,7 +173,23 @@ void bddexportassvg_inner(FILE* fp, bddp f,
 
 template<typename T>
 sbddextended_INLINE_FUNC
-void exportAsSvg(FILE* fp, const ZBDD& zbdd, DDIndex<T>* index = NULL)
+void exportBDDAsSvg(FILE* fp, const BDD& bdd, DDIndex<T>* index = NULL)
+{
+    std::cerr << "not implemented yet." << std::endl;
+    exit(1);
+}
+
+template<typename T>
+sbddextended_INLINE_FUNC
+void exportBDDAsSvg(std::ostream& ost, const BDD& bdd, DDIndex<T>* index = NULL)
+{
+    std::cerr << "not implemented yet." << std::endl;
+    exit(1);
+}
+
+template<typename T>
+sbddextended_INLINE_FUNC
+void exportZBDDAsSvg(FILE* fp, const ZBDD& zbdd, DDIndex<T>* index = NULL)
 {
     WriteObject wo(false, true, NULL);
     bddexportassvg_inner(fp, zbdd.GetID(), index, 1, wo);
@@ -181,7 +197,7 @@ void exportAsSvg(FILE* fp, const ZBDD& zbdd, DDIndex<T>* index = NULL)
 
 template<typename T>
 sbddextended_INLINE_FUNC
-void exportAsSvg(std::ostream& ost, const ZBDD& zbdd, DDIndex<T>* index = NULL)
+void exportZBDDAsSvg(std::ostream& ost, const ZBDD& zbdd, DDIndex<T>* index = NULL)
 {
     WriteObject wo(true, true, &ost);
     bddexportassvg_inner(NULL, zbdd.GetID(), index, 1, wo);
