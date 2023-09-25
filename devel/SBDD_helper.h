@@ -94,8 +94,12 @@ typedef unsigned long long int ullint;
 #include "NodeIndex.h"
 #include "NodeIterator.h"
 #include "ElementIterator.h"
-#include "io.h"
-#include "bddbinaryformat.h"
+#include "io_elements.h"
+#include "io_binary.h"
+#include "io_graphillion.h"
+#include "io_knuth.h"
+#include "io_graphviz.h"
+#include "io_svg.h"
 
 #ifdef __cplusplus
 } // end of namespace sbddh
