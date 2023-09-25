@@ -205,7 +205,7 @@ void test_at_random_cpp()
 
     test(f == g);
 
-    f = getAllPowerSetsIncluding(3, 2);
+    f = getPowerSetIncluding(3, 2);
     test(f.Card() == 4);
     test(f.OnSet(2).Card() == 4);
     test(f.OffSet(2).Card() == 0);
@@ -213,7 +213,7 @@ void test_at_random_cpp()
     std::vector<bddvar> bv;
     bv.push_back(2);
     bv.push_back(3);
-    f = getAllPowerSetsIncluding(5, bv);
+    f = getPowerSetIncluding(5, bv);
     test(f.Card() == 8);
     test(f.OnSet(3).Card() == 8);
     test(f.OffSet(3).Card() == 0);
@@ -225,14 +225,14 @@ void test_at_random_cpp()
     basev.push_back(4);
     basev.push_back(6);
 
-    f = getAllSetsIncluding(basev, 3);
+    f = getPowerSetIncluding(basev, 3);
     test(f.Card() == 8);
     test(f.OnSet(3).Card() == 8);
     test(f.OffSet(3).Card() == 0);
     test(f.OnSet(4).Card() == 4);
     test(f.OffSet(4).Card() == 4);
 
-    f = getAllSetsIncluding(basev, bv);
+    f = getPowerSetIncluding(basev, bv);
     test(f.Card() == 4);
     test(f.OnSet(3).Card() == 4);
     test(f.OffSet(3).Card() == 0);
@@ -240,28 +240,28 @@ void test_at_random_cpp()
     test(f.OffSet(4).Card() == 2);
 
 
-    f = getAllPowerSetsNotIncluding(3, 2);
+    f = getPowerSetNotIncluding(3, 2);
     test(f.Card() == 4);
     test(f.OnSet(2).Card() == 0);
     test(f.OffSet(2).Card() == 4);
 
-    f = getAllPowerSetsNotIncluding(5, bv);
+    f = getPowerSetNotIncluding(5, bv);
     test(f.Card() == 8);
     test(f.OnSet(3).Card() == 0);
     test(f.OffSet(3).Card() == 8);
     test(f.OnSet(4).Card() == 4);
     test(f.OffSet(4).Card() == 4);
 
-    f = getAllSetsWithCard(basev, 0);
+    f = getPowerSetWithCard(basev, 0);
     test(f.Card() == 1);
-    f = getAllSetsWithCard(basev, 1);
+    f = getPowerSetWithCard(basev, 1);
     test(f.Card() == 3);
-    f = getAllSetsWithCard(basev, 2);
+    f = getPowerSetWithCard(basev, 2);
     test(f.Card() == 3);
-    f = getAllSetsWithCard(basev, 3);
+    f = getPowerSetWithCard(basev, 3);
     test(f.Card() == 1);
 
-    f = getAllPowerSetsWithCard(5, 2);
+    f = getPowerSetWithCard(5, 2);
     test(f.Card() == 10);
 
     std::vector<bddvar> sv;
@@ -646,7 +646,7 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
 
 void test_ddindex()
 {
-    ZBDD f1 = getAllPowerSetsWithCard(5, 3);
+    ZBDD f1 = getPowerSetWithCard(5, 3);
     DDIndex<int> s1(f1);
     check_ddindex(f1, s1);
     ZBDD f2 = f1 + ZBDD(1) + ZBDD(1).Change(2)
@@ -665,7 +665,7 @@ void test_ddindex()
     //}
 
 #ifdef USE_GMP
-    ZBDD fp = getAllPowerSetsIncluding(100, 2);
+    ZBDD fp = getPowerSetIncluding(100, 2);
     DDIndex<int> sp(fp);
     // expect 2^99
     test(sp.countMP().get_str() == "633825300114114700748351602688");

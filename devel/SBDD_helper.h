@@ -87,6 +87,12 @@ typedef unsigned long long int ullint;
 #endif
 
 // for compatibility
+#define getAllSetsIncluding getPowerSetIncluding
+#define getAllPowerSetsIncluding getPowerSetIncluding
+#define getAllPowerSetsNotIncluding getPowerSetNotIncluding
+#define getAllSetsWithCard getPowerSetWithCard
+#define getAllPowerSetsWithCard getPowerSetWithCard
+
 #define bddconstructzbddfrombinary bddimportzbddasbinary
 #define constructZBDDFromBinary importZBDDAsBinary
 

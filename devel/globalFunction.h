@@ -879,7 +879,7 @@ sbddextended_INLINE_FUNC ZBDD getPowerSet(int n)
 }
 
 template<typename T1, typename T2>
-sbddextended_INLINE_FUNC ZBDD getAllSetsIncluding_inner(const T1& base_variables,
+sbddextended_INLINE_FUNC ZBDD getPowerSetIncluding_inner(const T1& base_variables,
                                                         const T2& target_variables)
 {
     ZBDD f = getPowerSet(base_variables);
@@ -900,30 +900,30 @@ sbddextended_INLINE_FUNC ZBDD getAllSetsIncluding_inner(const T1& base_variables
 
 
 template<typename T>
-sbddextended_INLINE_FUNC ZBDD getAllSetsIncluding(const T& base_variables,
+sbddextended_INLINE_FUNC ZBDD getPowerSetIncluding(const T& base_variables,
                                                   const std::vector<bddvar>& target_variables)
 {
-    return getAllSetsIncluding_inner(base_variables, target_variables);
+    return getPowerSetIncluding_inner(base_variables, target_variables);
 }
 
 template<typename T>
-sbddextended_INLINE_FUNC ZBDD getAllSetsIncluding(const T& base_variables,
+sbddextended_INLINE_FUNC ZBDD getPowerSetIncluding(const T& base_variables,
                                                   const std::set<bddvar>& target_variables)
 {
-    return getAllSetsIncluding_inner(base_variables, target_variables);
+    return getPowerSetIncluding_inner(base_variables, target_variables);
 }
 
 template<typename T>
-sbddextended_INLINE_FUNC ZBDD getAllSetsIncluding(const T& base_variables,
-                                                  int v)
+sbddextended_INLINE_FUNC ZBDD getPowerSetIncluding(const T& base_variables,
+                                                  bddvar v)
 {
     std::vector<bddvar> target_variables;
     target_variables.push_back(v);
 
-    return getAllSetsIncluding(base_variables, target_variables);
+    return getPowerSetIncluding(base_variables, target_variables);
 }
 
-sbddextended_INLINE_FUNC ZBDD getAllPowerSetsIncluding(int n,
+sbddextended_INLINE_FUNC ZBDD getPowerSetIncluding(int n,
                                                        const std::vector<bddvar>& target_variables)
 {
     std::vector<bddvar> base_variables;
@@ -931,10 +931,10 @@ sbddextended_INLINE_FUNC ZBDD getAllPowerSetsIncluding(int n,
         base_variables.push_back(v);
     }
 
-    return getAllSetsIncluding(base_variables, target_variables);
+    return getPowerSetIncluding(base_variables, target_variables);
 }
 
-sbddextended_INLINE_FUNC ZBDD getAllPowerSetsIncluding(int n,
+sbddextended_INLINE_FUNC ZBDD getPowerSetIncluding(int n,
                                                        const std::set<bddvar>& target_variables)
 {
     std::vector<bddvar> base_variables;
@@ -942,19 +942,19 @@ sbddextended_INLINE_FUNC ZBDD getAllPowerSetsIncluding(int n,
         base_variables.push_back(v);
     }
 
-    return getAllSetsIncluding(base_variables, target_variables);
+    return getPowerSetIncluding(base_variables, target_variables);
 }
 
-sbddextended_INLINE_FUNC ZBDD getAllPowerSetsIncluding(int n, int v)
+sbddextended_INLINE_FUNC ZBDD getPowerSetIncluding(int n, int v)
 {
     std::vector<bddvar> target_variables;
     target_variables.push_back(v);
 
-    return getAllPowerSetsIncluding(n, target_variables);
+    return getPowerSetIncluding(n, target_variables);
 }
 
 template<typename T>
-sbddextended_INLINE_FUNC ZBDD getAllPowerSetsNotIncluding_inner(int n,
+sbddextended_INLINE_FUNC ZBDD getPowerSetNotIncluding_inner(int n,
                                                                 const T& target_variables)
 {
     ZBDD f = getPowerSet(n);
@@ -966,19 +966,19 @@ sbddextended_INLINE_FUNC ZBDD getAllPowerSetsNotIncluding_inner(int n,
     return f;
 }
 
-sbddextended_INLINE_FUNC ZBDD getAllPowerSetsNotIncluding(int n,
+sbddextended_INLINE_FUNC ZBDD getPowerSetNotIncluding(int n,
                                                           const std::vector<bddvar>& target_variables)
 {
-    return getAllPowerSetsNotIncluding_inner(n, target_variables);
+    return getPowerSetNotIncluding_inner(n, target_variables);
 }
 
-sbddextended_INLINE_FUNC ZBDD getAllPowerSetsNotIncluding(int n,
+sbddextended_INLINE_FUNC ZBDD getPowerSetNotIncluding(int n,
                                                           const std::set<bddvar>& target_variables)
 {
-    return getAllPowerSetsNotIncluding_inner(n, target_variables);
+    return getPowerSetNotIncluding_inner(n, target_variables);
 }
 
-sbddextended_INLINE_FUNC ZBDD getAllPowerSetsNotIncluding(int n, int v)
+sbddextended_INLINE_FUNC ZBDD getPowerSetNotIncluding(int n, int v)
 {
     ZBDD f = getPowerSet(n);
     f = f.OffSet(v);
@@ -986,7 +986,7 @@ sbddextended_INLINE_FUNC ZBDD getAllPowerSetsNotIncluding(int n, int v)
 }
 
 template<typename T>
-sbddextended_INLINE_FUNC ZBDD getAllSetsWithCard(const T& variables, int k)
+sbddextended_INLINE_FUNC ZBDD getPowerSetWithCard(const T& variables, int k)
 {
     int n;
     bddvar* ar = containerToArray(variables, &n);
@@ -1025,13 +1025,13 @@ sbddextended_INLINE_FUNC ZBDD getAllSetsWithCard(const T& variables, int k)
     return current[0];
 }
 
-sbddextended_INLINE_FUNC ZBDD getAllPowerSetsWithCard(int n, int k)
+sbddextended_INLINE_FUNC ZBDD getPowerSetWithCard(int n, int k)
 {
     std::vector<bddvar> variables;
     for (int v = 1; v <= n; ++v) {
         variables.push_back(v);
     }
-    return getAllSetsWithCard(variables, k);
+    return getPowerSetWithCard(variables, k);
 }
 
 
