@@ -477,6 +477,36 @@ std::mt19937 mt(0);
 ZBDD f = getUniformlyRandomZBDD(10, mt);
 ```
 
+## constructZBDDFromElements
+
+```
+ZBDD constructZBDDFromElements(FILE* fp)
+ZBDD constructZBDDFromElements(std::istream& ist)
+```
+
+要素を並べたファイルを、引数 fp または ist で指定した（ファイル等の）ストリーム fp または ist から読み込み、ZBDD を構築して返す。
+ファイルは、1行に1つの集合の変数番号をスペース区切りで並べた形式である。
+最後の行の末尾には改行があってもなくてもよい。何も書かれていない行は空集合に対応する。
+空集合に対応する行は、ファイルの末尾に置いてはいけない。
+過去には引数に large_sep、small_sep を指定できたが、廃止された。
+
+### 使用例
+
+ファイルの例
+
+```
+1 2
+
+2 3
+1 2 4
+```
+
+```
+std::ifstream ifs("input.txt");
+ZBDD f = constructZBDDFromElements(ifs);
+ifs.close();
+```
+
 ## printZBDDElements
 
 ```
@@ -537,15 +567,6 @@ std::string zstr(const ZBDD& zbdd)
 ```
 
 ZStr 関数の別名である。
-
-## constructZBDDFromElements
-
-```
-ZBDD constructZBDDFromElements(FILE* fp, const char* large_sep, const char* small_sep)
-ZBDD constructZBDDFromElements(std::istream& ist, const char* large_sep, const char* small_sep)
-```
-
-要素の集合の集合から ZBDD を作成する。
 
 ## importBDDAsBinary
 

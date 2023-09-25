@@ -1,5 +1,148 @@
 // *************** import functions
 
+sbddextended_INLINE_FUNC
+bddp bddconstructzbddfromelements_inner(FILE* fp
+#ifdef __cplusplus
+                    , ReadCharObject& sbddextended_readChar
+#endif
+                                        )
+{
+    bddp p, q, r;
+    bddvar* vararr;
+    int vararr_pos, vararr_size;
+    int c, prev_c, v;
+    int mode;
+
+    vararr_size = sbddextended_MAX_LINE;
+    vararr = (bddvar*)malloc((size_t)vararr_size * sizeof(bddvar));
+    if (vararr == NULL) {
+        fprintf(stderr, "out of memory\n");
+        exit(1);
+    }
+    vararr_pos = 0;
+
+    p = bddfalse;
+
+    mode = 0; // 0: skip ws, 1: reading nums
+    c = 0;
+    while (c != -1) {
+        prev_c = c;
+        c = sbddextended_readChar(fp);
+        if (c != -1) {
+            if (!isdigit(c) && c != '\n' && !isspace(c)) {
+                fprintf(stderr, "invalid char\n");
+                exit(1);
+            }
+            if (mode == 0) {
+                if (isdigit(c)) {
+                    v = c - '0';
+                    mode = 1;
+                }
+            } else if (mode == 1) {
+                if (isdigit(c)) {
+                    v = 10 * v + (c - '0');
+                }
+            }
+        }
+        if ((c == -1 || c == '\n' || isspace(c)) && mode == 1) {
+            if (vararr_pos >= vararr_size) {
+                vararr_size *= 2;
+                vararr = (bddvar*)realloc(vararr, (size_t)vararr_size * sizeof(bddvar));
+                if (vararr == NULL) {
+                    fprintf(stderr, "out of memory\n");
+                    exit(1);
+                }
+            }
+            vararr[vararr_pos] = (bddvar)v;
+            ++vararr_pos;
+            mode = 0;
+        }
+        if ((c == -1 && prev_c != '\n') || c == '\n') {
+            q = bddgetsingleset(vararr, vararr_pos);
+            r = bddunion(p, q);
+            bddfree(p);
+            bddfree(q);
+            p = r;
+            vararr_pos = 0;
+        }
+    }
+    free(vararr);
+    return p;
+}
+
+#ifdef __cplusplus
+
+sbddextended_INLINE_FUNC
+ZBDD constructZBDDFromElements(FILE* fp)
+{
+    ReadLineObject glo;
+    bddp p;
+    p = bddconstructzbddfromelements_inner(fp, glo);
+    return ZBDD_ID(p);
+}
+
+sbddextended_INLINE_FUNC
+ZBDD constructZBDDFromElements(std::istream& ist)
+{
+    ReadLineObject glo(&ist);
+    bddp p;
+    p = bddconstructzbddfromelements_inner(NULL, glo);
+    return ZBDD_ID(p);
+}
+
+sbddextended_INLINE_FUNC
+bddp bddconstructzbddfromelements(FILE* fp)
+{
+    ReadLineObject glo;
+    return bddconstructzbddfromelements_inner(fp, glo);
+}
+
+sbddextended_INLINE_FUNC
+ZBDD constructZBDDFromElements(FILE* /*fp*/, const char* /*large_sep*/,
+                                const char* /*small_sep*/)
+{
+    std::cerr << "Arguments large_sep and small_sep are no longer supported.";
+    exit(1);
+}
+
+sbddextended_INLINE_FUNC
+ZBDD constructZBDDFromElements(std::istream& /*ist*/, const char* /*large_sep*/,
+                                const char* /*small_sep*/)
+{
+    std::cerr << "Arguments large_sep and small_sep are no longer supported.";
+    exit(1);
+}
+
+sbddextended_INLINE_FUNC
+bddp bddconstructzbddfromelements(FILE* /*fp*/, const char* /*large_sep*/,
+                                    const char* /*small_sep*/)
+{
+    std::cerr << "Arguments large_sep and small_sep are no longer supported.";
+    exit(1);
+}
+
+#else
+
+// The following function is no longer supported.
+//sbddextended_INLINE_FUNC
+//bddp bddconstructzbddfromelements(FILE* fp, const char* large_sep,
+//                                    const char* small_sep)
+//{
+//    return bddconstructzbddfromelements_inner(fp, large_sep, small_sep);
+//}
+
+sbddextended_INLINE_FUNC
+bddp bddconstructzbddfromelements(FILE* fp)
+{
+    return bddconstructzbddfromelements_inner(fp);
+}
+
+#endif
+
+
+// *************** export functions
+
+
 // num_of_variables: 0 -> elements format, non 0 -> value list format
 sbddextended_INLINE_FUNC
 void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
@@ -300,203 +443,6 @@ sbddextended_INLINE_FUNC
 std::string zstr(const ZBDD& zbdd)
 {
     return ZStr(zbdd);
-}
-
-#endif
-
-
-// *************** export functions
-
-
-sbddextended_INLINE_FUNC
-bddp bddconstructzbddfromelements_inner_getoneset(const char* line, int line_len,
-                                                  const char* small_sep,
-                                                  int small_sep_len)
-{
-    char int_buf[sbddextended_MAX_LINE];
-    int mode = 0;
-    int pos;
-    int v;
-    int sep_pos = 0;
-    int sep_start = 0;
-    int num_start = 0;
-    bddvar vararr[256];
-    int vararr_size = 0;
-
-    if (line_len == 0) {
-        return bddsingle;
-    }
-
-    for (pos = 0; pos < line_len + 1; ++pos) {
-        if (pos < line_len) {
-            if (mode == 0) {
-                if (line[pos] == small_sep[0]) {
-                    mode = 1;
-                    sep_start = pos;
-                    sep_pos = 1;
-                }
-            } else if (mode == 1) {
-                if (line[pos] == small_sep[sep_pos]) {
-                    ++sep_pos;
-                } else {
-                    mode = 0;
-                }
-            }
-        }
-        if (pos >= line_len || (mode == 1 && sep_pos >= small_sep_len)) {
-            if (pos >= line_len) {
-                sep_start = pos;
-            }
-            assert(num_start < sep_start);
-            strncpy(int_buf, line + num_start, (size_t)(sep_start - num_start));
-            int_buf[sep_start - num_start] = '\0';
-            if (sscanf(int_buf, "%d", &v) != 1) {
-                fprintf(stderr, "format error in "
-                        "bddconstructzbddfromelements_inner_getoneset\n");
-            }
-            vararr[vararr_size] = (bddvar)v;
-            ++vararr_size;
-            num_start = pos + 1;
-        }
-    }
-
-    //printf("vararr_size = %d\n", vararr_size);
-    //for (v = 0; v < vararr_size; ++v) {
-    //    printf("<%d> ", vararr[v]);
-    //}
-    //printf("\n");
-
-    return bddgetsingleset(vararr, vararr_size);
-}
-
-sbddextended_INLINE_FUNC
-bddp bddconstructzbddfromelements_inner(FILE* fp, const char* large_sep,
-                                        const char* small_sep
-#ifdef __cplusplus
-                             , ReadCharObject& sbddextended_readChar
-#endif
-                             )
-{
-    char buf[sbddextended_MAX_LINE];
-    bddp p, q, r;
-    int pos;
-    int start_pos;
-    int sep_pos;
-    int c;
-    int large_sep_len;
-    int small_sep_len;
-    int mode;
-
-    p = bddfalse;
-    large_sep_len = (int)strlen(large_sep);
-    if (large_sep_len <= 0) {
-        fprintf(stderr, "large_sep_len must be at least one");
-        exit(1);
-    }
-    small_sep_len = (int)strlen(small_sep);
-    if (small_sep_len <= 0) {
-        fprintf(stderr, "small_sep_len must be at least one");
-        exit(1);
-    }
-
-    start_pos = 0;
-    sep_pos = 0;
-    mode = 0;
-    pos = 0;
-    while (1 == 1) {
-        c = sbddextended_readChar(fp);
-        if (c != -1) {
-            if (mode == 0) {
-                if (c == large_sep[0]) {
-                    mode = 1;
-                    sep_pos = 1;
-                } else {
-                    if (pos - start_pos >= sbddextended_MAX_LINE) {
-                        fprintf(stderr, "length must not exceed sbddextended_MAX_LINE");
-                        exit(1);
-                    }
-                    buf[pos - start_pos] = (char)c;
-                    ++pos;
-                }
-            } else if (mode == 1) {
-                if (c == large_sep[sep_pos]) {
-                    ++sep_pos;
-                } else {
-                    if (pos - start_pos + sep_pos >= sbddextended_MAX_LINE) {
-                        fprintf(stderr, "length must not exceed sbddextended_MAX_LINE");
-                        exit(1);
-                    }
-                    memcpy(buf + pos - start_pos, large_sep, (size_t)sep_pos);
-                    pos += sep_pos;
-                    sep_pos = 0;
-                }
-            }
-        }
-        if (c == -1 || sep_pos >= large_sep_len) {
-            buf[pos - start_pos] = '\0';
-
-            //fprintf(stderr,"<<%s>>\n", buf);
-            // obtain buf
-            q = bddconstructzbddfromelements_inner_getoneset(buf,
-                                                             pos - start_pos,
-                                                             small_sep,
-                                                             small_sep_len);
-            r = bddunion(p, q);
-            bddfree(p);
-            bddfree(q);
-            p = r;
-            if (c == -1) {
-                break;
-            }
-            start_pos = pos + sep_pos + 1;
-            pos += sep_pos + 1;
-            mode = 0;
-            sep_pos = 0;
-        }
-    }
-    return p;
-}
-
-#ifdef __cplusplus
-
-sbddextended_INLINE_FUNC
-ZBDD constructZBDDFromElements(FILE* fp, const char* large_sep,
-                              const char* small_sep)
-{
-    ReadLineObject glo;
-    bddp p;
-    p = bddconstructzbddfromelements_inner(fp, large_sep, small_sep,
-                                           glo);
-    return ZBDD_ID(p);
-}
-
-sbddextended_INLINE_FUNC
-ZBDD constructZBDDFromElements(std::istream& ist, const char* large_sep,
-                              const char* small_sep)
-{
-    ReadLineObject glo(&ist);
-    bddp p;
-    p = bddconstructzbddfromelements_inner(NULL, large_sep, small_sep,
-                                           glo);
-    return ZBDD_ID(p);
-}
-
-sbddextended_INLINE_FUNC
-bddp bddconstructzbddfromelements(FILE* fp, const char* large_sep,
-                                  const char* small_sep)
-{
-    ReadLineObject glo;
-    return bddconstructzbddfromelements_inner(fp, large_sep, small_sep,
-                                              glo);
-}
-
-#else
-
-sbddextended_INLINE_FUNC
-bddp bddconstructzbddfromelements(FILE* fp, const char* large_sep,
-                                  const char* small_sep)
-{
-    return bddconstructzbddfromelements_inner(fp, large_sep, small_sep);
 }
 
 #endif

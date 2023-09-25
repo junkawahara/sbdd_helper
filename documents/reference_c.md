@@ -442,6 +442,35 @@ dds[0] = f0, dds[1] = f1, dds[2] = f2; // f0, f1, f2 は何らかの方法で作
 printf("%d", bddcountnodes(dds, 3, 0));
 ```
 
+## bddconstructzbddfromelements
+
+```
+bddp bddconstructzbddfromelements(FILE* fp)
+```
+
+要素を並べたファイルを、引数で指定したファイルポインタ fp から読み込み、ZBDD を構築して返す。
+ファイルは、1行に1つの集合の変数番号をスペース区切りで並べた形式である。
+最後の行の末尾には改行があってもなくてもよい。何も書かれていない行は空集合に対応する。
+空集合に対応する行は、ファイルの末尾に置いてはいけない。
+過去には引数に large_sep、small_sep を指定できたが、廃止された。
+
+### 使用例
+
+ファイルの例
+
+```
+1 2
+
+2 3
+1 2 4
+```
+
+```
+FILE* fp = fopen("input.txt");
+bddp f = bddconstructzbddfromelements(fp);
+fclose(fp);
+```
+
 ## bddprintzbddelements
 
 ```

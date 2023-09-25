@@ -794,20 +794,40 @@ void test_io()
         fprintf(stderr, "file cannot be opened.\n");
         exit(1);
     }
-    fputs("1,2!1,3!2,3", fp1);
+    fputs("1 2\n1 3\n2 3\n", fp1);
 
     if (fseek(fp1, 0, SEEK_SET) != 0) {
         fprintf(stderr, "fseek failed\n");
         exit(1);
     }
     f = make_test_zbdd();
-    g = bddconstructzbddfromelements(fp1, "!", ",");
+    g = bddconstructzbddfromelements(fp1);
     fclose(fp1);
     if (remove(g_filename3) != 0) {
         fprintf(stderr, "remove failed\n");
         exit(1);
     }
+    test(f == g);
 
+    fp1 = fopen(g_filename3, "w+");
+    if (fp1 == NULL) {
+        fprintf(stderr, "file cannot be opened.\n");
+        exit(1);
+    }
+    fputs("\n1 2\n1 3\n2 3\n", fp1);
+
+    if (fseek(fp1, 0, SEEK_SET) != 0) {
+        fprintf(stderr, "fseek failed\n");
+        exit(1);
+    }
+    f = make_test_zbdd();
+    f = bddunion(f, bddsingle);
+    g = bddconstructzbddfromelements(fp1);
+    fclose(fp1);
+    if (remove(g_filename3) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
     test(f == g);
 }
 
