@@ -883,9 +883,21 @@ public:
         return optimize(weights, true, s);
     }
 
+    llint getMaximum(const std::vector<llint>& weights) const
+    {
+        std::set<bddvar> dummy;
+        return optimize(weights, true, dummy);
+    }
+
     llint getMinimum(const std::vector<llint>& weights, std::set<bddvar>& s) const
     {
         return optimize(weights, false, s);
+    }
+
+    llint getMinimum(const std::vector<llint>& weights) const
+    {
+        std::set<bddvar> dummy;
+        return optimize(weights, false, dummy);
     }
 
     llint getSum(const std::vector<llint>& weights)
