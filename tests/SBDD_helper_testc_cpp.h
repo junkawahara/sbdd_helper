@@ -648,13 +648,13 @@ void test_at_random()
         fprintf(stderr, "file cannot be opened\n");
         exit(1);
     }
-    bddwritezbddtofileknuth(fp, f, 0);
+    bddexportzbddasknuth(fp, f, 0);
 
     if (fseek(fp, 0, SEEK_SET) != 0) {
         fprintf(stderr, "fseek failed\n");
         exit(1);
     }
-    g = bddconstructzbddfromfileknuth(fp, 0, -1);
+    g = bddimportzbddasknuth(fp, 0, -1);
 
     test(f == g);
 
@@ -670,13 +670,13 @@ void test_at_random()
         fprintf(stderr, "file cannot be opened\n");
         exit(1);
     }
-    bddwritezbddtobinary(fp, f);
+    bddexportzbddasbinary(fp, f);
 
     if (fseek(fp, 0, SEEK_SET) != 0) {
         fprintf(stderr, "fseek failed\n");
         exit(1);
     }
-    g = bddconstructzbddfrombinary(fp, -1);
+    g = bddimportzbddasbinary(fp, -1);
 
     test(f == g);
 
@@ -725,7 +725,7 @@ void test_io()
 
     test(is_expected_str(fp1, "c d$c e$d e"));
 
-    bddwritezbddtofileknuth(fp1, f, 0);
+    bddexportzbddasknuth(fp1, f, 0);
     test(is_expected_str(fp1, "#1\n2:3,4\n#2\n3:0,5\n4:5,1\n#3\n5:0,1\n"));
 
     fp2 = fopen(g_filename2, "w+");
@@ -742,7 +742,7 @@ void test_io()
         exit(1);
     }
 
-    g = bddconstructzbddfromfileknuth(fp2, 0, -1);
+    g = bddimportzbddasknuth(fp2, 0, -1);
 
     fclose(fp2);
     if (remove(g_filename2) != 0) {
@@ -928,13 +928,13 @@ void test_bddbinaryformat_f(bddp f)
         fprintf(stderr, "file cannot be opened\n");
         exit(1);
     }
-    bddwritezbddtobinary(fp, f);
+    bddexportzbddasbinary(fp, f);
 
     if (fseek(fp, 0, SEEK_SET) != 0) {
         fprintf(stderr, "fseek failed\n");
         exit(1);
     }
-    g = bddconstructzbddfrombinary(fp, -1);
+    g = bddimportzbddasbinary(fp, -1);
 
     fclose(fp);
     if (remove(g_filename1) != 0) {

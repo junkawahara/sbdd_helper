@@ -1,13 +1,14 @@
+// *************** import functions
 
 sbddextended_INLINE_FUNC
-bddp bddconstructbddfrombinary_inner(FILE* fp, int root_level
+bddp bddimportbddasbinary_inner(FILE* fp, int root_level
 #ifdef __cplusplus
-                             , ReadCharObject& sbddextended_readUint8
-                             , ReadCharObject& sbddextended_readUint16
-                             , ReadCharObject& sbddextended_readUint32
-                             , ReadCharObject& sbddextended_readUint64
+                                , ReadCharObject& sbddextended_readUint8
+                                , ReadCharObject& sbddextended_readUint16
+                                , ReadCharObject& sbddextended_readUint32
+                                , ReadCharObject& sbddextended_readUint64
 #endif
-                             )
+                                )
 {
     ullint i, level, max_level, root_id, number_of_nodes;
     ullint node_count, node_sum;
@@ -171,54 +172,86 @@ bddp bddconstructbddfrombinary_inner(FILE* fp, int root_level
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-ZBDD constructZBDDFromBinary(FILE* fp, int root_level = -1)
+BDD importBDDAsBinary(FILE* /*fp*/, int /*root_level*/ = -1)
+{
+    std::cerr << "not implemented yet." << std::endl;
+    exit(1);
+}
+
+sbddextended_INLINE_FUNC
+BDD importBDDAsBinary(std::istream& /*ist*/, int /*root_level*/ = -1)
+{
+    std::cerr << "not implemented yet." << std::endl;
+    exit(1);
+}
+
+sbddextended_INLINE_FUNC
+ZBDD importZBDDAsBinary(FILE* fp, int root_level = -1)
 {
     ReadLineObject glo;
     bddp p;
-    p = bddconstructbddfrombinary_inner(fp,
-                                        root_level, glo, glo, glo, glo);
+    p = bddimportbddasbinary_inner(fp,
+                                    root_level, glo, glo, glo, glo);
     return ZBDD_ID(p);
 }
 
 sbddextended_INLINE_FUNC
-ZBDD constructZBDDFromBinary(std::istream& ist, int root_level = -1)
+ZBDD importZBDDAsBinary(std::istream& ist, int root_level = -1)
 {
     ReadLineObject glo(&ist);
     bddp p;
-    p = bddconstructbddfrombinary_inner(NULL,
-                                        root_level, glo, glo, glo, glo);
+    p = bddimportbddasbinary_inner(NULL,
+                                    root_level, glo, glo, glo, glo);
     return ZBDD_ID(p);
 }
 
 sbddextended_INLINE_FUNC
-bddp bddconstructzbddfrombinary(FILE* fp, int root_level = -1)
+bddp bddimportbddasbinary(FILE* /*fp*/, int /*root_level*/ = -1)
+{
+    std::cerr << "not implemented yet." << std::endl;
+    exit(1);
+}
+
+sbddextended_INLINE_FUNC
+bddp bddimportzbddasbinary(FILE* fp, int root_level = -1)
 {
     ReadLineObject glo;
-    return bddconstructbddfrombinary_inner(fp,
-                                           root_level, glo, glo, glo, glo);
+    return bddimportbddasbinary_inner(fp,
+                                        root_level, glo, glo, glo, glo);
 }
 
 #else
 
 sbddextended_INLINE_FUNC
-bddp bddconstructzbddfrombinary(FILE* fp, int root_level)
+bddp bddimportbddasbinary(FILE* fp, int root_level)
 {
-    return bddconstructbddfrombinary_inner(fp, root_level);
+    unused(fp);
+    unused(root_level);
+    fprintf(stderr, "not implemented yet.\n");
+    exit(1);
+}
+
+sbddextended_INLINE_FUNC
+bddp bddimportzbddasbinary(FILE* fp, int root_level)
+{
+    return bddimportbddasbinary_inner(fp, root_level);
 }
 
 #endif
 
 
+// *************** export functions
+
 
 sbddextended_INLINE_FUNC
-void bddwritezbddtobinary_inner(FILE* fp, bddp f
+void bddexportbddasbinary_inner(FILE* fp, bddp f
 #ifdef __cplusplus
-                          , const WriteObject& sbddextended_writeUint8
-                          , const WriteObject& sbddextended_writeUint16
-                          , const WriteObject& sbddextended_writeUint32
-                          , const WriteObject& sbddextended_writeUint64
+                                , const WriteObject& sbddextended_writeUint8
+                                , const WriteObject& sbddextended_writeUint16
+                                , const WriteObject& sbddextended_writeUint32
+                                , const WriteObject& sbddextended_writeUint64
 #endif
-                             )
+                                )
 {
     // Since only BDD/ZDD is treated in the current version,
     // the number of terminals is fixed to be 2.
@@ -322,7 +355,7 @@ void bddwritezbddtobinary_inner(FILE* fp, bddp f
                     //fprintf(stderr, "%d-child: %d\n", k, (child == bddsingle ? 1 : 0));
                 } else {
                     if (sbddextended_MyDict_find(&index->node_dict_arr[bddgetlev(child)],
-                                                 (llint)bdderasenot(child), &id) == 0) {
+                                                    (llint)bdderasenot(child), &id) == 0) {
                         fprintf(stderr, "node not found\n");
                         return;
                     }
@@ -348,32 +381,62 @@ void bddwritezbddtobinary_inner(FILE* fp, bddp f
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-void writeZBDDToBinary(FILE* fp, const ZBDD& zbdd)
+void exportBDDAsBinary(FILE* /*fp*/, const BDD& /*bdd*/)
 {
-    WriteObject wo(false, true, NULL);
-    bddwritezbddtobinary_inner(fp, zbdd.GetID(), wo, wo, wo, wo);
+    std::cerr << "not implemented yet." << std::endl;
+    exit(1);
 }
 
 sbddextended_INLINE_FUNC
-void writeZBDDToBinary(std::ostream& ost, const ZBDD& zbdd)
+void exportBDDAsBinary(std::ostream& /*ost*/, const BDD& /*bdd*/)
+{
+    std::cerr << "not implemented yet." << std::endl;
+    exit(1);
+}
+
+sbddextended_INLINE_FUNC
+void exportZBDDAsBinary(FILE* fp, const ZBDD& zbdd)
+{
+    WriteObject wo(false, true, NULL);
+    bddexportbddasbinary_inner(fp, zbdd.GetID(), wo, wo, wo, wo);
+}
+
+sbddextended_INLINE_FUNC
+void exportZBDDAsBinary(std::ostream& ost, const ZBDD& zbdd)
 {
     WriteObject wo(true, true, &ost);
-    bddwritezbddtobinary_inner(NULL, zbdd.GetID(), wo, wo, wo, wo);
+    bddexportbddasbinary_inner(NULL, zbdd.GetID(), wo, wo, wo, wo);
 }
 
 sbddextended_INLINE_FUNC
-void bddwritezbddtobinary(FILE* fp, bddp f)
+void bddexportbddasbinary(FILE* /*fp*/, bddp /*f*/)
+{
+    std::cerr << "not implemented yet." << std::endl;
+    exit(1);
+}
+
+sbddextended_INLINE_FUNC
+void bddexportzbddasbinary(FILE* fp, bddp f)
 {
     WriteObject wo(false, true, NULL);
-    bddwritezbddtobinary_inner(fp, f, wo, wo, wo, wo);
+    bddexportbddasbinary_inner(fp, f, wo, wo, wo, wo);
 }
 
 #else
 
 sbddextended_INLINE_FUNC
-void bddwritezbddtobinary(FILE* fp, bddp f)
+void bddexportbddasbinary(FILE* fp, bddp f)
 {
-    bddwritezbddtobinary_inner(fp, f);
+    unused(fp);
+    unused(f);
+    fprintf(stderr, "not implemented yet.\n");
+    exit(1);
+}
+
+sbddextended_INLINE_FUNC
+void bddexportzbddasbinary(FILE* fp, bddp f)
+{
+    bddexportbddasbinary_inner(fp, f);
 }
 
 #endif

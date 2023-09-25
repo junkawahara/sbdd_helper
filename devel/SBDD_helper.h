@@ -84,6 +84,30 @@ typedef unsigned long long int ullint;
     const llint sbddextended_VALUE_ONE = 1;
 #endif
 
+// for compatibility
+#define bddconstructzbddfrombinary bddimportzbddasbinary
+#define constructZBDDFromBinary importZBDDAsBinary
+
+#define bddwritezbddtobinary bddexportzbddasbinary
+#define writeZBDDToBinary exportZBDDAsBinary
+
+#define constructZBDDFromGraphillion importZBDDAsGraphillion
+#define bddwritebddforgraphillion bddexportbddasgraphillion
+#define writeZBDDForGraphillion exportZBDDAsGraphillion
+
+#define bddconstructbddfromfileknuth bddimportbddasknuth
+#define bddconstructzbddfromfileknuth bddimportzbddasknuth
+#define constructBDDFromFileKnuth importBDDAsKnuth
+#define constructZBDDFromFileKnuth importZBDDAsKnuth
+
+#define bddwritezbddtofileknuth bddexportzbddasknuth
+#define writeZBDDToFileKnuth exportZBDDAsKnuth
+
+#define bddwritebddforgraphviz bddexportbddasgraphviz
+#define writeBDDForGraphviz exportBDDAsGraphviz
+#define writeZBDDForGraphviz exportZBDDAsGraphviz
+
+
 #include "utility.h"
 #include "MyVector.h"
 #include "MyDict.h"

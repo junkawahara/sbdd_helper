@@ -1,3 +1,5 @@
+// *************** import functions
+
 // num_of_variables: 0 -> elements format, non 0 -> value list format
 sbddextended_INLINE_FUNC
 void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
@@ -301,6 +303,10 @@ std::string zstr(const ZBDD& zbdd)
 }
 
 #endif
+
+
+// *************** export functions
+
 
 sbddextended_INLINE_FUNC
 bddp bddconstructzbddfromelements_inner_getoneset(const char* line, int line_len,

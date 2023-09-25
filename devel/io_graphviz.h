@@ -1,11 +1,11 @@
 
 sbddextended_INLINE_FUNC
-void bddwritebddforgraphviz_inner(FILE* fp, bddp f,
-                                   bddNodeIndex* index, int is_zbdd
+void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
+                                    bddNodeIndex* index, int is_zbdd
 #ifdef __cplusplus
                         , const WriteObject& sbddextended_writeLine
 #endif
-                             )
+                                    )
 {
     int i, k, c, clevel, n;
     llint cvalue;
@@ -80,7 +80,7 @@ void bddwritebddforgraphviz_inner(FILE* fp, bddp f,
                 if (!bddisterminal(child)) {
                     clevel = (int)bddgetlev(child);
                     c = sbddextended_MyDict_find(&index->node_dict_arr[clevel],
-                                                 (llint)child, &cvalue);
+                                                    (llint)child, &cvalue);
                     assert(c != 0);
 
                     n = sprintf(ss, "\tv%d_%lld -> v%d_%lld", i, (llint)j,
@@ -126,64 +126,83 @@ void bddwritebddforgraphviz_inner(FILE* fp, bddp f,
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-void writeBDDForGraphviz(FILE* fp, const BDD& bdd, DDNodeIndex* index = NULL)
+void exportBDDAsGraphviz(FILE* fp, const BDD& bdd, DDNodeIndex* index = NULL)
 {
     bddNodeIndex* bindex = NULL;
     if (index != NULL) {
         bindex = index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddwritebddforgraphviz_inner(fp, bdd.GetID(), bindex, 0, wo);
+    bddexportbddasgraphviz_inner(fp, bdd.GetID(), bindex, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
-void writeBDDForGraphviz(std::ostream& ost, const BDD& bdd, DDNodeIndex* index = NULL)
+void exportBDDAsGraphviz(std::ostream& ost, const BDD& bdd, DDNodeIndex* index = NULL)
 {
     bddNodeIndex* bindex = NULL;
     if (index != NULL) {
         bindex = index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddwritebddforgraphviz_inner(NULL, bdd.GetID(), bindex, 0, wo);
+    bddexportbddasgraphviz_inner(NULL, bdd.GetID(), bindex, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
-void writeZBDDForGraphviz(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
+void exportZBDDAsGraphviz(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 {
     bddNodeIndex* bindex = NULL;
     if (index != NULL) {
         bindex = index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddwritebddforgraphviz_inner(fp, zbdd.GetID(), bindex, 1, wo);
+    bddexportbddasgraphviz_inner(fp, zbdd.GetID(), bindex, 1, wo);
 }
 
 sbddextended_INLINE_FUNC
-void writeZBDDForGraphviz(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* index = NULL)
+void exportZBDDAsGraphviz(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 {
     bddNodeIndex* bindex = NULL;
     if (index != NULL) {
         bindex = index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddwritebddforgraphviz_inner(NULL, zbdd.GetID(), bindex, 1, wo);
+    bddexportbddasgraphviz_inner(NULL, zbdd.GetID(), bindex, 1, wo);
 }
 
 sbddextended_INLINE_FUNC
-void bddwritebddforgraphviz(FILE* fp, bddp f,
+void bddexportbddasgraphviz(FILE* fp, bddp f,
                             bddNodeIndex* index)
 {
     WriteObject wo(false, true, NULL);
-    bddwritebddforgraphviz_inner(fp, f, index, -1, wo);
+    // can be used for BDD/ZBDD
+    bddexportbddasgraphviz_inner(fp, f, index, -1, wo);
+}
+
+sbddextended_INLINE_FUNC
+void bddexportzbddasgraphviz(FILE* fp, bddp f,
+                                bddNodeIndex* index)
+{
+    WriteObject wo(false, true, NULL);
+    // only for ZBDD
+    bddexportbddasgraphviz_inner(fp, f, index, 1, wo);
 }
 
 #else
 
 sbddextended_INLINE_FUNC
-void bddwritebddforgraphviz(FILE* fp, bddp f,
+void bddexportbddasgraphviz(FILE* fp, bddp f,
                             bddNodeIndex* index)
 {
-    bddwritebddforgraphviz_inner(fp, f, index, -1);
+    // can be used for BDD/ZBDD
+    bddexportbddasgraphviz_inner(fp, f, index, -1);
+}
+
+sbddextended_INLINE_FUNC
+void bddexportzbddasgraphviz(FILE* fp, bddp f,
+                            bddNodeIndex* index)
+{
+    // only for ZBDD
+    bddexportbddasgraphviz_inner(fp, f, index, 1);
 }
 
 #endif

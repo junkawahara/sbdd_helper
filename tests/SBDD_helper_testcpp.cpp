@@ -174,11 +174,11 @@ void test_at_random_cpp()
         fprintf(stderr, "file cannot be opened\n");
         exit(1);
     }
-    writeZBDDToFileKnuth(ofs, f, 0);
+    exportZBDDAsKnuth(ofs, f, 0);
     ofs.close();
 
     ifs.open(g_filename1);
-    g = constructZBDDFromFileKnuth(ifs, 0);
+    g = importZBDDAsKnuth(ifs, 0);
     ifs.close();
     if (remove(g_filename1) != 0) {
         fprintf(stderr, "remove failed\n");
@@ -192,11 +192,11 @@ void test_at_random_cpp()
         fprintf(stderr, "file cannot be opened\n");
         exit(1);
     }
-    writeZBDDToBinary(ofs, f);
+    exportZBDDAsBinary(ofs, f);
     ofs.close();
 
     ifs.open(g_filename1, std::ifstream::binary);
-    g = constructZBDDFromBinary(ifs);
+    g = importZBDDAsBinary(ifs);
     ifs.close();
     if (remove(g_filename1) != 0) {
         fprintf(stderr, "remove failed\n");

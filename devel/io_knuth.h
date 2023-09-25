@@ -1,11 +1,12 @@
+// *************** import functions
 
 sbddextended_INLINE_FUNC
-bddp bddconstructbddfromfileknuth_inner(FILE* fp, int is_hex, int root_level,
-                                        int is_zdd
+bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
+                                int is_zdd
 #ifdef __cplusplus
-                             , ReadLineObject& sbddextended_readLine
+                                , ReadLineObject& sbddextended_readLine
 #endif
-                             )
+                                )
 {
     int c, level, level_count = 1;
     llint i, id, lo, hi, line_count = 0;
@@ -118,13 +119,13 @@ bddp bddconstructbddfromfileknuth_inner(FILE* fp, int is_hex, int root_level,
         } else { // ZDD
             p0 = bddnode_buf[sbddextended_MyVector_get(&lo_vec, i)];
             p1 = bddchange(bddnode_buf[sbddextended_MyVector_get(&hi_vec, i)],
-                           var);
+                            var);
             bddnode_buf[i] = bddunion(p0, p1);
             bddfree(p1);
         }
     }
     for (i = (llint)lo_vec.count - 1;
-         i >= sbddextended_BDDNODE_START + 1; --i) {
+            i >= sbddextended_BDDNODE_START + 1; --i) {
         bddfree(bddnode_buf[i]);
     }
 
@@ -142,90 +143,85 @@ bddp bddconstructbddfromfileknuth_inner(FILE* fp, int is_hex, int root_level,
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-BDD constructBDDFromFileKnuth(FILE* fp, bool is_hex, int root_level = -1)
+BDD importBDDAsKnuth(FILE* fp, bool is_hex, int root_level = -1)
 {
     ReadLineObject glo;
     bddp p;
-    p = bddconstructbddfromfileknuth_inner(fp, (is_hex ? 1 : 0),
-                                           root_level, 0, glo);
+    p = bddimportbddasknuth_inner(fp, (is_hex ? 1 : 0),
+                                            root_level, 0, glo);
     return BDD_ID(p);
 }
 
 sbddextended_INLINE_FUNC
-BDD constructBDDFromFileKnuth(std::istream& ist, bool is_hex, int root_level = -1)
+BDD importBDDAsKnuth(std::istream& ist, bool is_hex, int root_level = -1)
 {
     ReadLineObject glo(&ist);
     bddp p;
-    p = bddconstructbddfromfileknuth_inner(NULL, (is_hex ? 1 : 0),
-                                           root_level, 0, glo);
+    p = bddimportbddasknuth_inner(NULL, (is_hex ? 1 : 0),
+                                            root_level, 0, glo);
     return BDD_ID(p);
 }
 
 sbddextended_INLINE_FUNC
-bddp bddconstructbddfromfileknuth(FILE* fp, int is_hex, int root_level = -1)
+ZBDD importZBDDAsKnuth(FILE* fp, bool is_hex, int root_level = -1)
 {
     ReadLineObject glo;
-    return bddconstructbddfromfileknuth_inner(fp, is_hex,
-                                              root_level, 0, glo);
+    bddp p;
+    p = bddimportbddasknuth_inner(fp, (is_hex ? 1 : 0),
+                                            root_level, 1, glo);
+    return ZBDD_ID(p);
+}
+
+sbddextended_INLINE_FUNC
+ZBDD importZBDDAsKnuth(std::istream& ist, bool is_hex, int root_level = -1)
+{
+    ReadLineObject glo(&ist);
+    bddp p;
+    p = bddimportbddasknuth_inner(NULL, (is_hex ? 1 : 0),
+                                            root_level, 1, glo);
+    return ZBDD_ID(p);
+}
+
+sbddextended_INLINE_FUNC
+bddp bddimportbddasknuth(FILE* fp, int is_hex, int root_level = -1)
+{
+    ReadLineObject glo;
+    return bddimportbddasknuth_inner(fp, is_hex, root_level, 0, glo);
+}
+
+sbddextended_INLINE_FUNC
+bddp bddimportzbddasknuth(FILE* fp, int is_hex, int root_level = -1)
+{
+    ReadLineObject glo;
+    return bddimportbddasknuth_inner(fp, is_hex, root_level, 1, glo);
 }
 
 #else
 
 sbddextended_INLINE_FUNC
-bddp bddconstructbddfromfileknuth(FILE* fp, int is_hex, int root_level)
+bddp bddimportbddasknuth(FILE* fp, int is_hex, int root_level)
 {
-    return bddconstructbddfromfileknuth_inner(fp, is_hex, root_level, 0);
+    return bddimportbddasknuth_inner(fp, is_hex, root_level, 0);
+}
+
+sbddextended_INLINE_FUNC
+bddp bddimportzbddasknuth(FILE* fp, int is_hex, int root_level)
+{
+    return bddimportbddasknuth_inner(fp, is_hex, root_level, 1);
 }
 
 #endif
 
 
+// *************** export functions
+
+
+sbddextended_INLINE_FUNC
+void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex
 #ifdef __cplusplus
-
-sbddextended_INLINE_FUNC
-ZBDD constructZBDDFromFileKnuth(FILE* fp, bool is_hex, int root_level = -1)
-{
-    ReadLineObject glo;
-    bddp p;
-    p = bddconstructbddfromfileknuth_inner(fp, (is_hex ? 1 : 0),
-                                           root_level, 1, glo);
-    return ZBDD_ID(p);
-}
-
-sbddextended_INLINE_FUNC
-ZBDD constructZBDDFromFileKnuth(std::istream& ist, bool is_hex, int root_level = -1)
-{
-    ReadLineObject glo(&ist);
-    bddp p;
-    p = bddconstructbddfromfileknuth_inner(NULL, (is_hex ? 1 : 0),
-                                           root_level, 1, glo);
-    return ZBDD_ID(p);
-}
-
-sbddextended_INLINE_FUNC
-bddp bddconstructzbddfromfileknuth(FILE* fp, int is_hex, int root_level = -1)
-{
-    ReadLineObject glo;
-    return bddconstructbddfromfileknuth_inner(fp, is_hex,
-                                              root_level, 1, glo);
-}
-
-#else
-
-sbddextended_INLINE_FUNC
-bddp bddconstructzbddfromfileknuth(FILE* fp, int is_hex, int root_level)
-{
-    return bddconstructbddfromfileknuth_inner(fp, is_hex, root_level, 1);
-}
-
+                                    , const WriteObject& sbddextended_writeLine
 #endif
-
-sbddextended_INLINE_FUNC
-void bddwritezbddtofileknuth_inner(FILE* fp, bddp f, int is_hex
-#ifdef __cplusplus
-                          , const WriteObject& sbddextended_writeLine
-#endif
-                             )
+                                    )
 {
     int clevel, i;
     bddp node, n0, n1;
@@ -259,7 +255,7 @@ void bddwritezbddtofileknuth_inner(FILE* fp, bddp f, int is_hex
             } else {
                 clevel = (int)bddgetlev(n0);
                 if (sbddextended_MyDict_find(&index->node_dict_arr[clevel],
-                                             (llint)n0, &id0) == 0) {
+                                                (llint)n0, &id0) == 0) {
                     fprintf(stderr, "node not found!\n");
                     exit(1);
                 }
@@ -273,7 +269,7 @@ void bddwritezbddtofileknuth_inner(FILE* fp, bddp f, int is_hex
             } else {
                 clevel = (int)bddgetlev(n1);
                 if (sbddextended_MyDict_find(&index->node_dict_arr[clevel],
-                                             (llint)n1, &id1) == 0) {
+                                                (llint)n1, &id1) == 0) {
                     fprintf(stderr, "node not found!\n");
                     exit(1);
                 }
@@ -294,32 +290,63 @@ void bddwritezbddtofileknuth_inner(FILE* fp, bddp f, int is_hex
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-void writeZBDDToFileKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex)
+void exportBDDAsKnuth(FILE* /*fp*/, const BDD& /*bdd*/, bool /*is_hex*/)
 {
-    WriteObject wo(false, true, NULL);
-    bddwritezbddtofileknuth_inner(fp, zbdd.GetID(), (is_hex ? 1 : 0), wo);
+    std::cerr << "not implemented yet." << std::endl;
+    exit(1);
 }
 
 sbddextended_INLINE_FUNC
-void writeZBDDToFileKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex)
+void exportBDDAsKnuth(std::ostream& /*ost*/, const BDD& /*bdd*/, bool /*is_hex*/)
+{
+    std::cerr << "not implemented yet." << std::endl;
+    exit(1);
+}
+
+sbddextended_INLINE_FUNC
+void exportZBDDAsKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex)
+{
+    WriteObject wo(false, true, NULL);
+    bddexportbddasknuth_inner(fp, zbdd.GetID(), (is_hex ? 1 : 0), wo);
+}
+
+sbddextended_INLINE_FUNC
+void exportZBDDAsKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex)
 {
     WriteObject wo(true, true, &ost);
-    bddwritezbddtofileknuth_inner(NULL, zbdd.GetID(), (is_hex ? 1 : 0), wo);
+    bddexportbddasknuth_inner(NULL, zbdd.GetID(), (is_hex ? 1 : 0), wo);
 }
 
 sbddextended_INLINE_FUNC
-void bddwritezbddtofileknuth(FILE* fp, bddp f, int is_hex)
+void bddexportbddasknuth(FILE* /*fp*/, bddp /*f*/, int /*is_hex*/)
+{
+    std::cerr << "not implemented yet." << std::endl;
+    exit(1);
+}
+
+sbddextended_INLINE_FUNC
+void bddexportzbddasknuth(FILE* fp, bddp f, int is_hex)
 {
     WriteObject wo(false, true, NULL);
-    bddwritezbddtofileknuth_inner(fp, f, (is_hex ? 1 : 0), wo);
+    bddexportbddasknuth_inner(fp, f, (is_hex ? 1 : 0), wo);
 }
 
 #else
 
 sbddextended_INLINE_FUNC
-void bddwritezbddtofileknuth(FILE* fp, bddp f, int is_hex)
+void bddexportbddasknuth(FILE* fp, bddp f, int is_hex)
 {
-    bddwritezbddtofileknuth_inner(fp, f, is_hex);
+    unused(fp);
+    unused(f);
+    unused(is_hex);
+    fprintf(stderr, "not implemented yet.\n");
+    exit(1);
+}
+
+sbddextended_INLINE_FUNC
+void bddexportzbddasknuth(FILE* fp, bddp f, int is_hex)
+{
+    bddexportbddasknuth_inner(fp, f, is_hex);
 }
 
 #endif
