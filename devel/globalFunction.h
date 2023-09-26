@@ -1213,6 +1213,26 @@ public:
             }
         }
     }
+
+    template <typename T>
+    static ZBDD getRandomZBDDWithCard(int level, llint card, T& random_engine)
+    {
+        ZBDD f(0);
+        std::set<bddvar> s;
+        std::uniform_int_distribution<int> dist(0, 1);
+
+        while ((llint)f.Card() < card) {
+            for (int lev = 1; lev <= level; ++lev) {
+                if (dist(random_engine) != 0) {
+                    s.insert(bddvaroflev(lev));
+                }
+            }
+            f += getSingleSet(s);
+            s.clear();
+        }
+
+        return f;
+    }
 };
 
 template <typename T>
@@ -1220,6 +1240,13 @@ sbddextended_INLINE_FUNC
 ZBDD getUniformlyRandomZBDD(int level, T& random_engine)
 {
     return DDUtility::getUniformlyRandomZBDD(level, random_engine);
+}
+
+template <typename T>
+sbddextended_INLINE_FUNC
+ZBDD getRandomZBDDWithCard(int level, llint card, T& random_engine)
+{
+    return DDUtility::getRandomZBDDWithCard(level, card, random_engine);
 }
 
 #endif // __cplusplus >= 201103L

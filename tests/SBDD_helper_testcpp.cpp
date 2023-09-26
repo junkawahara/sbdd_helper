@@ -94,6 +94,11 @@ void test_BDD_functions()
         test(fx.Top() <= i);
         test(fx.Card() <= (1u << i)); // card <= 2^i
     }
+
+    for (int i = 0; i < 10; ++i) {
+        ZBDD fx = getRandomZBDDWithCard(i * 10 + 5, i * 10 + 10, mt);
+        test(fx.Card() == static_cast<unsigned int>(i * 10 + 10));
+    }
 #endif
 }
 
