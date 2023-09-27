@@ -27,6 +27,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cctype>
+#include <cmath>
 #include <cassert>
 #include <cstdarg>
 
@@ -53,6 +54,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <math.h>
 #include <string.h>
 #include <assert.h>
 #include <stdarg.h>
@@ -77,6 +79,10 @@ typedef unsigned long long int ullint;
 #define sbddextended_NUMBER_OF_CHILDREN 2
 
 #define sbddextended_TEMP_BUFSIZE 1024
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 #ifdef USE_GMP
     const mpz_class sbddextended_VALUE_ZERO(0);

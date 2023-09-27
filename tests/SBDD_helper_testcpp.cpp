@@ -568,7 +568,7 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
     s.terminal(1).value = 1;
     for (int level = 1; level <= s.height(); ++level) {
         for (llint j = 0; j < s.size(level); ++j) {
-            auto n = s.getNode(level, j);
+            DDNode<int> n = s.getNode(level, j);
             n.value = n.child(0).value + n.child(1).value;
         }
     }

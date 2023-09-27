@@ -535,24 +535,24 @@ public:
     }
 };
 
-template <typename T = int>
+template <typename T>
 bool operator==(const DDNode<T>& node1, const DDNode<T>& node2)
 {
     return node1.getBddp() == node2.getBddp();
 }
 
-template <typename T = int>
+template <typename T>
 bool operator!=(const DDNode<T>& node1, const DDNode<T>& node2)
 {
     return node1.getBddp() != node2.getBddp();
 }
 
-template <typename T = int>
+template <typename T>
 class DDIndex {
 private:
     bddNodeIndex* index_;
     std::map<bddp, T> storage_;
-    bool is_count_made = false;
+    bool is_count_made;
 
 #ifdef USE_GMP
     std::map<bddp, mpz_class> count_storage_;
@@ -803,17 +803,17 @@ private:
     }
 
 public:
-    DDIndex(const BDD& f, bool is_raw = false)
+    DDIndex(const BDD& f, bool is_raw = false) : is_count_made(false)
     {
         initialize(f.GetID(), is_raw, 0);
     }
 
-    DDIndex(const ZBDD& f, bool is_raw = false)
+    DDIndex(const ZBDD& f, bool is_raw = false) : is_count_made(false)
     {
         initialize(f.GetID(), is_raw, 1);
     }
 
-    DDIndex(bddp f, bool is_raw = false)
+    DDIndex(bddp f, bool is_raw = false) : is_count_made(false)
     {
         initialize(f, is_raw, (bddiszbdd(f) ? 1 : 0));
     }
