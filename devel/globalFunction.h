@@ -44,6 +44,16 @@ sbddextended_INLINE_FUNC int bddisterminal(bddp f)
     return (f == bddempty || f == bddsingle || f == bddfalse || f == bddtrue) ? 1 : 0;
 }
 
+sbddextended_INLINE_FUNC bddp bddgetterminal(int terminal, int is_zbdd)
+{
+    assert(terminal == 0 || terminal == 1);
+    if (is_zbdd != 0) {
+        return (terminal == 0 ? bddempty : bddsingle);
+    } else {
+        return (terminal == 0 ? bddfalse : bddtrue);
+    }
+}
+
 // assume that f is ZBDD
 sbddextended_INLINE_FUNC int bddisemptymember(bddp f)
 {

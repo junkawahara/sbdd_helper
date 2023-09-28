@@ -80,6 +80,14 @@ int bddisterminal(bddp f)
 
 f が定数関数（bddfalse, bddtrue, bddempty, bddsingle のいずれか）、すなわちBDD/ZBDDの終端ノードであるかを返す。f が定数関数であるなら 1 を、定数関数でないなら 0 を返す。SAPPOROBDD は多値終端に対応できるように準備されているが、完全には対応していない。本関数は現在のところ、bddfalse, bddtrue, bddempty, bddsingle に対してのみ 1 を返す。
 
+## bddisterminal
+
+```
+bddp bddgetterminal(int terminal, int is_zbdd)
+```
+
+定数関数を返す。is_zbdd が非0のときは ZBDD の定数関数を、0のときは BDD の定数関数を返す。terminal が 0 のときは 0-終端を、1 のときは 1 終端を返す。terminal と is_zbdd があらかじめ分かっているときは、この関数を用いる必要はない。例えば、`bddgetterminal(1, 1)` は、`bddsingle` と同じであるので、単に `bddsingle` と書けばよい。
+
 ## bddisemptymember
 
 ```

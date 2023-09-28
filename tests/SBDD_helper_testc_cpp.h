@@ -383,6 +383,11 @@ void test_bddfunctions()
     g4 = bddmakenodez(3, g2, g3);
     test(g4 == f);
 
+    test(bddgetterminal(0, 0) == bddfalse);
+    test(bddgetterminal(0, 1) == bddempty);
+    test(bddgetterminal(1, 0) == bddtrue);
+    test(bddgetterminal(1, 1) == bddsingle);
+
     s2 = construct_singleton();
     test(s2 == bddgetsingleton(2));
     test(bddrshift(s2, 1) == bddgetsingleton(1));
