@@ -305,6 +305,85 @@ void test_io_cpp()
     test(ZStr(ZBDD(1)) == std::string("{}"));
 }
 
+void test_io_all_func_cpp()
+{
+    const llint n = 3;
+    const llint n_pow = (1ll << n);
+    const llint n_powpow = (1ll << n_pow);
+
+    std::set<bddvar> s;
+
+    // generate all n variable families.
+    for (int v = 0; v < n_powpow; ++v) {
+        ZBDD f(0);
+        BDD b(0);
+        for (int w = 0; w < n_pow; ++w) {
+            if (((v >> w) & 1) != 0) {
+                s.clear();
+                BDD bx(1);
+                for (int x = 0; x < n; ++x) {
+                    if (((w >> x) & 1) != 0) {
+                        s.insert(x + 1);
+                        bx &= BDDvar(x + 1);
+                    } else {
+                        bx &= ~BDDvar(x + 1);
+                    }
+                }
+                f += getSingleSet(s);
+                b |= bx;
+            }
+        }
+        for (int i = 0; i < 4; ++i) {
+            std::stringstream ss;
+            if (i >= 2) {
+                exportZBDDAsBinary(ss, f, i % 2 == 1);
+            } else {
+                exportBDDAsBinary(ss, b, i % 2 == 1);
+            }
+            ss.seekg(0);
+            if (i >= 2) {
+                ZBDD g1 = importZBDDAsBinary(ss);
+                test(f == g1);
+            } else {
+                BDD g1 = importBDDAsBinary(ss);
+                test(b == g1);
+            }
+        }
+        for (int i = 0; i < 2; ++i) {
+            std::stringstream ss;
+            if (i == 1) {
+                exportZBDDAsGraphillion(ss, f, n);
+            } else {
+                exportBDDAsGraphillion(ss, b, n);
+            }
+            ss.seekg(0);
+            if (i == 1) {
+                ZBDD g1 = importZBDDAsGraphillion(ss, n);
+                test(f == g1);
+            } else {
+                BDD g1 = importBDDAsGraphillion(ss, n);
+                test(b == g1);
+            }
+        }
+        for (int i = 0; i < 4; ++i) {
+            std::stringstream ss;
+            if (i >= 2) {
+                exportZBDDAsKnuth(ss, f, i % 2 == 1);
+            } else {
+                exportBDDAsKnuth(ss, b, i % 2 == 1);
+            }
+            ss.seekg(0);
+            if (i >= 2) {
+                ZBDD g1 = importZBDDAsKnuth(ss, i % 2 == 1);
+                test(f == g1);
+            } else {
+                BDD g1 = importBDDAsKnuth(ss, i % 2 == 1);
+                test(b == g1);
+            }
+        }
+    }
+}
+
 void test_index_cpp()
 {
     ZBDD f = ZBDD_ID(make_test_zbdd());
@@ -714,6 +793,7 @@ void start_test_cpp()
     test_BDD_functions();
     test_at_random_cpp();
     test_io_cpp();
+    test_io_all_func_cpp();
     test_index_cpp();
     test_elementIterator_cpp();
     test_ddindex();

@@ -4,6 +4,7 @@ int sbddextended_readChar_inner(FILE* fp)
     return fgetc(fp);
 }
 
+// The size of buf should be sbddextended_MAX_LINE.
 sbddextended_INLINE_FUNC
 int sbddextended_readLine_inner(char* buf, FILE* fp)
 {

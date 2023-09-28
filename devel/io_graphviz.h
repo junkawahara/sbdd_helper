@@ -125,8 +125,11 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
 
 #ifdef __cplusplus
 
+template <typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsGraphviz(FILE* fp, const BDD& bdd, DDNodeIndex* index = NULL)
+void exportBDDAsGraphviz(FILE* fp, const BDD& bdd,
+                            std::map<std::string, std::string>* /*option*/,
+                            DDIndex<T>* index)
 {
     bddNodeIndex* bindex = NULL;
     if (index != NULL) {
@@ -137,7 +140,17 @@ void exportBDDAsGraphviz(FILE* fp, const BDD& bdd, DDNodeIndex* index = NULL)
 }
 
 sbddextended_INLINE_FUNC
-void exportBDDAsGraphviz(std::ostream& ost, const BDD& bdd, DDNodeIndex* index = NULL)
+void exportBDDAsGraphviz(FILE* fp, const BDD& bdd,
+                            std::map<std::string, std::string>* option = NULL)
+{
+    exportBDDAsGraphviz<int>(fp, bdd, option, NULL);
+}
+
+template <typename T>
+sbddextended_INLINE_FUNC
+void exportBDDAsGraphviz(std::ostream& ost, const BDD& bdd,
+                            std::map<std::string, std::string>* /*option*/,
+                            DDIndex<T>* index)
 {
     bddNodeIndex* bindex = NULL;
     if (index != NULL) {
@@ -148,7 +161,17 @@ void exportBDDAsGraphviz(std::ostream& ost, const BDD& bdd, DDNodeIndex* index =
 }
 
 sbddextended_INLINE_FUNC
-void exportZBDDAsGraphviz(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
+void exportBDDAsGraphviz(std::ostream& ost, const BDD& bdd,
+                            std::map<std::string, std::string>* option = NULL)
+{
+    exportBDDAsGraphviz<int>(ost, bdd, option, NULL);
+}
+
+template <typename T>
+sbddextended_INLINE_FUNC
+void exportZBDDAsGraphviz(FILE* fp, const ZBDD& zbdd,
+                            std::map<std::string, std::string>* /*option*/,
+                            DDIndex<T>* index)
 {
     bddNodeIndex* bindex = NULL;
     if (index != NULL) {
@@ -159,7 +182,17 @@ void exportZBDDAsGraphviz(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
 }
 
 sbddextended_INLINE_FUNC
-void exportZBDDAsGraphviz(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* index = NULL)
+void exportZBDDAsGraphviz(FILE* fp, const ZBDD& zbdd,
+                            std::map<std::string, std::string>* option = NULL)
+{
+    exportZBDDAsGraphviz<int>(fp, zbdd, option, NULL);
+}
+
+template <typename T>
+sbddextended_INLINE_FUNC
+void exportZBDDAsGraphviz(std::ostream& ost, const ZBDD& zbdd,
+                            std::map<std::string, std::string>* /*option*/,
+                            DDIndex<T>* index)
 {
     bddNodeIndex* bindex = NULL;
     if (index != NULL) {
@@ -167,6 +200,13 @@ void exportZBDDAsGraphviz(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* inde
     }
     WriteObject wo(true, true, &ost);
     bddexportbddasgraphviz_inner(NULL, zbdd.GetID(), bindex, 1, wo);
+}
+
+sbddextended_INLINE_FUNC
+void exportZBDDAsGraphviz(std::ostream& ost, const ZBDD& zbdd,
+                            std::map<std::string, std::string>* option = NULL)
+{
+    exportZBDDAsGraphviz<int>(ost, zbdd, option, NULL);
 }
 
 sbddextended_INLINE_FUNC

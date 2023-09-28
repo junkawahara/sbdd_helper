@@ -11,7 +11,7 @@ bddp bddconstructzbddfromelements_inner(FILE* fp
     bddvar* vararr;
     int vararr_pos, vararr_size;
     int c, prev_c, v;
-    int mode;
+    int mode, first;
 
     vararr_size = sbddextended_MAX_LINE;
     vararr = (bddvar*)malloc((size_t)vararr_size * sizeof(bddvar));
@@ -22,12 +22,23 @@ bddp bddconstructzbddfromelements_inner(FILE* fp
     vararr_pos = 0;
 
     p = bddfalse;
+    first = 1;
 
     mode = 0; // 0: skip ws, 1: reading nums
+    v = 0;
     c = 0;
     while (c != -1) {
         prev_c = c;
         c = sbddextended_readChar(fp);
+        if (first == 1) {
+            first = 0;
+            if (c == 'T') {
+                p = bddtrue;
+                break;
+            } else if (c == 'B' || c == 'E' || c == 'F') {
+                break;
+            }
+        }
         if (c != -1) {
             if (!isdigit(c) && c != '\n' && !isspace(c)) {
                 fprintf(stderr, "invalid char\n");

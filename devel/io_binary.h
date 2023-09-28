@@ -1,7 +1,7 @@
 // *************** import functions
 
 sbddextended_INLINE_FUNC
-bddp bddimportbddasbinary_inner(FILE* fp, int root_level
+bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
 #ifdef __cplusplus
                                 , ReadCharObject& sbddextended_readUint8
                                 , ReadCharObject& sbddextended_readUint16
@@ -13,7 +13,8 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level
     ullint i, level, max_level, root_id, number_of_nodes;
     ullint node_count, node_sum;
     unsigned int number_of_terminals;
-    bddp p0, p1, q;
+    bddvar var;
+    bddp f, f0, f1;
     bddp* bddnode_buf;
     sbddextended_MyVector level_vec;
     unsigned char use_negative_arcs;
@@ -36,9 +37,13 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level
     }
 
     sbddextended_readUint8(&v8, fp); // type
-    if (!(v8 == 1 || v8 == 3)) {
-        fprintf(stderr, "Currently, this version supports only ZDD.\n");
+    if (is_zbdd < 0 && v8 == 1) {
+        fprintf(stderr, "Need to specify BDD or ZBDD.\n");
         return bddnull;
+    } else if (is_zbdd > 0 && v8 == 2) {
+        fprintf(stderr, "The binary indicates that it is BDD, but we interpret it as a ZBDD.\n");
+    } else if (is_zbdd == 0 && v8 == 3) {
+        fprintf(stderr, "The binary indicates that it is ZDDD, but we interpret it as a BDD.\n");
     }
 
     sbddextended_readUint16(&v16, fp); // number_of_arcs
@@ -111,7 +116,8 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level
     }
     sbddextended_readUint64(&root_id, fp);
 
-    bddnode_buf = (bddp*)malloc((number_of_nodes + 1) * sizeof(bddp));
+    //bddnode_buf = (bddp*)malloc((number_of_nodes + 1) * sizeof(bddp));
+    bddnode_buf = (bddp*)malloc(number_of_nodes * sizeof(bddp));
     if (bddnode_buf == NULL) {
         fprintf(stderr, "out of memory\n");
         exit(1);
@@ -119,28 +125,52 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level
     bddnode_buf[0] = bddempty;
     bddnode_buf[1] = bddsingle;
 
-    node_count = number_of_terminals;
-    while (sbddextended_readUint64(&v64, fp)) {
-        //fprintf(stderr, "%lld\n", v64);
-        if (use_negative_arcs != 0) {
-            assert(v64 <= 1 || v64 % 2 == 0);
-            v64 >>= 1;
+    while (bddvarused() < (bddvar)root_level) {
+        bddnewvar();
+    }
+
+    for (node_count = number_of_terminals;
+            node_count < number_of_nodes; ++node_count) {
+        // read 0-child
+        if (!sbddextended_readUint64(&v64, fp)) {
+            break;
         }
+        //fprintf(stderr, "%lld\n", v64);
+
         //fprintf(stderr, "0-child: %lld\n", v64);
-        p0 = bddnode_buf[v64];
+        if (v64 <= 1) {
+            f0 = bddgetterminal((int)v64, is_zbdd);
+        } else {
+            if (use_negative_arcs != 0) {
+                if(v64 % 2 == 1) {
+                    fprintf(stderr, "0-child must not be negative.\n");
+                    return bddnull;
+                }
+                f0 = bddnode_buf[v64 >> 1];
+            } else {
+                f0 = bddnode_buf[v64];
+            }
+        }
+
+        // read 1-child
         if (!sbddextended_readUint64(&v64, fp)) {
             fprintf(stderr, "illegal format\n");
             return bddnull;
         }
-        if (use_negative_arcs) {
-            q = bddnode_buf[v64 >> 1];
-            if (v64 % 2 == 1) {
-                q = bddtakenot(q);
-            }
+        if (v64 <= 1) {
+            f1 = bddgetterminal((int)v64, is_zbdd);
         } else {
-            q = bddnode_buf[v64];
+            if (use_negative_arcs != 0) {
+                f1 = bddnode_buf[v64 >> 1];
+                if (v64 % 2 == 1) {
+                    f1 = bddtakenot(f1);
+                }
+            } else {
+                f1 = bddnode_buf[v64];
+            }
         }
-        //fprintf(stderr, "1-child: %lld\n", v64 >> 1);
+
+        // obtain node's level
         node_sum = number_of_terminals;
         for (level = 1; level <= max_level; ++level) {
             // add the number of nodes at the level
@@ -150,39 +180,50 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level
                 break;
             }
         }
-        //fprintf(stderr, "level: %lld\n", level);
         assert(level <= max_level);
-        p1 = bddchange(q, (bddvar)((int)level + root_level - (int)max_level));
-        bddnode_buf[node_count] = bddunion(p0, p1);
-        bddfree(p1);
-        ++node_count;
-    }
-    if (use_negative_arcs) {
-        if (root_id % 2 == 1) { // negative arc
-            return bddtakenot(bddnode_buf[root_id >> 1]);
+        var = bddvaroflev((bddvar)((int)level + root_level - (int)max_level));
+        assert(node_count < number_of_nodes + 1);
+        if (is_zbdd != 0) {
+            bddnode_buf[node_count] = bddmakenodez(var, f0, f1);
         } else {
-            return bddnode_buf[root_id >> 1];
+            bddnode_buf[node_count] = bddmakenodeb(var, f0, f1);
+        }
+    }
+    if (use_negative_arcs != 0) {
+        if (root_id % 2 == 1) { // negative arc
+            f = bddtakenot(bddnode_buf[root_id >> 1]);
+        } else {
+            f = bddnode_buf[root_id >> 1];
         }
     } else {
-        return bddnode_buf[root_id];
+        f = bddnode_buf[root_id];
     }
-    return bddnull;
+    // FIX ME: need to free of bddnode_buf[*]
+    return f;
 }
 
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-BDD importBDDAsBinary(FILE* /*fp*/, int /*root_level*/ = -1)
+BDD importBDDAsBinary(FILE* fp, int root_level = -1)
 {
-    std::cerr << "not implemented yet." << std::endl;
-    exit(1);
+    ReadLineObject glo;
+    bddp p;
+    p = bddimportbddasbinary_inner(fp,
+                                    root_level, 0,
+                                    glo, glo, glo, glo);
+    return BDD_ID(p);
 }
 
 sbddextended_INLINE_FUNC
-BDD importBDDAsBinary(std::istream& /*ist*/, int /*root_level*/ = -1)
+BDD importBDDAsBinary(std::istream& ist, int root_level = -1)
 {
-    std::cerr << "not implemented yet." << std::endl;
-    exit(1);
+    ReadLineObject glo(&ist);
+    bddp p;
+    p = bddimportbddasbinary_inner(NULL,
+                                    root_level, 0,
+                                    glo, glo, glo, glo);
+    return BDD_ID(p);
 }
 
 sbddextended_INLINE_FUNC
@@ -191,7 +232,8 @@ ZBDD importZBDDAsBinary(FILE* fp, int root_level = -1)
     ReadLineObject glo;
     bddp p;
     p = bddimportbddasbinary_inner(fp,
-                                    root_level, glo, glo, glo, glo);
+                                    root_level, 1,
+                                    glo, glo, glo, glo);
     return ZBDD_ID(p);
 }
 
@@ -201,15 +243,18 @@ ZBDD importZBDDAsBinary(std::istream& ist, int root_level = -1)
     ReadLineObject glo(&ist);
     bddp p;
     p = bddimportbddasbinary_inner(NULL,
-                                    root_level, glo, glo, glo, glo);
+                                    root_level, 1,
+                                    glo, glo, glo, glo);
     return ZBDD_ID(p);
 }
 
 sbddextended_INLINE_FUNC
-bddp bddimportbddasbinary(FILE* /*fp*/, int /*root_level*/ = -1)
+bddp bddimportbddasbinary(FILE* fp, int root_level = -1)
 {
-    std::cerr << "not implemented yet." << std::endl;
-    exit(1);
+    ReadLineObject glo;
+    return bddimportbddasbinary_inner(fp,
+                                        root_level, 0,
+                                        glo, glo, glo, glo);
 }
 
 sbddextended_INLINE_FUNC
@@ -217,7 +262,8 @@ bddp bddimportzbddasbinary(FILE* fp, int root_level = -1)
 {
     ReadLineObject glo;
     return bddimportbddasbinary_inner(fp,
-                                        root_level, glo, glo, glo, glo);
+                                        root_level, 1,
+                                        glo, glo, glo, glo);
 }
 
 #else
@@ -225,16 +271,13 @@ bddp bddimportzbddasbinary(FILE* fp, int root_level = -1)
 sbddextended_INLINE_FUNC
 bddp bddimportbddasbinary(FILE* fp, int root_level)
 {
-    unused(fp);
-    unused(root_level);
-    fprintf(stderr, "not implemented yet.\n");
-    exit(1);
+    return bddimportbddasbinary_inner(fp, root_level, 0);
 }
 
 sbddextended_INLINE_FUNC
 bddp bddimportzbddasbinary(FILE* fp, int root_level)
 {
-    return bddimportbddasbinary_inner(fp, root_level);
+    return bddimportbddasbinary_inner(fp, root_level, 1);
 }
 
 #endif
@@ -244,7 +287,10 @@ bddp bddimportzbddasbinary(FILE* fp, int root_level)
 
 
 sbddextended_INLINE_FUNC
-void bddexportbddasbinary_inner(FILE* fp, bddp f
+void bddexportbddasbinary_inner(FILE* fp, bddp f,
+                                bddNodeIndex* index,
+                                int is_zbdd,
+                                int use_negative_arcs
 #ifdef __cplusplus
                                 , const WriteObject& sbddextended_writeUint8
                                 , const WriteObject& sbddextended_writeUint16
@@ -256,16 +302,26 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f
     // Since only BDD/ZDD is treated in the current version,
     // the number of terminals is fixed to be 2.
     const unsigned int number_of_terminals = 2;
-    const unsigned char use_negative_arcs = 1;
     ullint i, j;
-    int k;
+    int k, is_making_index = 0;
     ullint max_level;
-    bddNodeIndex* index;
     ullint number_of_nodes = 0;
     ullint root_id;
     llint id;
     ullint* id_prefix;
-    bddp node, child;
+    bddp node, child, rchild;
+
+    if (index != NULL) {
+        if (index->is_raw != 0 && use_negative_arcs == 0) {
+            fprintf(stderr, "The index must not be constructed in the raw mode "
+                            "when not using negative arcs.\n");
+            return;
+        } else if (index->is_raw == 0 && use_negative_arcs != 0) {
+            fprintf(stderr, "The index must be constructed in the raw mode "
+                            "when using negative arcs.\n");
+            return;
+        }
+    }
 
     max_level = (ullint)bddgetlev(f);
 
@@ -276,7 +332,14 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f
     sbddextended_writeUint8((unsigned char)'D', fp);
 
     sbddextended_writeUint8((unsigned char)1u, fp); // version
-    sbddextended_writeUint8((unsigned char)1u, fp); // DD type
+    // DD type
+    if (is_zbdd < 0) { // can be interpreted as BDD/ZBDD
+        sbddextended_writeUint8((unsigned char)1u, fp);
+    } else if (is_zbdd == 0) { // BDD
+        sbddextended_writeUint8((unsigned char)2u, fp);
+    } else { // ZBDD
+        sbddextended_writeUint8((unsigned char)3u, fp);
+    }
     // number_of_arcs
     sbddextended_writeUint16((unsigned short)2u, fp);
     // number_of_terminals
@@ -286,7 +349,11 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f
     // number_of_bits_for_id
     sbddextended_writeUint8((unsigned char)64u, fp);
     // use_negative_arcs
-    sbddextended_writeUint8(use_negative_arcs, fp);
+    if (use_negative_arcs != 0) {
+        sbddextended_writeUint8((unsigned char)1u, fp);
+    } else {
+        sbddextended_writeUint8((unsigned char)0u, fp);
+    }
     // max_level
     sbddextended_writeUint64(max_level, fp);
     // number_of_roots
@@ -299,6 +366,10 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f
 
     // end header
 
+    if (is_zbdd < 0) {
+        is_zbdd = (!bddisbdd(f) ? 1 : 0);
+    }
+
     if (max_level == 0) { // case of a constant function (0/1-terminal)
         if (f == bddempty) {
             sbddextended_writeUint64((ullint)0ull, fp);
@@ -310,7 +381,22 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f
         return;
     }
 
-    index = bddNodeIndex_makeRawIndexZWithoutCount(f);
+    if (index == NULL) {
+        is_making_index = 1;
+        if (is_zbdd != 0) {
+            if (use_negative_arcs != 0) {
+                index = bddNodeIndex_makeRawIndexZWithoutCount(f);
+            } else {
+                index = bddNodeIndex_makeIndexZWithoutCount(f);
+            }
+        } else {
+            if (use_negative_arcs != 0) {
+                index = bddNodeIndex_makeRawIndexBWithoutCount(f);
+            } else {
+                index = bddNodeIndex_makeIndexBWithoutCount(f);
+            }
+        }
+    }
 
     assert((ullint)index->height == max_level);
 
@@ -349,15 +435,17 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f
         for (j = 0; j < index->level_vec_arr[i].count; ++j) {
             node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i], (llint)j);
             for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
-                child = bddgetchildzraw(node, k);
-                if (bddisterminal(child)) {
-                    sbddextended_writeUint64((child == bddsingle ? 1llu : 0llu), fp);
-                    //fprintf(stderr, "%d-child: %d\n", k, (child == bddsingle ? 1 : 0));
+                child = bddgetchildg(node, k, index->is_zbdd, index->is_raw);
+                if (child == bddempty) {
+                    sbddextended_writeUint64(0llu, fp);
+                } else if (child == bddsingle) {
+                    sbddextended_writeUint64(1llu, fp);
                 } else {
+                    rchild = (use_negative_arcs != 0 ? bdderasenot(child) : child);
                     if (sbddextended_MyDict_find(&index->node_dict_arr[bddgetlev(child)],
-                                                    (llint)bdderasenot(child), &id) == 0) {
+                                                    (llint)rchild, &id) == 0) {
                         fprintf(stderr, "node not found\n");
-                        return;
+                        exit(1);
                     }
                     id += (llint)id_prefix[bddgetlev(child)];
                     if (use_negative_arcs != 0) {
@@ -367,76 +455,130 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f
                         }
                     }
                     sbddextended_writeUint64((ullint)id, fp);
-                    //fprintf(stderr, "%d-child: %lld\n", k, id);
                 }
             }
         }
     }
 
-    bddNodeIndex_destruct(index);
-    free(index);
+    if (is_making_index) {
+        bddNodeIndex_destruct(index);
+        free(index);
+    }
     free(id_prefix);
 }
 
 #ifdef __cplusplus
 
+template <typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsBinary(FILE* /*fp*/, const BDD& /*bdd*/)
+void exportBDDAsBinary(FILE* fp, const BDD& bdd, bool use_negative_arcs, DDIndex<T>* index)
 {
-    std::cerr << "not implemented yet." << std::endl;
-    exit(1);
-}
-
-sbddextended_INLINE_FUNC
-void exportBDDAsBinary(std::ostream& /*ost*/, const BDD& /*bdd*/)
-{
-    std::cerr << "not implemented yet." << std::endl;
-    exit(1);
-}
-
-sbddextended_INLINE_FUNC
-void exportZBDDAsBinary(FILE* fp, const ZBDD& zbdd)
-{
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
     WriteObject wo(false, true, NULL);
-    bddexportbddasbinary_inner(fp, zbdd.GetID(), wo, wo, wo, wo);
+    bddexportbddasbinary_inner(fp, bdd.GetID(), bindex,
+                                0, (use_negative_arcs ? 1 : 0),
+                                wo, wo, wo, wo);
 }
 
 sbddextended_INLINE_FUNC
-void exportZBDDAsBinary(std::ostream& ost, const ZBDD& zbdd)
+void exportBDDAsBinary(FILE* fp, const BDD& bdd, bool use_negative_arcs = true)
 {
+    exportBDDAsBinary<int>(fp, bdd, use_negative_arcs, NULL);
+}
+
+template <typename T>
+sbddextended_INLINE_FUNC
+void exportBDDAsBinary(std::ostream& ost, const BDD& bdd, bool use_negative_arcs, DDIndex<T>* index)
+{
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
     WriteObject wo(true, true, &ost);
-    bddexportbddasbinary_inner(NULL, zbdd.GetID(), wo, wo, wo, wo);
+    bddexportbddasbinary_inner(NULL, bdd.GetID(), bindex,
+                                0, (use_negative_arcs ? 1 : 0),
+                                wo, wo, wo, wo);
 }
 
 sbddextended_INLINE_FUNC
-void bddexportbddasbinary(FILE* /*fp*/, bddp /*f*/)
+void exportBDDAsBinary(std::ostream& ost, const BDD& bdd, bool use_negative_arcs = true)
 {
-    std::cerr << "not implemented yet." << std::endl;
-    exit(1);
+    exportBDDAsBinary<int>(ost, bdd, use_negative_arcs, NULL);
+}
+
+template <typename T>
+sbddextended_INLINE_FUNC
+void exportZBDDAsBinary(FILE* fp, const ZBDD& zbdd, bool use_negative_arcs, DDIndex<T>* index)
+{
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
+    WriteObject wo(false, true, NULL);
+    bddexportbddasbinary_inner(fp, zbdd.GetID(), bindex,
+                                1, (use_negative_arcs ? 1 : 0),
+                                wo, wo, wo, wo);
 }
 
 sbddextended_INLINE_FUNC
-void bddexportzbddasbinary(FILE* fp, bddp f)
+void exportZBDDAsBinary(FILE* fp, const ZBDD& zbdd, bool use_negative_arcs = true)
+{
+    exportZBDDAsBinary<int>(fp, zbdd, use_negative_arcs, NULL);
+}
+
+template <typename T>
+sbddextended_INLINE_FUNC
+void exportZBDDAsBinary(std::ostream& ost, const ZBDD& zbdd, bool use_negative_arcs, DDIndex<T>* index)
+{
+    bddNodeIndex* bindex = NULL;
+    if (index != NULL) {
+        bindex = index->getRawPointer();
+    }
+    WriteObject wo(true, true, &ost);
+    bddexportbddasbinary_inner(NULL, zbdd.GetID(), bindex,
+                                1, (use_negative_arcs ? 1 : 0),
+                                wo, wo, wo, wo);
+}
+
+sbddextended_INLINE_FUNC
+void exportZBDDAsBinary(std::ostream& ost, const ZBDD& zbdd, bool use_negative_arcs = true)
+{
+    exportZBDDAsBinary<int>(ost, zbdd, use_negative_arcs, NULL);
+}
+
+sbddextended_INLINE_FUNC
+void bddexportbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* index)
 {
     WriteObject wo(false, true, NULL);
-    bddexportbddasbinary_inner(fp, f, wo, wo, wo, wo);
+    bddexportbddasbinary_inner(fp, f, index,
+                                0, use_negative_arcs,
+                                wo, wo, wo, wo);
+}
+
+sbddextended_INLINE_FUNC
+void bddexportzbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* index)
+{
+    WriteObject wo(false, true, NULL);
+    bddexportbddasbinary_inner(fp, f, index,
+                                1, use_negative_arcs,
+                                wo, wo, wo, wo);
 }
 
 #else
 
 sbddextended_INLINE_FUNC
-void bddexportbddasbinary(FILE* fp, bddp f)
+void bddexportbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* index)
 {
-    unused(fp);
-    unused(f);
-    fprintf(stderr, "not implemented yet.\n");
-    exit(1);
+    bddexportbddasbinary_inner(fp, f, index, 0, use_negative_arcs);
 }
 
 sbddextended_INLINE_FUNC
-void bddexportzbddasbinary(FILE* fp, bddp f)
+void bddexportzbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* index)
 {
-    bddexportbddasbinary_inner(fp, f);
+    bddexportbddasbinary_inner(fp, f, index, 1, use_negative_arcs);
 }
 
 #endif

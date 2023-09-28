@@ -45,6 +45,7 @@ void bddexportassvg_inner(FILE* fp, bddp f,
     const int terminal_y = 40;
     const int margin_x = 20;
     const int margin_y = 20;
+    const int label_y = 7;
     const int arc_width = 3;
     bool draw_zero = true;
 
@@ -65,11 +66,15 @@ void bddexportassvg_inner(FILE* fp, bddp f,
             max_nodes = index->size(level);
         }
     }
-    const int node_x = (2 * node_radius + 1) * max_nodes
-        + node_interval_x * (max_nodes + 1);
+    if (max_nodes < 2) {
+        max_nodes = 2;
+    }
+    const int node_x = static_cast<int>((2 * node_radius + 1)
+        * max_nodes
+        + node_interval_x * (max_nodes + 1));
 
     for (int level = index->height(); level >= 1; --level) {
-        int num_nodes = index->size(level);
+        int num_nodes = static_cast<int>(index->size(level));
         int x = node_x / (num_nodes + 1) - (node_radius + node_interval_x - margin_x);
         for (llint j = 0; j < num_nodes; ++j) {
             bddp g = index->getNode(level, j).getBddp();
@@ -83,8 +88,9 @@ void bddexportassvg_inner(FILE* fp, bddp f,
         y += 2 * node_radius + node_interval_y;
     }
     y += terminal_y / 2 - node_radius;
-    const int max_x = 2 * node_radius * max_nodes + node_interval_x * (max_nodes - 1)
-        + 2 * margin_x;
+    const int max_x = static_cast<int>(2 * node_radius * max_nodes
+        + node_interval_x * (max_nodes - 1)
+        + 2 * margin_x);
     const int max_y = y + terminal_y / 2 + margin_y;
     const int num_terms = (draw_zero ? 2 : 1);
     int tx = node_x / (num_terms + 1) - (node_radius + node_interval_x - margin_x);
@@ -115,7 +121,7 @@ void bddexportassvg_inner(FILE* fp, bddp f,
                 dest1_pos[infovec[i].f] = std::make_pair(posx, posy);
             }
             if (infovec.size() >= 2) {
-                rad -= M_PI / 3.0 / (infovec.size() - 1);
+                rad -= M_PI / 3.0 / static_cast<double>(infovec.size() - 1);
             }
         }
         ++itor;
@@ -128,6 +134,17 @@ void bddexportassvg_inner(FILE* fp, bddp f,
     sbddextended_writeLine("<marker id=\"arrow\" viewBox=\"-10 -4 20 8\" markerWidth=\"10\" markerHeight=\"10\" orient=\"auto\">", fp);
     sbddextended_writeLine("    <polygon points=\"-10,-4 0,0 -10,4\" fill=\"#1b3966\" stroke=\"none\" />", fp);
     sbddextended_writeLine("</marker>", fp);
+
+    // draw nodes
+    for (int level = index->height(); level >= 1; --level) {
+        for (llint j = 0; j < index->size(level); ++j) {
+            bddp g = index->getNode(level, j).getBddp();
+            sprintf(ss, "<circle cx=\"%d\" cy=\"%d\" r=\"%d\" fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />", pos_map[g].first, pos_map[g].second, node_radius, arc_width);
+            sbddextended_writeLine(ss, fp);
+            sprintf(ss, "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" font-size=\"24\">%d</text>", pos_map[g].first, pos_map[g].second + label_y, level);
+            sbddextended_writeLine(ss, fp);
+        }
+    }
 
     // draw arcs
     for (int level = index->height(); level >= 1; --level) {
@@ -148,19 +165,16 @@ void bddexportassvg_inner(FILE* fp, bddp f,
         }
     }
 
-    // draw nodes
-    for (int level = index->height(); level >= 1; --level) {
-        for (llint j = 0; j < index->size(level); ++j) {
-            bddp g = index->getNode(level, j).getBddp();
-            sprintf(ss, "<circle cx=\"%d\" cy=\"%d\" r=\"%d\" fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />", pos_map[g].first, pos_map[g].second, node_radius, arc_width);
-            sbddextended_writeLine(ss, fp);
-        }
-    }
-
     //draw terminals
     sprintf(ss, "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />", pos_map[bddempty].first - terminal_x / 2, pos_map[bddempty].second - terminal_y / 2, terminal_x, terminal_y, arc_width);
     sbddextended_writeLine(ss, fp);
     sprintf(ss, "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />", pos_map[bddsingle].first - terminal_x / 2, pos_map[bddsingle].second - terminal_y / 2, terminal_x, terminal_y, arc_width);
+    sbddextended_writeLine(ss, fp);
+
+    sprintf(ss, "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" font-size=\"24\">0</text>", pos_map[bddempty].first, pos_map[bddempty].second + label_y);
+    sbddextended_writeLine(ss, fp);
+
+    sprintf(ss, "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" font-size=\"24\">1</text>", pos_map[bddsingle].first, pos_map[bddsingle].second + label_y);
     sbddextended_writeLine(ss, fp);
 
     sbddextended_writeLine("</svg>", fp);
@@ -173,34 +187,70 @@ void bddexportassvg_inner(FILE* fp, bddp f,
 
 template<typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsSvg(FILE* fp, const BDD& bdd, DDIndex<T>* index = NULL)
+void exportBDDAsSvg(FILE* fp, const BDD& bdd,
+                    std::map<std::string, std::string>* /*option*/,
+                    DDIndex<T>* index)
 {
-    std::cerr << "not implemented yet." << std::endl;
-    exit(1);
+    WriteObject wo(false, true, NULL);
+    bddexportassvg_inner(fp, bdd.GetID(), index, 0, wo);
+}
+
+sbddextended_INLINE_FUNC
+void exportBDDAsSvg(FILE* fp, const BDD& bdd,
+                    std::map<std::string, std::string>* option = NULL)
+{
+    exportBDDAsSvg<int>(fp, bdd, option, NULL);
 }
 
 template<typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsSvg(std::ostream& ost, const BDD& bdd, DDIndex<T>* index = NULL)
+void exportBDDAsSvg(std::ostream& ost, const BDD& bdd,
+                    std::map<std::string, std::string>* /*option*/,
+                    DDIndex<T>* index)
 {
-    std::cerr << "not implemented yet." << std::endl;
-    exit(1);
+    WriteObject wo(true, true, &ost);
+    bddexportassvg_inner(NULL, bdd.GetID(), index, 0, wo);
+}
+
+sbddextended_INLINE_FUNC
+void exportBDDAsSvg(std::ostream& ost, const BDD& bdd,
+                    std::map<std::string, std::string>* option = NULL)
+{
+    exportBDDAsSvg<int>(ost, bdd, option, NULL);
 }
 
 template<typename T>
 sbddextended_INLINE_FUNC
-void exportZBDDAsSvg(FILE* fp, const ZBDD& zbdd, DDIndex<T>* index = NULL)
+void exportZBDDAsSvg(FILE* fp, const ZBDD& zbdd,
+                        std::map<std::string, std::string>* /*option*/,
+                        DDIndex<T>* index)
 {
     WriteObject wo(false, true, NULL);
     bddexportassvg_inner(fp, zbdd.GetID(), index, 1, wo);
 }
 
+sbddextended_INLINE_FUNC
+void exportZBDDAsSvg(FILE* fp, const ZBDD& zbdd,
+                        std::map<std::string, std::string>* option = NULL)
+{
+    exportZBDDAsSvg<int>(fp, zbdd, option, NULL);
+}
+
 template<typename T>
 sbddextended_INLINE_FUNC
-void exportZBDDAsSvg(std::ostream& ost, const ZBDD& zbdd, DDIndex<T>* index = NULL)
+void exportZBDDAsSvg(std::ostream& ost, const ZBDD& zbdd,
+                        std::map<std::string, std::string>* /*option*/,
+                        DDIndex<T>* index)
 {
     WriteObject wo(true, true, &ost);
     bddexportassvg_inner(NULL, zbdd.GetID(), index, 1, wo);
+}
+
+sbddextended_INLINE_FUNC
+void exportZBDDAsSvg(std::ostream& ost, const ZBDD& zbdd,
+                        std::map<std::string, std::string>* option = NULL)
+{
+    exportZBDDAsSvg<int>(ost, zbdd, option, NULL);
 }
 
 #endif

@@ -1,6 +1,5 @@
 //
 // One header library for SAPPOROBDD and TdZdd C++ version
-// version 0.9.0
 //
 // Copyright (c) 2017 -- 2023 Jun Kawahara
 //

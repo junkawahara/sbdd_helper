@@ -31,7 +31,6 @@ C/C++ 言語の両方に対応しています。C++ は C++98 以降、C++17 ま
     * 辞書順と集合の相互変換
     * [GMP (GNU Multiple Precision Arithmetic Library)](https://gmplib.org/) を用いた、2^64 を超える要素の数え上げ、重み和の計算、ランダムサンプリング
 
-
 ## インストール
 
 [SBDD_helper.h ファイル](SBDD_helper.h) をダウンロードして、任意の場所に配置してください

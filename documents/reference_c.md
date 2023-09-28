@@ -80,7 +80,7 @@ int bddisterminal(bddp f)
 
 f が定数関数（bddfalse, bddtrue, bddempty, bddsingle のいずれか）、すなわちBDD/ZBDDの終端ノードであるかを返す。f が定数関数であるなら 1 を、定数関数でないなら 0 を返す。SAPPOROBDD は多値終端に対応できるように準備されているが、完全には対応していない。本関数は現在のところ、bddfalse, bddtrue, bddempty, bddsingle に対してのみ 1 を返す。
 
-## bddisterminal
+## bddgetterminal
 
 ```
 bddp bddgetterminal(int terminal, int is_zbdd)
@@ -514,7 +514,7 @@ bddp bddimportbddasbinary(FILE* fp, int root_level)
 bddp bddimportzbddasbinary(FILE* fp, int root_level)
 ```
 
-[BDD バイナリ形式](bdd_binary_format.md) のファイルを、引数で指定したファイルポインタ fp から読み込み、BDD/ZBDD を構築して返す。
+[BDD バイナリ形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/bdd_binary_format.md) のファイルを、引数で指定したファイルポインタ fp から読み込み、BDD/ZBDD を構築して返す。
 bddimportbddasbinary は BDD bddimportzbddasbinary は ZBDD を返す。
 root_level 引数によって、根ノードが SAPPOROBDD のどのノードレベルに取り込まれるかを
 指定することができる。-1 を指定すると、構築されたZBDDの高さと同じになる。
@@ -526,32 +526,34 @@ void bddexportbddasbinary(FILE* fp, bddp f)
 void bddexportzbddasbinary(FILE* fp, bddp f)
 ```
 
-BDD/ZBDD f を [BDD バイナリ形式](bdd_binary_format.md) で、引数で指定したファイルポインタ fp に書き込む。
+BDD/ZBDD f を [BDD バイナリ形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/bdd_binary_format.md) で、引数で指定したファイルポインタ fp に書き込む。
 bddexportbddasknuth は BDD を、bddexportzbddasknuth は ZBDD を引数にとる。
 
-##bddimportbddasgraphillion
+## bddimportbddasgraphillion
 
 ```
 bddp bddimportbddasgraphillion(FILE* fp, int root_level)
 bddp bddimportzbddasgraphillion(FILE* fp, int root_level)
 ```
 
-[graphillion 形式](graphillion_format.md) のファイルを、引数で指定したファイルポインタ fp から読み込み、BDD/ZBDD を構築して返す。
+[graphillion 形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/graphillion_format.md) のファイルを、引数で指定したファイルポインタ fp から読み込み、BDD/ZBDD を構築して返す。
 bddimportbddasgraphillion は BDD bddimportzbddasgraphillion は ZBDD を返す。
-root_level 引数によって、根ノードが SAPPOROBDD のどのノードレベルに取り込まれるかを
-指定することができる。-1 を指定すると、構築されたZBDDの高さと同じになる。
+root_level には、graphillion の変数番号 1（根に近い番号）に対応する SAPPOROBDD の level を指定する。graphillion で universe を n 個設定する場合は、root_level に n を与えればよい。root_level が -1 のときは、SAPPOROBDD の根ノードの level が、graphillion の変数番号 1（根に近い番号）に対応するように自動設定される。
 
 ## bddexportbddasgraphillion
 
 ```
-void bddexportbddasgraphillion(FILE* fp, bddp f, bddNodeIndex* index)
-void bddexportzbddasgraphillion(FILE* fp, bddp f, bddNodeIndex* index)
+void bddexportbddasgraphillion(FILE* fp, bddp f, bddNodeIndex* index, int root_level)
+void bddexportzbddasgraphillion(FILE* fp, bddp f, bddNodeIndex* index, int root_level)
 ```
 
-BDD/ZBDD f を [graphillion 形式](graphillion_format.md) で、引数で指定したファイルポインタ fp に書き込む。
+BDD/ZBDD f を [graphillion 形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/graphillion_format.md) で、引数で指定したファイルポインタ fp に書き込む。
 bddexportbddasgraphillion は BDD bddexportzbddasgraphillion は ZBDD を引数にとる。
 index が NULL なら内部で自動的にインデックスが生成される。
 index が NULL でないなら、指定したインデックスが用いられる。
+root_level には、graphillion の変数番号 1（根に近い番号）に対応する SAPPOROBDD の level を指定する。graphillion で universe を n 個設定した場合は、root_level に n を与えればよい。root_level が -1 のときは、graphillion 形式に現れる最も大きな変数番号（すなわち終端に近い）が、SAPPOROBDD の level 1 に対応するように自動設定される。
+
+root_level 引数は Ver 0.9.1 で追加された。
 
 ## bddimportbddasknuth
 

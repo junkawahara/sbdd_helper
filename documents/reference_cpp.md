@@ -429,7 +429,27 @@ ZBDD getUniformlyRandomZBDD(int level, T& random_engine)
 ```
 
 ノードレベルが最大 level である（すなわち根ノードのレベルが level 以下である）ZBDD を一様ランダムに構築して返す。
-一様ランダムとは、ノードレベルが最大 level である ZBDD が表すことのできる 2^(2^(level)) 個の集合族から一様ランダムに1つ選択し、その集合族を表す ZBDD を構築して返すという意味である。引数の T& random_engine は、乱数生成エンジンを指定する。<random> ヘッダのインクルードが必要である。この関数は C++ 版にのみ存在し、C++11 以降でコンパイルした場合のみ使用可能である。
+一様ランダムとは、ノードレベルが最大 level である ZBDD が表すことのできる 2^(2^(level)) 個の集合族から一様ランダムに1つ選択し、その集合族を表す ZBDD を構築して返すという意味である。
+この関数は 2^(level) より大きな計算時間がかかる（level が大きすぎると計算が終わらない）。
+引数の T& random_engine は、乱数生成エンジンを指定する。<random> ヘッダのインクルードが必要である。この関数は C++ 版にのみ存在し、C++11 以降でコンパイルした場合のみ使用可能である。
+
+### 使用例
+
+```
+std::mt19937 mt(0);
+ZBDD f = getUniformlyRandomZBDD(10, mt);
+```
+
+## getRandomZBDDWithCard
+
+```
+template <typename T>
+ZBDD getRandomZBDDWithCard(int level, llint card, T& random_engine)
+```
+
+ノードレベルが最大 level である（すなわち根ノードのレベルが level 以下である）ZBDD のうち、要素数が card 個であるものをランダムに作成して返す。
+この関数は、card に依存する計算時間がかかる（card が大きすぎると計算が終わらない）。
+引数の T& random_engine は、乱数生成エンジンを指定する。<random> ヘッダのインクルードが必要である。この関数は C++ 版にのみ存在し、C++11 以降でコンパイルした場合のみ使用可能である。
 
 ### 使用例
 
@@ -449,7 +469,7 @@ ZBDD constructZBDDFromElements(std::istream& ist)
 ファイルは、1行に1つの集合の変数番号をスペース区切りで並べた形式である。
 最後の行の末尾には改行があってもなくてもよい。何も書かれていない行は空集合に対応する。
 空集合に対応する行は、ファイルの末尾に置いてはいけない。
-過去には引数に large_sep、small_sep を指定できたが、廃止された。
+過去には引数に large_sep、small_sep を指定できたが、Ver 0.9.0 廃止された。
 
 ### 使用例
 
@@ -539,9 +559,10 @@ ZBDD importZBDDAsBinary(std::istream& ist, int root_level = -1)
 ```
 
 引数 fp または ist で指定した（ファイル等の）ストリームから、
-[BDD バイナリ形式](bdd_binary_format.md) を読み込み、BDD/ZBDD を構築して返す。
+[BDD バイナリ形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/bdd_binary_format.md) を読み込み、BDD/ZBDD を構築して返す。
 root_level に正の数を指定すると、根のレベルが root_level になる。
-BDD 版は未実装である。
+
+Ver 1.0.0 で BDD 版が実装された。また、否定枝を使わない場合に対応した。
 
 ### 使用例
 
@@ -554,15 +575,28 @@ ifs.close();
 ## exportBDDAsBinary
 
 ```
-void exportBDDAsBinary(FILE* fp, const BDD& bdd)
-void exportBDDAsBinary(std::ostream& ost, const BDD& bdd)
-void exportZBDDAsBinary(FILE* fp, const ZBDD& zbdd)
-void exportZBDDAsBinary(std::ostream& ost, const ZBDD& zbdd)
+template <typename T>
+void exportBDDAsBinary(FILE* fp, const BDD& bdd, bool use_negative_arcs, DDIndex<T>* index)void exportBDDAsBinary(FILE* fp, const BDD& bdd, bool use_negative_arcs = true)
+void exportBDDAsBinary(std::ostream& ost, const BDD& bdd, bool use_negative_arcs, DDIndex<T>* index)
+void exportBDDAsBinary(std::ostream& ost, const BDD& bdd, bool use_negative_arcs = true)
+void exportZBDDAsBinary(FILE* fp, const ZBDD& zbdd, bool use_negative_arcs, DDIndex<T>* index)
+void exportZBDDAsBinary(FILE* fp, const ZBDD& zbdd, bool use_negative_arcs = true)
+void exportZBDDAsBinary(std::ostream& ost, const ZBDD& zbdd, bool use_negative_arcs, DDIndex<T>* index)
+void exportZBDDAsBinary(std::ostream& ost, const ZBDD& zbdd, bool use_negative_arcs = true)
 ```
 
 引数 fp または ost で指定した（ファイル等の）ストリームに、
-BDD/ZBDD を、[BDD バイナリ形式](bdd_binary_format.md) で書き込む。
-BDD 版は未実装である。
+BDD/ZBDD を、[BDD バイナリ形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/bdd_binary_format.md) で書き込む。
+use_negative_arcs は否定枝を使うかどうかを表す bool 値であり、true なら否定枝を使用し、false なら否定枝を使わない。否定枝を用いるとファイルサイズが削減されるので、理由がない場合は否定枝を用いることを推奨する。
+
+事前に DDIndex を構築している場合は引数に指定できる。
+構築していない場合は index を NULL にすることで、関数内部で自動的に構築される
+（関数終了後、自動的に破棄される）。
+use_negative_arcs が true のときは、DDIndex は raw モードで作成されていなければならない。
+use_negative_arcs が false のときは、DDIndex は通常モード（raw モードではないモード）で作成されていなければならない。
+
+
+Ver 1.0.0 で BDD 版が実装された。また、引数 use_negative_arcs と DDIndex に対応した。
 
 ### 使用例
 
@@ -571,7 +605,7 @@ ZBDD f = ...; // f は何らかの方法で作成
 
 std::ofstream ofs("zbdd.dat");
 exportZBDDAsBinary(ofs, f);
-ofs.close();
+ofs.close(); // バイナリ形式ファイル zbdd.dat が作成される
 ```
 
 ## importBDDAsGraphillion
@@ -584,23 +618,32 @@ ZBDD importZBDDAsGraphillion(std::istream& ist, int root_level = -1)
 ```
 
 引数 fp または ist で指定した（ファイル等の）ストリームから、
-[graphillion 形式](graphillion_format.md) を読み込み、BDD/ZBDD を構築して返す。
-root_level に正の数を指定すると、根のレベルが root_level になる。
+[graphillion 形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/graphillion_format.md) を読み込み、BDD/ZBDD を構築して返す。
+root_level には、graphillion の変数番号 1（根に近い番号）に対応する SAPPOROBDD の level を指定する。graphillion で universe を n 個設定する場合は、root_level に n を与えればよい。root_level が -1 のときは、SAPPOROBDD の根ノードの level が、graphillion の変数番号 1（根に近い番号）に対応するように自動設定される。
 
 ## exportBDDAsGraphillion
 
 ```
-void exportBDDAsGraphillion(FILE* fp, const BDD& bdd, DDNodeIndex* index = NULL)
-void exportBDDAsGraphillion(std::ostream& ost, const BDD& bdd, DDNodeIndex* index = NULL)
-void exportZBDDAsGraphillion(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
-void exportZBDDAsGraphillion(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* index = NULL)
+template <typename T>
+void exportBDDAsGraphillion(FILE* fp, const BDD& bdd, int root_level, DDIndex<T>* index)
+void exportBDDAsGraphillion(FILE* fp, const BDD& bdd, int root_level = -1)
+void exportBDDAsGraphillion(std::ostream& ost, const BDD& bdd, int root_level, DDIndex<T>* index)
+void exportBDDAsGraphillion(std::ostream& ost, const BDD& bdd, int root_level = -1)
+void exportZBDDAsGraphillion(FILE* fp, const ZBDD& zbdd, int root_level, DDIndex<T>* index)void exportZBDDAsGraphillion(FILE* fp, const ZBDD& zbdd, int root_level = -1)
+void exportZBDDAsGraphillion(std::ostream& ost, const ZBDD& zbdd, int root_level, DDIndex<T>* index)
+void exportZBDDAsGraphillion(std::ostream& ost, const ZBDD& zbdd, int root_level = -1)
 ```
 
 引数 fp または ost で指定した（ファイル等の）ストリームに、
-BDD/ZBDD を、[graphillion 形式](graphillion_format.md) で書き込む。
-事前に DDNodeIndex を構築している場合は引数に指定できる。
+BDD/ZBDD を、[graphillion 形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/graphillion_format.md) で書き込む。
+root_level には、graphillion の変数番号 1（根に近い番号）に対応する SAPPOROBDD の level を指定する。graphillion で universe を n 個設定した場合は、root_level に n を与えればよい。root_level が -1 のときは、graphillion 形式に現れる最も大きな変数番号（すなわち終端に近い）が、SAPPOROBDD の level 1 に対応するように自動設定される。
+
+事前に DDIndex を構築している場合は引数に指定できる。
 構築していない場合は index を NULL にすることで、関数内部で自動的に構築される
 （関数終了後、自動的に破棄される）。
+DDIndex は通常モード（raw モードではないモード）で作成されていなければならない。
+
+Ver 1.0.0 から root_level 引数が追加され、DDNodeIndex から DDIndex<T> に変更された。
 
 ### 使用例
 
@@ -608,7 +651,7 @@ BDD/ZBDD を、[graphillion 形式](graphillion_format.md) で書き込む。
 ZBDD f = ...; // f は何らかの方法で作成
 
 std::ofstream ofs("zbdd_for_graphillion.dat");
-writeZBDDForGraphillion(ofs, f);
+exportZBDDAsGraphillion(ofs, f);
 ofs.close();
 ```
 
@@ -630,30 +673,55 @@ is_hex を true にすると、値を16進数として、false にすると、�
 ## exportBDDAsKnuth
 
 ```
-void exportBDDAsKnuth(FILE* fp, const BDD& bdd, bool is_hex)
-void exportBDDAsKnuth(std::ostream& ost, const BDD& bdd, bool is_hex)
-void exportZBDDAsKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex)
-void exportZBDDAsKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex)
+template <typename T>
+void exportBDDAsKnuth(FILE* fp, const BDD& bdd, bool is_hex, DDIndex<T>* index)
+void exportBDDAsKnuth(FILE* fp, const BDD& bdd, bool is_hex = false)
+void exportBDDAsKnuth(std::ostream& ost, const BDD& bdd, bool is_hex, DDIndex<T>* index)
+void exportBDDAsKnuth(std::ostream& ost, const BDD& bdd, bool is_hex = false)
+void exportZBDDAsKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex, DDIndex<T>* index)
+void exportZBDDAsKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex = false)
+void exportZBDDAsKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex, DDIndex<T>* index)
+void exportZBDDAsKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex = false)
 ```
 
 引数 fp または ost で指定した（ファイル等の）ストリームに、
 BDD/ZBDD を、Knuth 形式 で書き込む。
 is_hex を true にすると16進数を、false にすると10進数を書き込む。
-Knuth 形式の利用は非推奨である。代わりに [graphillion 形式](graphillion_format.md) を推奨する。
+Knuth 形式の利用は非推奨である。代わりに [graphillion 形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/graphillion_format.md) を推奨する。
+
+事前に DDIndex を構築している場合は引数に指定できる。
+構築していない場合は index を NULL にすることで、関数内部で自動的に構築される
+（関数終了後、自動的に破棄される）。
+DDIndex は通常モード（raw モードではないモード）で作成されていなければならない。
+
+Ver 1.0.0 から DDIndex<T> 引数が追加された。
 
 ## exportZBDDAsGraphviz
 
 ```
-void exportZBDDAsGraphviz(FILE* fp, const ZBDD& zbdd, DDNodeIndex* index = NULL)
-void exportZBDDAsGraphviz(std::ostream& ost, const ZBDD& zbdd, DDNodeIndex* index = NULL)
+template <typename T>
+void exportBDDAsGraphviz(FILE* fp, const BDD& bdd, std::map<std::string, std::string>* /*option*/, DDIndex<T>* index)
+void exportBDDAsGraphviz(FILE* fp, const BDD& bdd, std::map<std::string, std::string>* option = NULL)
+void exportBDDAsGraphviz(std::ostream& ost, const BDD& bdd, std::map<std::string, std::string>* /*option*/, DDIndex<T>* index)
+void exportBDDAsGraphviz(std::ostream& ost, const BDD& bdd,std::map<std::string, std::string>* option = NULL)
+void exportZBDDAsGraphviz(FILE* fp, const ZBDD& zbdd, std::map<std::string, std::string>* /*option*/, DDIndex<T>* index)
+void exportZBDDAsGraphviz(FILE* fp, const ZBDD& zbdd, std::map<std::string, std::string>* option = NULL)
+void exportZBDDAsGraphviz(std::ostream& ost, const ZBDD& zbdd, std::map<std::string, std::string>* /*option*/, DDIndex<T>* index)
+void exportZBDDAsGraphviz(std::ostream& ost, const ZBDD& zbdd, std::map<std::string, std::string>* option = NULL)
 ```
 
 引数 fp または ost で指定した（ファイル等の）ストリームに、
 ZBDD を、[Graphviz](https://www.graphviz.org/) の
 [dot 形式](https://www.graphviz.org/doc/info/lang.html)で書き込む。
-事前に DDNodeIndex を構築している場合は引数に指定できる。
+
+option 引数では、現バージョンでは無視される。
+
+事前に DDIndex を構築している場合は引数に指定できる。
 構築していない場合は index を NULL にすることで、関数内部で自動的に構築される
 （関数終了後、自動的に破棄される）。
+DDIndex は通常モード（raw モードではないモード）で作成されていなければならない。
+
+Ver 1.0.0 から BDD に対応した。option 引数が用意された。bddNodeIndex が DDIndex<T> に変更された。
 
 ### 使用例
 
@@ -661,7 +729,7 @@ ZBDD を、[Graphviz](https://www.graphviz.org/) の
 ZBDD f = ...; // f は何らかの方法で作成
 
 std::ofstream ofs("zbdd_for_graphviz.dat");
-writeZBDDForGraphviz(ofs, f);
+exportZBDDAsGraphviz(ofs, f);
 ofs.close();
 ```
 
@@ -675,17 +743,24 @@ dot -Tpng -o zbdd.png < zbdd_for_graphviz.dat
 
 ```
 template<typename T>
-void exportBDDAsSvg(FILE* fp, const BDD& bdd, DDIndex<T>* index = NULL)
-void exportBDDAsSvg(std::ostream& ost, const BDD& bdd, DDIndex<T>* index = NULL)
-void exportZBDDAsSvg(FILE* fp, const ZBDD& zbdd, DDIndex<T>* index = NULL)
-void exportZBDDAsSvg(std::ostream& ost, const ZBDD& zbdd, DDIndex<T>* index = NULL)
+void exportBDDAsSvg(FILE* fp, const BDD& bdd, std::map<std::string, std::string>* /*option*/, DDIndex<T>* index)
+void exportBDDAsSvg(FILE* fp, const BDD& bdd, std::map<std::string, std::string>* option = NULL)
+void exportBDDAsSvg(std::ostream& ost, const BDD& bdd, std::map<std::string, std::string>* /*option*/, DDIndex<T>* index)
+void exportBDDAsSvg(std::ostream& ost, const BDD& bdd, std::map<std::string, std::string>* option = NULL)
+void exportZBDDAsSvg(FILE* fp, const ZBDD& zbdd, std::map<std::string, std::string>* /*option*/, DDIndex<T>* index)
+void exportZBDDAsSvg(FILE* fp, const ZBDD& zbdd, std::map<std::string, std::string>* option = NULL)
+void exportZBDDAsSvg(std::ostream& ost, const ZBDD& zbdd, std::map<std::string, std::string>* /*option*/, DDIndex<T>* index)
+void exportZBDDAsSvg(std::ostream& ost, const ZBDD& zbdd, std::map<std::string, std::string>* option = NULL)
 ```
 
 引数 fp または ost で指定した（ファイル等の）ストリームに、
 BDD/ZBDD を SVG 形式の図として書き込む。
 （SVG 形式はブラウザ等で閲覧できる。）
+
 事前に DDIndex<T> を構築している場合は引数に指定できる。
 構築していない場合は index を NULL にすることで、関数内部で自動的に構築される
 （関数終了後、自動的に破棄される）。
+DDIndex は通常モード（raw モードではないモード）で作成されていなければならない。
+
 本関数は C++ 版にのみ存在する。
 BDD 版は未実装である。
