@@ -463,6 +463,8 @@ int bddismemberz(bddp f, const bddvar* vararr, int n)
     int i, c;
     bddvar* ar;
 
+    assert(n >= 0);
+
     if (n == 0) {
         return bddisnegative(f);
     }

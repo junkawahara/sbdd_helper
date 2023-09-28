@@ -1,5 +1,6 @@
 typedef struct tagbddNodeIndex {
     int is_raw;
+    int is_zbdd;
     // All of the following four pointers are NULL if f is a terminal or bddnull.
     sbddextended_MyDict* node_dict_arr;
     sbddextended_MyVector* level_vec_arr; // stores all nodes at level i
@@ -10,7 +11,7 @@ typedef struct tagbddNodeIndex {
 } bddNodeIndex;
 
 sbddextended_INLINE_FUNC
-bddNodeIndex* bddNodeIndex_makeIndexWithoutCount_inner(bddp f, int is_raw, int is_zdd)
+bddNodeIndex* bddNodeIndex_makeIndexWithoutCount_inner(bddp f, int is_raw, int is_zbdd)
 {
     int i, k, level;
     size_t j;
@@ -22,9 +23,10 @@ bddNodeIndex* bddNodeIndex_makeIndexWithoutCount_inner(bddp f, int is_raw, int i
         fprintf(stderr, "out of memory\n");
         exit(1);
     }
-    index->is_raw = is_raw;
+    index->is_raw = (is_raw != 0 ? 1 : 0);
     index->f = f;
     index->height = (int)bddgetlev(f);
+    index->is_zbdd = (is_zbdd != 0 ? 1 : 0);
 
     if (f == bddnull || f == bddfalse || f == bddtrue) {
         index->node_dict_arr = NULL;
@@ -65,14 +67,14 @@ bddNodeIndex* bddNodeIndex_makeIndexWithoutCount_inner(bddp f, int is_raw, int i
             node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i], (llint)j);
             for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
                 if (is_raw) {
-                    if (is_zdd) {
+                    if (is_zbdd) {
                         child = bddgetchildzraw(node, k);
                     } else {
                         child = bddgetchildbraw(node, k);
                     }
                     child = bdderasenot(child);
                 } else {
-                    if (is_zdd) {
+                    if (is_zbdd) {
                         child = bddgetchildz(node, k);
                     } else {
                         child = bddgetchildb(node, k);
@@ -145,21 +147,25 @@ bddNodeIndex* bddNodeIndex_makeRawIndexWithoutCount(bddp f)
 }
 
 sbddextended_INLINE_FUNC
-bddNodeIndex* bddNodeIndex_makeIndex_inner(bddp f, int is_raw, int is_zdd)
+bddNodeIndex* bddNodeIndex_makeIndex_inner(bddp f, int is_raw, int is_zbdd)
 {
     int i, clevel, raw_flag;
     llint j, id0, id1;
     bddp node, n0, n1;
     bddNodeIndex* index;
 
-    index = bddNodeIndex_makeIndexWithoutCount_inner(f, is_raw, is_zdd);
+    index = bddNodeIndex_makeIndexWithoutCount_inner(f, is_raw, is_zbdd);
 
     if (f == bddnull || f == bddfalse || f == bddtrue) {
         return index;
     }
 
-    if (is_zdd) {
+    if (is_zbdd) {
         index->count_arr = (llint*)malloc((size_t)index->offset_arr[0] * sizeof(llint));
+        if (index->count_arr == NULL) {
+            fprintf(stderr, "out of memory\n");
+            exit(1);
+        }
         index->count_arr[0] = 0;
         index->count_arr[1] = 1;
 
