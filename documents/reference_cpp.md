@@ -559,7 +559,7 @@ ZBDD importZBDDAsBinary(std::istream& ist, int root_level = -1)
 ```
 
 引数 fp または ist で指定した（ファイル等の）ストリームから、
-[BDD バイナリ形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/bdd_binary_format.md) を読み込み、BDD/ZBDD を構築して返す。
+[BDD バイナリ形式](https://github.com/junkawahara/dd_documents/blob/main/formats/bdd_binary_format.md) を読み込み、BDD/ZBDD を構築して返す。
 root_level に正の数を指定すると、根のレベルが root_level になる。
 
 Ver 1.0.0 で BDD 版が実装された。また、否定枝を使わない場合に対応した。
@@ -586,7 +586,7 @@ void exportZBDDAsBinary(std::ostream& ost, const ZBDD& zbdd, bool use_negative_a
 ```
 
 引数 fp または ost で指定した（ファイル等の）ストリームに、
-BDD/ZBDD を、[BDD バイナリ形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/bdd_binary_format.md) で書き込む。
+BDD/ZBDD を、[BDD バイナリ形式](https://github.com/junkawahara/dd_documents/blob/main/formats/bdd_binary_format.md) で書き込む。
 use_negative_arcs は否定枝を使うかどうかを表す bool 値であり、true なら否定枝を使用し、false なら否定枝を使わない。否定枝を用いるとファイルサイズが削減されるので、理由がない場合は否定枝を用いることを推奨する。
 
 事前に DDIndex を構築している場合は引数に指定できる。
@@ -618,7 +618,7 @@ ZBDD importZBDDAsGraphillion(std::istream& ist, int root_level = -1)
 ```
 
 引数 fp または ist で指定した（ファイル等の）ストリームから、
-[graphillion 形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/graphillion_format.md) を読み込み、BDD/ZBDD を構築して返す。
+[graphillion 形式](https://github.com/junkawahara/dd_documents/blob/main/formats/graphillion_format.md) を読み込み、BDD/ZBDD を構築して返す。
 root_level には、graphillion の変数番号 1（根に近い番号）に対応する SAPPOROBDD の level を指定する。graphillion で universe を n 個設定する場合は、root_level に n を与えればよい。root_level が -1 のときは、SAPPOROBDD の根ノードの level が、graphillion の変数番号 1（根に近い番号）に対応するように自動設定される。
 
 ## exportBDDAsGraphillion
@@ -635,7 +635,7 @@ void exportZBDDAsGraphillion(std::ostream& ost, const ZBDD& zbdd, int root_level
 ```
 
 引数 fp または ost で指定した（ファイル等の）ストリームに、
-BDD/ZBDD を、[graphillion 形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/graphillion_format.md) で書き込む。
+BDD/ZBDD を、[graphillion 形式](https://github.com/junkawahara/dd_documents/blob/main/formats/graphillion_format.md) で書き込む。
 root_level には、graphillion の変数番号 1（根に近い番号）に対応する SAPPOROBDD の level を指定する。graphillion で universe を n 個設定した場合は、root_level に n を与えればよい。root_level が -1 のときは、graphillion 形式に現れる最も大きな変数番号（すなわち終端に近い）が、SAPPOROBDD の level 1 に対応するように自動設定される。
 
 事前に DDIndex を構築している場合は引数に指定できる。
@@ -687,7 +687,7 @@ void exportZBDDAsKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex = false)
 引数 fp または ost で指定した（ファイル等の）ストリームに、
 BDD/ZBDD を、Knuth 形式 で書き込む。
 is_hex を true にすると16進数を、false にすると10進数を書き込む。
-Knuth 形式の利用は非推奨である。代わりに [graphillion 形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/graphillion_format.md) を推奨する。
+Knuth 形式の利用は非推奨である。代わりに [graphillion 形式](https://github.com/junkawahara/dd_documents/blob/main/formats/graphillion_format.md) を推奨する。
 
 事前に DDIndex を構築している場合は引数に指定できる。
 構築していない場合は index を NULL にすることで、関数内部で自動的に構築される

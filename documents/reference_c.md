@@ -514,7 +514,7 @@ bddp bddimportbddasbinary(FILE* fp, int root_level)
 bddp bddimportzbddasbinary(FILE* fp, int root_level)
 ```
 
-[BDD バイナリ形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/bdd_binary_format.md) のファイルを、引数で指定したファイルポインタ fp から読み込み、BDD/ZBDD を構築して返す。
+[BDD バイナリ形式](https://github.com/junkawahara/dd_documents/blob/main/formats/bdd_binary_format.md) のファイルを、引数で指定したファイルポインタ fp から読み込み、BDD/ZBDD を構築して返す。
 bddimportbddasbinary は BDD bddimportzbddasbinary は ZBDD を返す。
 root_level 引数によって、根ノードが SAPPOROBDD のどのノードレベルに取り込まれるかを
 指定することができる。-1 を指定すると、構築されたZBDDの高さと同じになる。
@@ -526,7 +526,7 @@ void bddexportbddasbinary(FILE* fp, bddp f)
 void bddexportzbddasbinary(FILE* fp, bddp f)
 ```
 
-BDD/ZBDD f を [BDD バイナリ形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/bdd_binary_format.md) で、引数で指定したファイルポインタ fp に書き込む。
+BDD/ZBDD f を [BDD バイナリ形式](https://github.com/junkawahara/dd_documents/blob/main/formats/bdd_binary_format.md) で、引数で指定したファイルポインタ fp に書き込む。
 bddexportbddasknuth は BDD を、bddexportzbddasknuth は ZBDD を引数にとる。
 
 ## bddimportbddasgraphillion
@@ -536,7 +536,7 @@ bddp bddimportbddasgraphillion(FILE* fp, int root_level)
 bddp bddimportzbddasgraphillion(FILE* fp, int root_level)
 ```
 
-[graphillion 形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/graphillion_format.md) のファイルを、引数で指定したファイルポインタ fp から読み込み、BDD/ZBDD を構築して返す。
+[graphillion 形式](https://github.com/junkawahara/dd_documents/blob/main/formats/graphillion_format.md) のファイルを、引数で指定したファイルポインタ fp から読み込み、BDD/ZBDD を構築して返す。
 bddimportbddasgraphillion は BDD bddimportzbddasgraphillion は ZBDD を返す。
 root_level には、graphillion の変数番号 1（根に近い番号）に対応する SAPPOROBDD の level を指定する。graphillion で universe を n 個設定する場合は、root_level に n を与えればよい。root_level が -1 のときは、SAPPOROBDD の根ノードの level が、graphillion の変数番号 1（根に近い番号）に対応するように自動設定される。
 
@@ -547,7 +547,7 @@ void bddexportbddasgraphillion(FILE* fp, bddp f, bddNodeIndex* index, int root_l
 void bddexportzbddasgraphillion(FILE* fp, bddp f, bddNodeIndex* index, int root_level)
 ```
 
-BDD/ZBDD f を [graphillion 形式](https://github.com/junkawahara/sbdd_helper/blob/main/documents/graphillion_format.md) で、引数で指定したファイルポインタ fp に書き込む。
+BDD/ZBDD f を [graphillion 形式](https://github.com/junkawahara/dd_documents/blob/main/formats/graphillion_format.md) で、引数で指定したファイルポインタ fp に書き込む。
 bddexportbddasgraphillion は BDD bddexportzbddasgraphillion は ZBDD を引数にとる。
 index が NULL なら内部で自動的にインデックスが生成される。
 index が NULL でないなら、指定したインデックスが用いられる。
