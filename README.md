@@ -1,7 +1,7 @@
 # One header library for SAPPOROBDD
 
-[SAPPOROBDD](https://github.com/Shin-ichi-Minato/SAPPOROBDD) を使用する際に便利な関数を提供しています。
-ライブラリは1つのヘッダファイルだけから構成されているため、
+BDD/ZDD（Binary Decision Diagram、二分決定グラフ）ライブラリ[SAPPOROBDD](https://github.com/Shin-ichi-Minato/SAPPOROBDD) を使用する際に便利な関数を提供しています。
+ライブラリは基本的に1つのヘッダファイルだけから構成されているため、
 インクルードするだけで使用できます。
 C/C++ 言語の両方に対応しています。C++ は C++98 以降、C++17 までコンパイル可能であることを確認しています。
 
@@ -38,13 +38,13 @@ C/C++ 言語の両方に対応しています。C++ は C++98 以降、C++17 ま
 
 または、SAPPOROBDD と SAPPOROBDD helper（と他のライブラリ）を同時にインストールできる [dd_package](https://github.com/junkawahara/dd_package) を用いるのも便利です。
 
-C 言語（bddc.c のみを使用）の場合は以下のように、bddc.h ヘッダのインクルードの後に SBDD_helper.h をインクルードしてください。
+C 言語（bddc.c のみを使用）の場合は以下のように、bddc.h ヘッダのインクルードの後に `SBDD_helper.h` をインクルードしてください。
 ```
 #include "bddc.h"
 #include "SBDD_helper.h"
 ```
 
-C++ 言語（BDD, ZBDD クラスを使用）の場合、以下のように、BDD.h や ZBDD.h ヘッダのインクルードの後に SBDD_helper.h をインクルードしてください。
+C++ 言語（BDD, ZBDD クラスを使用）の場合、以下のように、BDD.h や ZBDD.h ヘッダのインクルードの後に `SBDD_helper.h` をインクルードしてください。
 ```
 #include "ZBDD.h"
 #include "SBDD_helper.h"
@@ -54,6 +54,12 @@ C++ 版では、ライブラリはすべて名前空間 sbddh の中で定義さ
 
 ```
 using namespace sbddh;
+```
+
+TdZdd も使用する場合、TdZdd と `SBDD_helper.h` のインクルードの後に、`SBDD_helper_tdzdd.h` をインクルードしてください。
+
+```
+#include "SBDD_helper_tdzdd.h"
 ```
 
 ## GMP について
