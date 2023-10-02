@@ -1,5 +1,7 @@
 # DDNodeIndex クラス
 
+このクラスは非推奨になった。代わりに [DDIndex](reference_cpp_DDIndex.md) クラスを推奨する。
+
 BDD/ZBDD に対して「インデックス」を付加することで、
 BDD/ZBDD が表す集合族の要素の個数や、BDD/ZBDD のノードの個数を
 求める機能を提供する。

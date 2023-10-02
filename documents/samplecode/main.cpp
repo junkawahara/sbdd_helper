@@ -82,6 +82,28 @@ void example2()
         weights.push_back(w);
     }
     std::cout << "max = " << index.getMaximum(weights) << std::endl;
+
+    // 各ノードに値を記憶させて計算を行う例。
+    // この例では、f に含まれる要素数を計算する。
+    // 終端に近いノードから順に根に向かって計算する。
+    // 値は value メンバ変数に格納される。
+    // value の型は DDIndex<T> の T である。
+    index.terminal(0).value = 0; // 終端ノードに値を格納
+    index.terminal(1).value = 1;
+    // ZBDD の各レベルについて
+    for (int level = 1; level <= index.height(); ++level) {
+        // レベル level の各ノードについて
+        for (llint j = 0; j < index.size(level); ++j) {
+            // レベル level の j 番目のノードを取得
+            DDNode<int> n = index.getNode(level, j);
+            // 子ノードの値から親ノードの値を計算
+            n.value = n.child(0).value + n.child(1).value;
+            // value はインデックスに格納されるので、
+            // DDNode<int> n は開放しても問題ない
+        }
+    }
+    // 根ノードの値を取得
+    std::cout << "count = " << index.root().value << std::endl;
 }
 
 int main()
