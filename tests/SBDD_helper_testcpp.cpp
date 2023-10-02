@@ -100,6 +100,27 @@ void test_BDD_functions()
         test(fx.Card() == static_cast<unsigned int>(i * 10 + 10));
     }
 #endif
+
+    ullint rand_state = 31415926535ull;
+    for (int i = 0; i < 10; ++i) {
+        BDD fx = getUniformlyRandomBDDX(i, &rand_state);
+        test(fx.Top() <= i);
+        ZBDD fy = getUniformlyRandomZBDDX(i, &rand_state);
+        test(fy.Top() <= i);
+        test(fy.Card() <= (1u << i)); // card <= 2^i
+    }
+    for (int i = 0; i < 10; ++i) {
+        ZBDD fx = getRandomZBDDWithCardX(i * 10 + 5, i * 10 + 10, &rand_state);
+        test(fx.Card() == static_cast<unsigned int>(i * 10 + 10));
+    }
+    {
+        BDD fx = exampleBdd();
+        ZBDD fy = exampleZbdd();
+    }
+    for (int i = 0; i < 10; ++i) {
+        BDD fx = exampleBdd(i);
+        ZBDD fy = exampleZbdd(i);
+    }
 }
 
 void test_at_random_cpp()

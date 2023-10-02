@@ -18,4 +18,16 @@ const char** sbddextended_strVectorToArray(const std::vector<std::string>& vec)
     return arr;
 }
 
+// XOR shift
+sbddextended_INLINE_FUNC
+ullint sbddextended_getXRand(ullint* state)
+{
+    ullint v = *state;
+    v ^= (v << 13);
+    v ^= (v >> 7);
+    v ^= (v << 17);
+    *state = v;
+    return v;
+}
+
 #endif

@@ -1205,7 +1205,7 @@ llint countNodes(const std::set<ZBDD>& dds, bool is_raw = false)
 
 #if __cplusplus >= 201103L
 
-class DDUtility {
+class DDUtilityCpp11 {
 public:
     template <typename T>
     static ZBDD getUniformlyRandomZBDD(int level, T& random_engine)
@@ -1251,16 +1251,120 @@ template <typename T>
 sbddextended_INLINE_FUNC
 ZBDD getUniformlyRandomZBDD(int level, T& random_engine)
 {
-    return DDUtility::getUniformlyRandomZBDD(level, random_engine);
+    return DDUtilityCpp11::getUniformlyRandomZBDD(level, random_engine);
 }
 
 template <typename T>
 sbddextended_INLINE_FUNC
 ZBDD getRandomZBDDWithCard(int level, llint card, T& random_engine)
 {
-    return DDUtility::getRandomZBDDWithCard(level, card, random_engine);
+    return DDUtilityCpp11::getRandomZBDDWithCard(level, card, random_engine);
 }
 
 #endif // __cplusplus >= 201103L
+
+class DDUtility {
+public:
+    static BDD getUniformlyRandomBDDX(int level, ullint* rand_state)
+    {
+        if (level > 0) {
+            return makeNode(bddvaroflev(level),
+                            getUniformlyRandomBDDX(level - 1,
+                                                    rand_state),
+                            getUniformlyRandomBDDX(level - 1,
+                                                    rand_state));
+        } else {
+            ullint v = sbddextended_getXRand(rand_state);
+            if (((v >> 19) & 1u) != 0) {
+                return BDD(1);
+            } else {
+                return BDD(0);
+            }
+        }
+    }
+
+    static ZBDD getUniformlyRandomZBDDX(int level, ullint* rand_state)
+    {
+        if (level > 0) {
+            return makeNode(bddvaroflev(level),
+                            getUniformlyRandomZBDDX(level - 1,
+                                                    rand_state),
+                            getUniformlyRandomZBDDX(level - 1,
+                                                    rand_state));
+        } else {
+            ullint v = sbddextended_getXRand(rand_state);
+            if (((v >> 19) & 1u) != 0) {
+                return ZBDD(1);
+            } else {
+                return ZBDD(0);
+            }
+        }
+    }
+
+    static ZBDD getRandomZBDDWithCardX(int level, llint card, ullint* rand_state)
+    {
+        ZBDD f(0);
+        std::set<bddvar> s;
+
+        while ((llint)f.Card() < card) {
+            for (int lev = 1; lev <= level; ++lev) {
+                ullint v = sbddextended_getXRand(rand_state);
+                if (((v >> 19) & 1u) != 0) {
+                    s.insert(bddvaroflev(lev));
+                }
+            }
+            f += getSingleSet(s);
+            s.clear();
+        }
+
+        return f;
+    }
+};
+
+sbddextended_INLINE_FUNC
+BDD getUniformlyRandomBDDX(int level, ullint* rand_state)
+{
+    return DDUtility::getUniformlyRandomBDDX(level, rand_state);
+}
+
+sbddextended_INLINE_FUNC
+ZBDD getUniformlyRandomZBDDX(int level, ullint* rand_state)
+{
+    return DDUtility::getUniformlyRandomZBDDX(level, rand_state);
+}
+
+sbddextended_INLINE_FUNC
+ZBDD getRandomZBDDWithCardX(int level, llint card, ullint* rand_state)
+{
+    return DDUtility::getRandomZBDDWithCardX(level, card, rand_state);
+}
+
+sbddextended_INLINE_FUNC
+BDD exampleBdd(ullint kind = 0ull)
+{
+    // kind == 0 cannot be used for rand_state
+    kind += 1;
+    ullint rand_state = kind;
+    ullint v = sbddextended_getXRand(&rand_state);
+    int size = static_cast<int>((v % 6) + 3);
+    while (BDD_VarUsed() < size) {
+        BDD_NewVar();
+    }
+    return DDUtility::getUniformlyRandomBDDX(size, &rand_state);
+}
+
+sbddextended_INLINE_FUNC
+ZBDD exampleZbdd(ullint kind = 0ull)
+{
+    // kind == 0 cannot be used for rand_state
+    kind += 1;
+    ullint rand_state = kind;
+    ullint v = sbddextended_getXRand(&rand_state);
+    int size = static_cast<int>((v % 6) + 3);
+    while (BDD_VarUsed() < size) {
+        BDD_NewVar();
+    }
+    return DDUtility::getUniformlyRandomZBDDX(size, &rand_state);
+}
 
 #endif

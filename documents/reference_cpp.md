@@ -430,6 +430,7 @@ ZBDD getUniformlyRandomZBDD(int level, T& random_engine)
 
 ノードレベルが最大 level である（すなわち根ノードのレベルが level 以下である）ZBDD を一様ランダムに構築して返す。
 一様ランダムとは、ノードレベルが最大 level である ZBDD が表すことのできる 2^(2^(level)) 個の集合族から一様ランダムに1つ選択し、その集合族を表す ZBDD を構築して返すという意味である。
+この関数を呼び出す前に、BDD_NewVar を少なくとも level 回呼び出して、変数を level 個用意する必要がある。
 この関数は 2^(level) より大きな計算時間がかかる（level が大きすぎると計算が終わらない）。
 引数の T& random_engine は、乱数生成エンジンを指定する。<random> ヘッダのインクルードが必要である。この関数は C++ 版にのみ存在し、C++11 以降でコンパイルした場合のみ使用可能である。
 
@@ -440,6 +441,50 @@ std::mt19937 mt(0);
 ZBDD f = getUniformlyRandomZBDD(10, mt);
 ```
 
+## getUniformlyRandomBDDX
+
+```
+BDD getUniformlyRandomBDDX(int level, ullint* rand_state)
+```
+
+ノードレベルが最大 level である（すなわち根ノードのレベルが level 以下である）ZBDD を一様ランダムに構築して返す。
+一様ランダムとは、ノードレベルが最大 level である ZBDD が表すことのできる 2^(2^(level)) 個の集合族から一様ランダムに1つ選択し、その集合族を表す ZBDD を構築して返すという意味である。
+この関数を呼び出す前に、BDD_NewVar を少なくとも level 回呼び出して、変数を level 個用意する必要がある。
+この関数は 2^(level) より大きな計算時間がかかる（level が大きすぎると計算が終わらない）。
+rand_state は乱数エンジンの内部状態を指し、ullint へのポインタを指定する。
+
+この関数は乱数生成として、本ライブラリ内部で実装している Xorshift を用いている。そのため、C++ 言語処理系に依存しない結果が必要な場合に用いることができる。
+
+### 使用例
+
+```
+ullint rand_state = 31415926535ull;
+BDD f1 = getUniformlyRandomBDDX(10, &rand_state);
+BDD f2 = getUniformlyRandomBDDX(10, &rand_state);
+```
+
+## getUniformlyRandomZBDDX
+
+```
+ZBDD getUniformlyRandomZBDDX(int level, ullint* rand_state)
+```
+
+ノードレベルが最大 level である（すなわち根ノードのレベルが level 以下である）ZBDD を一様ランダムに構築して返す。
+一様ランダムとは、ノードレベルが最大 level である ZBDD が表すことのできる 2^(2^(level)) 個の集合族から一様ランダムに1つ選択し、その集合族を表す ZBDD を構築して返すという意味である。
+この関数を呼び出す前に、BDD_NewVar を少なくとも level 回呼び出して、変数を level 個用意する必要がある。
+この関数は 2^(level) より大きな計算時間がかかる（level が大きすぎると計算が終わらない）。
+rand_state は乱数エンジンの内部状態を指し、ullint へのポインタを指定する。
+
+この関数は乱数生成として、本ライブラリ内部で実装している Xorshift を用いている。そのため、C++ 言語処理系に依存しない結果が必要な場合に用いることができる。
+
+### 使用例
+
+```
+ullint rand_state = 31415926535ull;
+ZBDD f1 = getUniformlyRandomZBDDX(10, &rand_state);
+ZBDD f2 = getUniformlyRandomZBDDX(10, &rand_state);
+```
+
 ## getRandomZBDDWithCard
 
 ```
@@ -448,6 +493,7 @@ ZBDD getRandomZBDDWithCard(int level, llint card, T& random_engine)
 ```
 
 ノードレベルが最大 level である（すなわち根ノードのレベルが level 以下である）ZBDD のうち、要素数が card 個であるものをランダムに作成して返す。
+この関数を呼び出す前に、BDD_NewVar を少なくとも level 回呼び出して、変数を level 個用意する必要がある。
 この関数は、card に依存する計算時間がかかる（card が大きすぎると計算が終わらない）。
 引数の T& random_engine は、乱数生成エンジンを指定する。<random> ヘッダのインクルードが必要である。この関数は C++ 版にのみ存在し、C++11 以降でコンパイルした場合のみ使用可能である。
 
@@ -457,6 +503,26 @@ ZBDD getRandomZBDDWithCard(int level, llint card, T& random_engine)
 std::mt19937 mt(0);
 ZBDD f = getUniformlyRandomZBDD(10, mt);
 ```
+
+## exampleBdd
+
+```
+BDD exampleBdd(ullint kind = 0ull)
+```
+
+3変数以上8変数以下の BDD の例を返す。kind には 0 以上の数を指定し、同じ数を指定した場合は同じ BDD を返す。
+この関数は使用している変数が足りない場合、自動的に `BDD_NewVar()` 関数を呼び出す。
+本関数はマニュアルや学習用としての使用を想定している。
+
+## exampleZbdd
+
+```
+ZBDD exampleZbdd(ullint kind = 0ull)
+```
+
+3変数以上8変数以下の ZBDD の例を返す。kind には 0 以上の数を指定し、同じ数を指定した場合は同じ ZBDD を返す。
+この関数は使用している変数が足りない場合、自動的に `BDD_NewVar()` 関数を呼び出す。
+本関数はマニュアルや学習用としての使用を想定している。
 
 ## constructZBDDFromElements
 
