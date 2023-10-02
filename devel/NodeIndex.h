@@ -494,7 +494,7 @@ public:
 
 template <typename T> class DDIndex;
 
-template <typename T = int>
+template <typename T>
 class DDNode {
 private:
     const bddp f_;
@@ -510,7 +510,7 @@ public:
         return f_;
     }
 
-    DDNode child(int c) const
+    DDNode<T> child(int c) const
     {
         bddp g;
         if (isTerminal()) {
@@ -520,7 +520,7 @@ public:
         } else {
             g = bddgetchildz(f_, c);
         }
-        DDNode node(g, index_);
+        DDNode<T> node(g, index_);
         return node;
     }
 
