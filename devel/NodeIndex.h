@@ -59,7 +59,7 @@ bddNodeIndex* bddNodeIndex_makeIndexWithoutCount_inner(bddp f, int is_raw, int i
 
     sbddextended_MyDict_add(&node_index->node_dict_arr[node_index->height],
                             (llint)f,
-                            0); // 0 means the first node in the level
+                            0ll); // 0 means the first node in the level
     sbddextended_MyVector_add(&node_index->level_vec_arr[node_index->height], (llint)f);
 
     for (i = node_index->height; i >= 1; --i) {

@@ -1,12 +1,12 @@
 
 typedef struct tagbddNodeIterator {
-    bddNodeIndex* index;
+    bddNodeIndex* node_index;
     size_t pos;
     llint level;
 } bddNodeIterator;
 
 sbddextended_INLINE_FUNC
-bddNodeIterator* bddNodeIterator_make(bddNodeIndex* index)
+bddNodeIterator* bddNodeIterator_make(bddNodeIndex* node_index)
 {
     bddNodeIterator* itor;
 
@@ -15,9 +15,9 @@ bddNodeIterator* bddNodeIterator_make(bddNodeIndex* index)
         fprintf(stderr, "out of memory\n");
         exit(1);
     }
-    itor->index = index;
+    itor->node_index = node_index;
     itor->pos = 0;
-    itor->level = itor->index->height;
+    itor->level = itor->node_index->height;
     return itor;
 }
 
@@ -36,11 +36,11 @@ bddp bddNodeIterator_next(bddNodeIterator* itor)
         return bddfalse;
     }
 
-    f = (bddp)sbddextended_MyVector_get(&itor->index->level_vec_arr[itor->level],
+    f = (bddp)sbddextended_MyVector_get(&itor->node_index->level_vec_arr[itor->level],
                                         (llint)itor->pos);
     ++itor->pos;
 
-    while (itor->level > 0 && itor->pos >= itor->index->level_vec_arr[itor->level].count) {
+    while (itor->level > 0 && itor->pos >= itor->node_index->level_vec_arr[itor->level].count) {
         itor->pos = 0;
         --itor->level;
     }

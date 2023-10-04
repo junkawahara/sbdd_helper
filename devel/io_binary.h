@@ -106,7 +106,7 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
     sbddextended_MyVector_initialize(&level_vec);
 
     // level 0, unused (dummy)
-    sbddextended_MyVector_add(&level_vec, 0);
+    sbddextended_MyVector_add(&level_vec, 0ll);
 
     number_of_nodes = number_of_terminals;
     for (level = 1; level <= max_level; ++level) {

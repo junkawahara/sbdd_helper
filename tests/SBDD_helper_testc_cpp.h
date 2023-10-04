@@ -70,7 +70,7 @@ int is_expected_str(FILE* fp, const char* str)
         fprintf(stderr, "Too much temporary file size\n");
         exit(1);
     }
-    if (fseek(fp, 0, SEEK_SET) != 0) {
+    if (fseek(fp, 0l, SEEK_SET) != 0) {
         fprintf(stderr, "fseek failed\n");
         exit(1);
     }
@@ -90,7 +90,7 @@ int is_expected_str(FILE* fp, const char* str)
         fprintf(stderr, "fgets failed!\n");
         exit(1);
     }
-    if (fseek(fp, 0, SEEK_SET) != 0) {
+    if (fseek(fp, 0l, SEEK_SET) != 0) {
         fprintf(stderr, "fseek failed\n");
         exit(1);
     }
@@ -198,7 +198,7 @@ void test_MyDict()
 {
     int N = 1024 + 1;
     llint i;
-    llint value;
+    llint value = 0;
     sbddextended_MyDict d0;
     sbddextended_MyDict d;
     sbddextended_MyDict d1;
@@ -655,7 +655,7 @@ void test_at_random()
     }
     bddexportzbddasknuth(fp, f, 0, NULL);
 
-    if (fseek(fp, 0, SEEK_SET) != 0) {
+    if (fseek(fp, 0l, SEEK_SET) != 0) {
         fprintf(stderr, "fseek failed\n");
         exit(1);
     }
@@ -677,7 +677,7 @@ void test_at_random()
     }
     bddexportzbddasbinary(fp, f, 1, NULL);
 
-    if (fseek(fp, 0, SEEK_SET) != 0) {
+    if (fseek(fp, 0l, SEEK_SET) != 0) {
         fprintf(stderr, "fseek failed\n");
         exit(1);
     }
@@ -801,7 +801,7 @@ void test_io()
     }
     fputs("1 2\n1 3\n2 3\n", fp1);
 
-    if (fseek(fp1, 0, SEEK_SET) != 0) {
+    if (fseek(fp1, 0l, SEEK_SET) != 0) {
         fprintf(stderr, "fseek failed\n");
         exit(1);
     }
@@ -821,7 +821,7 @@ void test_io()
     }
     fputs("\n1 2\n1 3\n2 3\n", fp1);
 
-    if (fseek(fp1, 0, SEEK_SET) != 0) {
+    if (fseek(fp1, 0l, SEEK_SET) != 0) {
         fprintf(stderr, "fseek failed\n");
         exit(1);
     }
@@ -955,7 +955,7 @@ void test_bddbinaryformat_f(bddp f)
     }
     bddexportzbddasbinary(fp, f, 1, NULL);
 
-    if (fseek(fp, 0, SEEK_SET) != 0) {
+    if (fseek(fp, 0l, SEEK_SET) != 0) {
         fprintf(stderr, "fseek failed\n");
         exit(1);
     }

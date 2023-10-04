@@ -20,28 +20,28 @@ sbddextended_INLINE_FUNC
 int sbddextended_writeUint8_inner(unsigned char v, FILE* fp)
 {
     assert(fp != NULL);
-    return fwrite(&v, sizeof(unsigned char), 1, fp) != 0;
+    return fwrite(&v, sizeof(unsigned char), (size_t)1, fp) != 0;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_writeUint16_inner(unsigned short v, FILE* fp)
 {
     assert(fp != NULL);
-    return fwrite(&v, sizeof(unsigned short), 1, fp) != 0;
+    return fwrite(&v, sizeof(unsigned short), (size_t)1, fp) != 0;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_writeUint32_inner(unsigned int v, FILE* fp)
 {
     assert(fp != NULL);
-    return fwrite(&v, sizeof(unsigned int), 1, fp) != 0;
+    return fwrite(&v, sizeof(unsigned int), (size_t)1, fp) != 0;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_writeUint64_inner(ullint v, FILE* fp)
 {
     assert(fp != NULL);
-    return fwrite(&v, sizeof(ullint), 1, fp) != 0;
+    return fwrite(&v, sizeof(ullint), (size_t)1, fp) != 0;
 }
 
 #ifdef __cplusplus

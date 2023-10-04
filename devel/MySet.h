@@ -36,7 +36,7 @@ void sbddextended_MySet_add(sbddextended_MySet* d, llint key)
     d->se->insert(key);
 #else
     // value is unused
-    sbddextended_MyDict_add(&d->dict, key, 0);
+    sbddextended_MyDict_add(&d->dict, key, 0ll);
 #endif
 }
 

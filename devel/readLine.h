@@ -27,28 +27,28 @@ sbddextended_INLINE_FUNC
 int sbddextended_readUint8_inner(unsigned char* v, FILE* fp)
 {
     assert(fp != NULL);
-    return fread(v, sizeof(unsigned char), 1, fp) != 0;
+    return fread(v, sizeof(unsigned char), (size_t)1, fp) != 0;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_readUint16_inner(unsigned short* v, FILE* fp)
 {
     assert(fp != NULL);
-    return fread(v, sizeof(unsigned short), 1, fp) != 0;
+    return fread(v, sizeof(unsigned short), (size_t)1, fp) != 0;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_readUint32_inner(unsigned int* v, FILE* fp)
 {
     assert(fp != NULL);
-    return fread(v, sizeof(unsigned int), 1, fp) != 0;
+    return fread(v, sizeof(unsigned int), (size_t)1, fp) != 0;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_readUint64_inner(ullint* v, FILE* fp)
 {
     assert(fp != NULL);
-    return fread(v, sizeof(ullint), 1, fp) != 0;
+    return fread(v, sizeof(ullint), (size_t)1, fp) != 0;
 }
 
 

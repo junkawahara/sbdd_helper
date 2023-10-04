@@ -85,8 +85,8 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
     }
 
     sbddextended_MyDict_initialize(&node_dict);
-    sbddextended_MyDict_add(&node_dict, 0, (is_zdd == 0 ? bddfalse : bddempty));
-    sbddextended_MyDict_add(&node_dict, 1, (is_zdd == 0 ? bddtrue : bddsingle));
+    sbddextended_MyDict_add(&node_dict, 0ll, (is_zdd == 0 ? bddfalse : bddempty));
+    sbddextended_MyDict_add(&node_dict, 1ll, (is_zdd == 0 ? bddtrue : bddsingle));
 
     for (i = 0; i < (llint)node_vec.count; ++i) {
         id = sbddextended_MyVector_get(&node_vec, i);

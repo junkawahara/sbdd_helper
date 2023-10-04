@@ -46,10 +46,10 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
     sbddextended_MyVector_initialize(&lo_vec);
     sbddextended_MyVector_initialize(&hi_vec);
 
-    sbddextended_MyVector_add(&lo_vec, 0);
-    sbddextended_MyVector_add(&lo_vec, 1);
-    sbddextended_MyVector_add(&hi_vec, 0);
-    sbddextended_MyVector_add(&hi_vec, 1);
+    sbddextended_MyVector_add(&lo_vec, 0ll);
+    sbddextended_MyVector_add(&lo_vec, 1ll);
+    sbddextended_MyVector_add(&hi_vec, 0ll);
+    sbddextended_MyVector_add(&hi_vec, 1ll);
 
     while (sbddextended_readLine(buf, fp)) {
         ++line_count;
@@ -109,8 +109,8 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
 
     for (i = (llint)lo_vec.count - 1; i >= sbddextended_BDDNODE_START; --i) {
         for (level = 1; level < (llint)level_vec.count; ++level) {
-            if (sbddextended_MyVector_get(&level_vec, level - 1) <= i &&
-                i < sbddextended_MyVector_get(&level_vec, level)) {
+            if (sbddextended_MyVector_get(&level_vec, (llint)level - 1) <= i &&
+                i < sbddextended_MyVector_get(&level_vec, (llint)level)) {
                 break;
             }
         }

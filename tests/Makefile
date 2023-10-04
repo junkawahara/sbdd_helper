@@ -1,15 +1,18 @@
 SBDDDIR = ../SBDD
 OPT = -O3 -DB_64
 WOPT = -Wall -Wextra -Wformat=2
+OLDGCC = /usr/local/gcc-4.1.2/bin/gcc
 
 # http://codeforces.com/blog/entry/15547  -Wshift-overflow=2 -Wduplicated-cond 
 WOPT2 = -Wall -Wextra -pedantic -Wshadow -Wformat=2 -Wfloat-equal \
--Wconversion -Wlogical-op \
+-Wconversion \
 -Wcast-qual -Wcast-align -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC \
 -D_FORTIFY_SOURCE=2 -fstack-protector
 #-fsanitize=address -fsanitize=undefined \
 #-fno-sanitize-recover
 # -pedantic-errors
+
+WOPT3 = $(WOPT2) -Wlogical-op
 
 all: testc testcpp testcpp-gmp
 	./testc
@@ -17,28 +20,34 @@ all: testc testcpp testcpp-gmp
 	./testcpp-gmp
 
 testc: SBDD_helper_testc_cpp.h SBDD_helper_testc.c ../devel/SBDD_helper.h ../devel/*.h $(SBDDDIR)/bddc.o
-	gcc $(OPT) $(WOPT2) -Wc++-compat $(SBDDDIR)/bddc.o SBDD_helper_testc.c -o testc
+	gcc $(OPT) $(WOPT3) -Wc++-compat $(SBDDDIR)/bddc.o SBDD_helper_testc.c -o testc
+
+testoldgcc: SBDD_helper_testc_cpp.h SBDD_helper_testc.c ../devel/SBDD_helper.h ../devel/*.h $(SBDDDIR)/bddc-oldgcc.o
+	$(OLDGCC) $(OPT) $(WOPT2) -Wc++-compat $(SBDDDIR)/bddc-oldgcc.o SBDD_helper_testc.c -o testoldgcc
 
 testcpp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o
-	g++ $(OPT) $(WOPT2) $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o SBDD_helper_testcpp.cpp -o testcpp
+	g++ $(OPT) $(WOPT3) $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o SBDD_helper_testcpp.cpp -o testcpp
 
 testcppg: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o
-	g++ -g -DB_64 $(WOPT2) $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o SBDD_helper_testcpp.cpp -o testcppg
+	g++ -g -DB_64 $(WOPT3) $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o SBDD_helper_testcpp.cpp -o testcppg
 
 testcpp-gmp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o
-	g++ $(OPT) $(WOPT2) -DUSE_GMP $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o SBDD_helper_testcpp.cpp -lgmp -lgmpxx -o testcpp-gmp
+	g++ $(OPT) $(WOPT3) -DUSE_GMP $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o SBDD_helper_testcpp.cpp -lgmp -lgmpxx -o testcpp-gmp
 
 testcpp98: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o
-	g++ -std=c++98 -Wno-long-long $(OPT) $(WOPT2) $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o SBDD_helper_testcpp.cpp -o testcpp98
+	g++ -std=c++98 -Wno-long-long $(OPT) $(WOPT3) $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o SBDD_helper_testcpp.cpp -o testcpp98
 
 testnewc: SBDD_helper_testc_cpp.h SBDD_helper_testc.c ../devel/SBDD_helper.h ../devel/*.h $(SBDDDIR)/bddc.o
-	gcc $(OPT) $(WOPT2) -DSBDD_VERSION=185 $(SBDDDIR)/bddc.o SBDD_helper_testc.c -o testc
+	gcc $(OPT) $(WOPT3) -DSBDD_VERSION=185 $(SBDDDIR)/bddc.o SBDD_helper_testc.c -o testc
 
 testnewcpp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp SBDD_helper_testc.c ../devel/SBDD_helper.h ../devel/*.h $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o
-	g++ $(OPT) $(WOPT2) -DSBDD_VERSION=185 $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o SBDD_helper_testcpp.cpp -o testcpp
+	g++ $(OPT) $(WOPT3) -DSBDD_VERSION=185 $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o SBDD_helper_testcpp.cpp -o testcpp
 
 $(SBDDDIR)/bddc.o: $(SBDDDIR)/bddc.c $(SBDDDIR)/bddc.h
 	gcc $(OPT) $(SBDDDIR)/bddc.c -c -o $(SBDDDIR)/bddc.o
+
+$(SBDDDIR)/bddc-oldgcc.o: $(SBDDDIR)/bddc.c $(SBDDDIR)/bddc.h
+	$(OLDGCC) $(OPT) $(SBDDDIR)/bddc.c -c -o $(SBDDDIR)/bddc-oldgcc.o
 
 $(SBDDDIR)/BDD.o: $(SBDDDIR)/BDD.cc $(SBDDDIR)/BDD.h
 	g++ $(OPT) $(SBDDDIR)/BDD.cc -c -o $(SBDDDIR)/BDD.o
@@ -47,4 +56,4 @@ $(SBDDDIR)/ZBDD.o: $(SBDDDIR)/ZBDD.cc $(SBDDDIR)/ZBDD.h
 	g++ $(OPT) $(SBDDDIR)/ZBDD.cc -c -o $(SBDDDIR)/ZBDD.o
 
 clean:
-	rm -f $(SBDDDIR)/*.o testc.exe testc testcpp.exe testcpp
+	rm -f $(SBDDDIR)/*.o testc.exe testc testcpp.exe testcpp testcpp98.exe testcppg.exe testcppg testcpp98 testcpp-gmp.exe testcpp-gmp *.stackdump
