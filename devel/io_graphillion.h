@@ -209,7 +209,7 @@ bddp bddimportzbddasgraphillion(FILE* fp, int root_level)
 
 sbddextended_INLINE_FUNC
 void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
-                                        bddNodeIndex* index, int is_zbdd,
+                                        bddNodeIndex* node_index, int is_zbdd,
                                         int root_level
 #ifdef __cplusplus
                         , const WriteObject& sbddextended_writeLine
@@ -234,19 +234,19 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
         }
     }
 
-    if (index != NULL) {
-        if (index->is_raw != 0) {
-            fprintf(stderr, "The index must be constructed in the raw mode ");
+    if (node_index != NULL) {
+        if (node_index->is_raw != 0) {
+            fprintf(stderr, "The node index must be constructed in the raw mode ");
             return;
         }
     }
 
-    if (index == NULL && !(f == bddempty || f == bddsingle)) {
+    if (node_index == NULL && !(f == bddempty || f == bddsingle)) {
         is_making_index = 1;
         if (is_zbdd != 0) {
-            index = bddNodeIndex_makeIndexZWithoutCount(f);
+            node_index = bddNodeIndex_makeIndexZWithoutCount(f);
         } else {
-            index = bddNodeIndex_makeIndexBWithoutCount(f);
+            node_index = bddNodeIndex_makeIndexBWithoutCount(f);
         }
     }
 
@@ -263,9 +263,9 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
         root_level = (int)bddlevofvar(bddtop(f));
     }
 
-    for (i = 1; i <= index->height; ++i) {
-        for (j = 0; j < index->level_vec_arr[i].count; ++j) {
-            node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i], (llint)j);
+    for (i = 1; i <= node_index->height; ++i) {
+        for (j = 0; j < node_index->level_vec_arr[i].count; ++j) {
+            node = (bddp)sbddextended_MyVector_get(&node_index->level_vec_arr[i], (llint)j);
             n = sprintf(ss, "%lld %d", (llint)node, (root_level - i + 1));
             for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
                 child = bddgetchildg(node, k, is_zbdd, 0);
@@ -284,8 +284,8 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
     sbddextended_writeLine(".", fp);
 
     if (is_making_index) {
-        bddNodeIndex_destruct(index);
-        free(index);
+        bddNodeIndex_destruct(node_index);
+        free(node_index);
     }
 }
 
@@ -293,14 +293,14 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsGraphillion(FILE* fp, const BDD& bdd, int root_level, DDIndex<T>* index)
+void exportBDDAsGraphillion(FILE* fp, const BDD& bdd, int root_level, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddexportbddasgraphillion_inner(fp, bdd.GetID(), bindex, 0, root_level, wo);
+    bddexportbddasgraphillion_inner(fp, bdd.GetID(), bnode_index, 0, root_level, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -311,14 +311,14 @@ void exportBDDAsGraphillion(FILE* fp, const BDD& bdd, int root_level = -1)
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsGraphillion(std::ostream& ost, const BDD& bdd, int root_level, DDIndex<T>* index)
+void exportBDDAsGraphillion(std::ostream& ost, const BDD& bdd, int root_level, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddexportbddasgraphillion_inner(NULL, bdd.GetID(), bindex, 0, root_level, wo);
+    bddexportbddasgraphillion_inner(NULL, bdd.GetID(), bnode_index, 0, root_level, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -329,14 +329,14 @@ void exportBDDAsGraphillion(std::ostream& ost, const BDD& bdd, int root_level = 
 
 template<typename T>
 sbddextended_INLINE_FUNC
-void exportZBDDAsGraphillion(FILE* fp, const ZBDD& zbdd, int root_level, DDIndex<T>* index)
+void exportZBDDAsGraphillion(FILE* fp, const ZBDD& zbdd, int root_level, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddexportbddasgraphillion_inner(fp, zbdd.GetID(), bindex, 1, root_level, wo);
+    bddexportbddasgraphillion_inner(fp, zbdd.GetID(), bnode_index, 1, root_level, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -347,14 +347,14 @@ void exportZBDDAsGraphillion(FILE* fp, const ZBDD& zbdd, int root_level = -1)
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportZBDDAsGraphillion(std::ostream& ost, const ZBDD& zbdd, int root_level, DDIndex<T>* index)
+void exportZBDDAsGraphillion(std::ostream& ost, const ZBDD& zbdd, int root_level, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddexportbddasgraphillion_inner(NULL, zbdd.GetID(), bindex, 1, root_level, wo);
+    bddexportbddasgraphillion_inner(NULL, zbdd.GetID(), bnode_index, 1, root_level, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -365,38 +365,38 @@ void exportZBDDAsGraphillion(std::ostream& ost, const ZBDD& zbdd, int root_level
 
 sbddextended_INLINE_FUNC
 void bddexportbddasgraphillion(FILE* fp, bddp f,
-                                bddNodeIndex* index, int root_level)
+                                bddNodeIndex* node_index, int root_level)
 {
     WriteObject wo(false, true, NULL);
     // can be used for BDD/ZBDD
-    bddexportbddasgraphillion_inner(fp, f, index, -1, root_level, wo);
+    bddexportbddasgraphillion_inner(fp, f, node_index, -1, root_level, wo);
 }
 
 sbddextended_INLINE_FUNC
 void bddexportzbddasgraphillion(FILE* fp, bddp f,
-                                bddNodeIndex* index, int root_level)
+                                bddNodeIndex* node_index, int root_level)
 {
     WriteObject wo(false, true, NULL);
     // only for ZBDD
-    bddexportbddasgraphillion_inner(fp, f, index, 1, root_level, wo);
+    bddexportbddasgraphillion_inner(fp, f, node_index, 1, root_level, wo);
 }
 
 #else
 
 sbddextended_INLINE_FUNC
 void bddexportbddasgraphillion(FILE* fp, bddp f,
-                                bddNodeIndex* index, int root_level)
+                                bddNodeIndex* node_index, int root_level)
 {
     // can be used for BDD/ZBDD
-    bddexportbddasgraphillion_inner(fp, f, index, -1, root_level);
+    bddexportbddasgraphillion_inner(fp, f, node_index, -1, root_level);
 }
 
 sbddextended_INLINE_FUNC
 void bddexportzbddasgraphillion(FILE* fp, bddp f,
-                                bddNodeIndex* index, int root_level)
+                                bddNodeIndex* node_index, int root_level)
 {
     // only for ZBDD
-    bddexportbddasgraphillion_inner(fp, f, index, 1, root_level);
+    bddexportbddasgraphillion_inner(fp, f, node_index, 1, root_level);
 }
 
 #endif

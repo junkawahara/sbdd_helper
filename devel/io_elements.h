@@ -167,7 +167,7 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
     bddp* bddnode_stack;
     bddp g;
     char* op_stack;
-    char* value_list;
+    char* value_list = NULL;
     char op;
     int i, height, sp, is_first_delim1, is_first_delim2;
     bddvar v;

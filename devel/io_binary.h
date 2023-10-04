@@ -288,7 +288,7 @@ bddp bddimportzbddasbinary(FILE* fp, int root_level)
 
 sbddextended_INLINE_FUNC
 void bddexportbddasbinary_inner(FILE* fp, bddp f,
-                                bddNodeIndex* index,
+                                bddNodeIndex* node_index,
                                 int is_zbdd,
                                 int use_negative_arcs
 #ifdef __cplusplus
@@ -311,13 +311,13 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
     ullint* id_prefix;
     bddp node, child, rchild;
 
-    if (index != NULL) {
-        if (index->is_raw != 0 && use_negative_arcs == 0) {
-            fprintf(stderr, "The index must not be constructed in the raw mode "
+    if (node_index != NULL) {
+        if (node_index->is_raw != 0 && use_negative_arcs == 0) {
+            fprintf(stderr, "The node index must not be constructed in the raw mode "
                             "when not using negative arcs.\n");
             return;
-        } else if (index->is_raw == 0 && use_negative_arcs != 0) {
-            fprintf(stderr, "The index must be constructed in the raw mode "
+        } else if (node_index->is_raw == 0 && use_negative_arcs != 0) {
+            fprintf(stderr, "The node index must be constructed in the raw mode "
                             "when using negative arcs.\n");
             return;
         }
@@ -381,29 +381,29 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
         return;
     }
 
-    if (index == NULL) {
+    if (node_index == NULL) {
         is_making_index = 1;
         if (is_zbdd != 0) {
             if (use_negative_arcs != 0) {
-                index = bddNodeIndex_makeRawIndexZWithoutCount(f);
+                node_index = bddNodeIndex_makeRawIndexZWithoutCount(f);
             } else {
-                index = bddNodeIndex_makeIndexZWithoutCount(f);
+                node_index = bddNodeIndex_makeIndexZWithoutCount(f);
             }
         } else {
             if (use_negative_arcs != 0) {
-                index = bddNodeIndex_makeRawIndexBWithoutCount(f);
+                node_index = bddNodeIndex_makeRawIndexBWithoutCount(f);
             } else {
-                index = bddNodeIndex_makeIndexBWithoutCount(f);
+                node_index = bddNodeIndex_makeIndexBWithoutCount(f);
             }
         }
     }
 
-    assert((ullint)index->height == max_level);
+    assert((ullint)node_index->height == max_level);
 
     // write the number of nodes in level i and compute the number of nodes
     for (i = 1; i <= max_level; ++i) {
-        sbddextended_writeUint64((ullint)index->level_vec_arr[i].count, fp);
-        number_of_nodes += (ullint)index->level_vec_arr[i].count;
+        sbddextended_writeUint64((ullint)node_index->level_vec_arr[i].count, fp);
+        number_of_nodes += (ullint)node_index->level_vec_arr[i].count;
     }
 
     id_prefix = (ullint*)malloc((max_level + 1) * sizeof(ullint));
@@ -414,7 +414,7 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
 
     id_prefix[1] = number_of_terminals;
     for (i = 1; i < max_level; ++i) {
-        id_prefix[i + 1] = id_prefix[i] + (ullint)index->level_vec_arr[i].count;
+        id_prefix[i + 1] = id_prefix[i] + (ullint)node_index->level_vec_arr[i].count;
     }
 
     // write the number of the root id
@@ -432,17 +432,17 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
     sbddextended_writeUint64(root_id, fp);
 
     for (i = 1; i <= max_level; ++i) {
-        for (j = 0; j < index->level_vec_arr[i].count; ++j) {
-            node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i], (llint)j);
+        for (j = 0; j < node_index->level_vec_arr[i].count; ++j) {
+            node = (bddp)sbddextended_MyVector_get(&node_index->level_vec_arr[i], (llint)j);
             for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
-                child = bddgetchildg(node, k, index->is_zbdd, index->is_raw);
+                child = bddgetchildg(node, k, node_index->is_zbdd, node_index->is_raw);
                 if (child == bddempty) {
                     sbddextended_writeUint64(0llu, fp);
                 } else if (child == bddsingle) {
                     sbddextended_writeUint64(1llu, fp);
                 } else {
                     rchild = (use_negative_arcs != 0 ? bdderasenot(child) : child);
-                    if (sbddextended_MyDict_find(&index->node_dict_arr[bddgetlev(child)],
+                    if (sbddextended_MyDict_find(&node_index->node_dict_arr[bddgetlev(child)],
                                                     (llint)rchild, &id) == 0) {
                         fprintf(stderr, "node not found\n");
                         exit(1);
@@ -461,8 +461,8 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
     }
 
     if (is_making_index) {
-        bddNodeIndex_destruct(index);
-        free(index);
+        bddNodeIndex_destruct(node_index);
+        free(node_index);
     }
     free(id_prefix);
 }
@@ -471,14 +471,14 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsBinary(FILE* fp, const BDD& bdd, bool use_negative_arcs, DDIndex<T>* index)
+void exportBDDAsBinary(FILE* fp, const BDD& bdd, bool use_negative_arcs, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddexportbddasbinary_inner(fp, bdd.GetID(), bindex,
+    bddexportbddasbinary_inner(fp, bdd.GetID(), bnode_index,
                                 0, (use_negative_arcs ? 1 : 0),
                                 wo, wo, wo, wo);
 }
@@ -491,14 +491,14 @@ void exportBDDAsBinary(FILE* fp, const BDD& bdd, bool use_negative_arcs = true)
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsBinary(std::ostream& ost, const BDD& bdd, bool use_negative_arcs, DDIndex<T>* index)
+void exportBDDAsBinary(std::ostream& ost, const BDD& bdd, bool use_negative_arcs, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddexportbddasbinary_inner(NULL, bdd.GetID(), bindex,
+    bddexportbddasbinary_inner(NULL, bdd.GetID(), bnode_index,
                                 0, (use_negative_arcs ? 1 : 0),
                                 wo, wo, wo, wo);
 }
@@ -511,14 +511,14 @@ void exportBDDAsBinary(std::ostream& ost, const BDD& bdd, bool use_negative_arcs
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportZBDDAsBinary(FILE* fp, const ZBDD& zbdd, bool use_negative_arcs, DDIndex<T>* index)
+void exportZBDDAsBinary(FILE* fp, const ZBDD& zbdd, bool use_negative_arcs, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddexportbddasbinary_inner(fp, zbdd.GetID(), bindex,
+    bddexportbddasbinary_inner(fp, zbdd.GetID(), bnode_index,
                                 1, (use_negative_arcs ? 1 : 0),
                                 wo, wo, wo, wo);
 }
@@ -531,14 +531,14 @@ void exportZBDDAsBinary(FILE* fp, const ZBDD& zbdd, bool use_negative_arcs = tru
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportZBDDAsBinary(std::ostream& ost, const ZBDD& zbdd, bool use_negative_arcs, DDIndex<T>* index)
+void exportZBDDAsBinary(std::ostream& ost, const ZBDD& zbdd, bool use_negative_arcs, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddexportbddasbinary_inner(NULL, zbdd.GetID(), bindex,
+    bddexportbddasbinary_inner(NULL, zbdd.GetID(), bnode_index,
                                 1, (use_negative_arcs ? 1 : 0),
                                 wo, wo, wo, wo);
 }
@@ -550,19 +550,19 @@ void exportZBDDAsBinary(std::ostream& ost, const ZBDD& zbdd, bool use_negative_a
 }
 
 sbddextended_INLINE_FUNC
-void bddexportbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* index)
+void bddexportbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* node_index)
 {
     WriteObject wo(false, true, NULL);
-    bddexportbddasbinary_inner(fp, f, index,
+    bddexportbddasbinary_inner(fp, f, node_index,
                                 0, use_negative_arcs,
                                 wo, wo, wo, wo);
 }
 
 sbddextended_INLINE_FUNC
-void bddexportzbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* index)
+void bddexportzbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* node_index)
 {
     WriteObject wo(false, true, NULL);
-    bddexportbddasbinary_inner(fp, f, index,
+    bddexportbddasbinary_inner(fp, f, node_index,
                                 1, use_negative_arcs,
                                 wo, wo, wo, wo);
 }
@@ -570,15 +570,15 @@ void bddexportzbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex
 #else
 
 sbddextended_INLINE_FUNC
-void bddexportbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* index)
+void bddexportbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* node_index)
 {
-    bddexportbddasbinary_inner(fp, f, index, 0, use_negative_arcs);
+    bddexportbddasbinary_inner(fp, f, node_index, 0, use_negative_arcs);
 }
 
 sbddextended_INLINE_FUNC
-void bddexportzbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* index)
+void bddexportzbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* node_index)
 {
-    bddexportbddasbinary_inner(fp, f, index, 1, use_negative_arcs);
+    bddexportbddasbinary_inner(fp, f, node_index, 1, use_negative_arcs);
 }
 
 #endif

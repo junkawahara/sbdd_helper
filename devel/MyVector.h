@@ -44,27 +44,27 @@ void sbddextended_MyVector_deinitialize(sbddextended_MyVector* v)
 }
 
 sbddextended_INLINE_FUNC
-llint sbddextended_MyVector_get(const sbddextended_MyVector* v, llint index)
+llint sbddextended_MyVector_get(const sbddextended_MyVector* v, llint v_index)
 {
 #ifdef __cplusplus
-    assert(0 <= index && (size_t)index < v->vec->size());
-    return (*v->vec)[index];
+    assert(0 <= v_index && (size_t)v_index < v->vec->size());
+    return (*v->vec)[v_index];
 #else
-    assert(0 <= index && (size_t)index < v->count);
-    return v->buf[index];
+    assert(0 <= v_index && (size_t)v_index < v->count);
+    return v->buf[v_index];
 #endif
 }
 
 sbddextended_INLINE_FUNC
 void sbddextended_MyVector_set(sbddextended_MyVector* v,
-                                llint index, llint value)
+                                llint v_index, llint value)
 {
 #ifdef __cplusplus
-    assert(0 <= index && (size_t)index < v->vec->size());
-    (*v->vec)[index] = value;
+    assert(0 <= v_index && (size_t)v_index < v->vec->size());
+    (*v->vec)[v_index] = value;
 #else
-    assert(0 <= index && (size_t)index < v->count);
-    v->buf[index] = value;
+    assert(0 <= v_index && (size_t)v_index < v->count);
+    v->buf[v_index] = value;
 #endif
 }
 

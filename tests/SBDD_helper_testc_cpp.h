@@ -692,14 +692,14 @@ void test_at_random()
         exit(1);
     }
 
-    bddNodeIndex* index = bddNodeIndex_makeIndexZ(g);
-    test_eq(bddNodeIndex_count(index), bddcard(g));
-    bddNodeIndex_destruct(index);
+    bddNodeIndex* node_index = bddNodeIndex_makeIndexZ(g);
+    test_eq(bddNodeIndex_count(node_index), bddcard(g));
+    bddNodeIndex_destruct(node_index);
 
-    index = bddNodeIndex_makeRawIndexZ(g);
-    test_eq(bddNodeIndex_count(index), bddcard(g));
-    test_eq(bddNodeIndex_size(index), bddsize(g));
-    bddNodeIndex_destruct(index);
+    node_index = bddNodeIndex_makeRawIndexZ(g);
+    test_eq(bddNodeIndex_count(node_index), bddcard(g));
+    test_eq(bddNodeIndex_size(node_index), bddsize(g));
+    bddNodeIndex_destruct(node_index);
 
     free(vararr);
     free(ar);
@@ -840,40 +840,40 @@ void test_index()
 {
     int i, count;
     bddp f = make_test_zbdd();
-    bddNodeIndex* index = bddNodeIndex_makeIndexZ(f);
-    test_eq(bddNodeIndex_count(index), 3);
-    test_eq(bddNodeIndex_size(index), 4);
+    bddNodeIndex* node_index = bddNodeIndex_makeIndexZ(f);
+    test_eq(bddNodeIndex_count(node_index), 3);
+    test_eq(bddNodeIndex_size(node_index), 4);
 
-    bddNodeIterator* itor = bddNodeIterator_make(index);
+    bddNodeIterator* itor = bddNodeIterator_make(node_index);
     count = 0;
     while (bddNodeIterator_hasNext(itor)) {
         bddNodeIterator_next(itor);
         ++count;
     }
     test_eq(count, 4);
-    bddNodeIndex_destruct(index);
+    bddNodeIndex_destruct(node_index);
 
     bddvar vararr[40];
     for (i = 0; i < 40; ++i) {
         vararr[i] = (bddvar)i + 1;
     }
     f = bddgetpowerset(vararr, 40);
-    index = bddNodeIndex_makeIndexZ(f);
-    test_eq(bddNodeIndex_count(index), 1ll << 40);
-    test_eq(bddNodeIndex_size(index), 40);
-    bddNodeIndex_destruct(index);
+    node_index = bddNodeIndex_makeIndexZ(f);
+    test_eq(bddNodeIndex_count(node_index), 1ll << 40);
+    test_eq(bddNodeIndex_size(node_index), 40);
+    bddNodeIndex_destruct(node_index);
 
     f = make_test_zbdd();
-    index = bddNodeIndex_makeRawIndexZ(f);
-    test_eq(bddNodeIndex_count(index), 3);
-    test_eq(bddNodeIndex_size(index), 4);
-    bddNodeIndex_destruct(index);
+    node_index = bddNodeIndex_makeRawIndexZ(f);
+    test_eq(bddNodeIndex_count(node_index), 3);
+    test_eq(bddNodeIndex_size(node_index), 4);
+    bddNodeIndex_destruct(node_index);
 
     f = bddgetpowerset(vararr, 40);
-    index = bddNodeIndex_makeRawIndexZ(f);
-    test_eq(bddNodeIndex_count(index), 1ll << 40);
-    test_eq(bddNodeIndex_size(index), bddsize(f));
-    bddNodeIndex_destruct(index);
+    node_index = bddNodeIndex_makeRawIndexZ(f);
+    test_eq(bddNodeIndex_count(node_index), 1ll << 40);
+    test_eq(bddNodeIndex_size(node_index), bddsize(f));
+    bddNodeIndex_destruct(node_index);
 }
 
 void test_elementIterator()

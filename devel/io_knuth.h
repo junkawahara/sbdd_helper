@@ -229,7 +229,7 @@ bddp bddimportzbddasknuth(FILE* fp, int is_hex, int root_level)
 
 sbddextended_INLINE_FUNC
 void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
-                                bddNodeIndex* index,
+                                bddNodeIndex* node_index,
                                 int is_zbdd
 #ifdef __cplusplus
                                     , const WriteObject& sbddextended_writeLine
@@ -261,27 +261,27 @@ void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
         }
     }
 
-    if (index != NULL) {
-        if (index->is_raw != 0) {
-            fprintf(stderr, "The index must be constructed in the raw mode ");
+    if (node_index != NULL) {
+        if (node_index->is_raw != 0) {
+            fprintf(stderr, "The node index must be constructed in the raw mode ");
             return;
         }
     }
 
-    if (index == NULL && !(f == bddempty || f == bddsingle)) {
+    if (node_index == NULL && !(f == bddempty || f == bddsingle)) {
         is_making_index = 1;
         if (is_zbdd != 0) {
-            index = bddNodeIndex_makeIndexZWithoutCount(f);
+            node_index = bddNodeIndex_makeIndexZWithoutCount(f);
         } else {
-            index = bddNodeIndex_makeIndexBWithoutCount(f);
+            node_index = bddNodeIndex_makeIndexBWithoutCount(f);
         }
     }
 
-    for (i = index->height; i >= 1; --i) {
-        sprintf(ss, "#%d", index->height - i + 1);
+    for (i = node_index->height; i >= 1; --i) {
+        sprintf(ss, "#%d", node_index->height - i + 1);
         sbddextended_writeLine(ss, fp);
-        for (k = 0; k < (llint)index->level_vec_arr[i].count; ++k) {
-            node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i], k);
+        for (k = 0; k < (llint)node_index->level_vec_arr[i].count; ++k) {
+            node = (bddp)sbddextended_MyVector_get(&node_index->level_vec_arr[i], k);
             n0 = bddgetchild0g(node, is_zbdd, 0);
             if (n0 == bddempty) {
                 id0 = 0;
@@ -289,12 +289,12 @@ void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
                 id0 = 1;
             } else {
                 clevel = (int)bddgetlev(n0);
-                if (sbddextended_MyDict_find(&index->node_dict_arr[clevel],
+                if (sbddextended_MyDict_find(&node_index->node_dict_arr[clevel],
                                                 (llint)n0, &id0) == 0) {
                     fprintf(stderr, "node not found!\n");
                     exit(1);
                 }
-                id0 += index->offset_arr[clevel];
+                id0 += node_index->offset_arr[clevel];
             }
             n1 = bddgetchild1g(node, is_zbdd, 0);
             if (n1 == bddempty) {
@@ -303,24 +303,24 @@ void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
                 id1 = 1;
             } else {
                 clevel = (int)bddgetlev(n1);
-                if (sbddextended_MyDict_find(&index->node_dict_arr[clevel],
+                if (sbddextended_MyDict_find(&node_index->node_dict_arr[clevel],
                                                 (llint)n1, &id1) == 0) {
                     fprintf(stderr, "node not found!\n");
                     exit(1);
                 }
-                id1 += index->offset_arr[clevel];
+                id1 += node_index->offset_arr[clevel];
             }
             if (is_hex) {
-                sprintf(ss, "%llx:%llx,%llx", index->offset_arr[i] + k, id0, id1);
+                sprintf(ss, "%llx:%llx,%llx", node_index->offset_arr[i] + k, id0, id1);
             } else {
-                sprintf(ss, "%lld:%lld,%lld", index->offset_arr[i] + k, id0, id1);
+                sprintf(ss, "%lld:%lld,%lld", node_index->offset_arr[i] + k, id0, id1);
             }
             sbddextended_writeLine(ss, fp);
         }
     }
     if (is_making_index) {
-        bddNodeIndex_destruct(index);
-        free(index);
+        bddNodeIndex_destruct(node_index);
+        free(node_index);
     }
 }
 
@@ -328,14 +328,14 @@ void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsKnuth(FILE* fp, const BDD& bdd, bool is_hex, DDIndex<T>* index)
+void exportBDDAsKnuth(FILE* fp, const BDD& bdd, bool is_hex, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddexportbddasknuth_inner(fp, bdd.GetID(), (is_hex ? 1 : 0), bindex, 0, wo);
+    bddexportbddasknuth_inner(fp, bdd.GetID(), (is_hex ? 1 : 0), bnode_index, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -346,14 +346,14 @@ void exportBDDAsKnuth(FILE* fp, const BDD& bdd, bool is_hex = false)
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsKnuth(std::ostream& ost, const BDD& bdd, bool is_hex, DDIndex<T>* index)
+void exportBDDAsKnuth(std::ostream& ost, const BDD& bdd, bool is_hex, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddexportbddasknuth_inner(NULL, bdd.GetID(), (is_hex ? 1 : 0), bindex, 0, wo);
+    bddexportbddasknuth_inner(NULL, bdd.GetID(), (is_hex ? 1 : 0), bnode_index, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -364,14 +364,14 @@ void exportBDDAsKnuth(std::ostream& ost, const BDD& bdd, bool is_hex = false)
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportZBDDAsKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex, DDIndex<T>* index)
+void exportZBDDAsKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddexportbddasknuth_inner(fp, zbdd.GetID(), (is_hex ? 1 : 0), bindex, 1, wo);
+    bddexportbddasknuth_inner(fp, zbdd.GetID(), (is_hex ? 1 : 0), bnode_index, 1, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -382,14 +382,14 @@ void exportZBDDAsKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex = false)
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportZBDDAsKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex, DDIndex<T>* index)
+void exportZBDDAsKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddexportbddasknuth_inner(NULL, zbdd.GetID(), (is_hex ? 1 : 0), bindex, 1, wo);
+    bddexportbddasknuth_inner(NULL, zbdd.GetID(), (is_hex ? 1 : 0), bnode_index, 1, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -399,31 +399,31 @@ void exportZBDDAsKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex = false)
 }
 
 sbddextended_INLINE_FUNC
-void bddexportbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* index)
+void bddexportbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* node_index)
 {
     WriteObject wo(false, true, NULL);
-    bddexportbddasknuth_inner(fp, f, (is_hex ? 1 : 0), index, 0, wo);
+    bddexportbddasknuth_inner(fp, f, (is_hex ? 1 : 0), node_index, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
-void bddexportzbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* index)
+void bddexportzbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* node_index)
 {
     WriteObject wo(false, true, NULL);
-    bddexportbddasknuth_inner(fp, f, (is_hex ? 1 : 0), index, 1, wo);
+    bddexportbddasknuth_inner(fp, f, (is_hex ? 1 : 0), node_index, 1, wo);
 }
 
 #else
 
 sbddextended_INLINE_FUNC
-void bddexportbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* index)
+void bddexportbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* node_index)
 {
-    bddexportbddasknuth_inner(fp, f, is_hex, index, 0);
+    bddexportbddasknuth_inner(fp, f, is_hex, node_index, 0);
 }
 
 sbddextended_INLINE_FUNC
-void bddexportzbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* index)
+void bddexportzbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* node_index)
 {
-    bddexportbddasknuth_inner(fp, f, is_hex, index, 1);
+    bddexportbddasknuth_inner(fp, f, is_hex, node_index, 1);
 }
 
 #endif
