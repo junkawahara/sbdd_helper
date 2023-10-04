@@ -117,7 +117,7 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
     sbddextended_readUint64(&root_id, fp);
 
     //bddnode_buf = (bddp*)malloc((number_of_nodes + 1) * sizeof(bddp));
-    bddnode_buf = (bddp*)malloc(number_of_nodes * sizeof(bddp));
+    bddnode_buf = (bddp*)malloc((size_t)number_of_nodes * sizeof(bddp));
     if (bddnode_buf == NULL) {
         fprintf(stderr, "out of memory\n");
         exit(1);
@@ -406,7 +406,7 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
         number_of_nodes += (ullint)node_index->level_vec_arr[i].count;
     }
 
-    id_prefix = (ullint*)malloc((max_level + 1) * sizeof(ullint));
+    id_prefix = (ullint*)malloc((size_t)(max_level + 1) * sizeof(ullint));
     if (id_prefix == NULL) {
         fprintf(stderr, "out of memory\n");
         return;

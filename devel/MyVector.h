@@ -48,7 +48,7 @@ llint sbddextended_MyVector_get(const sbddextended_MyVector* v, llint v_index)
 {
 #ifdef __cplusplus
     assert(0 <= v_index && (size_t)v_index < v->vec->size());
-    return (*v->vec)[v_index];
+    return (*v->vec)[(size_t)v_index];
 #else
     assert(0 <= v_index && (size_t)v_index < v->count);
     return v->buf[v_index];
@@ -61,7 +61,7 @@ void sbddextended_MyVector_set(sbddextended_MyVector* v,
 {
 #ifdef __cplusplus
     assert(0 <= v_index && (size_t)v_index < v->vec->size());
-    (*v->vec)[v_index] = value;
+    (*v->vec)[(size_t)v_index] = value;
 #else
     assert(0 <= v_index && (size_t)v_index < v->count);
     v->buf[v_index] = value;

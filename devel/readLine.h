@@ -211,7 +211,7 @@ public:
                         exit(1);
                     }
                 }
-                strncpy(buf, st_ + start, stpos_ - start);
+                strncpy(buf, st_ + start, static_cast<size_t>(stpos_ - start));
                 ++stpos_;
                 return true;
             }

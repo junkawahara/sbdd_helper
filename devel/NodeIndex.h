@@ -447,9 +447,9 @@ public:
             if (level_ <= 0) {
                 return bddfalse;
             }
-            return sbddextended_MyVector_get(&node_index_.node_index_->
-                                              level_vec_arr[level_],
-                                             (llint)pos_);
+            return (bddp)sbddextended_MyVector_get(&node_index_.node_index_->
+                                                    level_vec_arr[level_],
+                                                    (llint)pos_);
         }
 
         DDNodeIterator& operator++()
@@ -803,9 +803,9 @@ private:
 
     bddp getBddp(int level, llint pos) const
     {
-        return sbddextended_MyVector_get(&node_index_->
-                                            level_vec_arr[level],
-                                            pos);
+        return static_cast<bddp>(sbddextended_MyVector_get(&node_index_->
+                                                    level_vec_arr[level],
+                                                    pos));
     }
 
 public:
