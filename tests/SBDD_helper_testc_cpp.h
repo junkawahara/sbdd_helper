@@ -580,6 +580,7 @@ void test_at_random()
     bddp f, g, h;
     bddvar* vararr;
     FILE* fp;
+    bddNodeIndex* node_index;
 
     w_pow = (1llu << w);
 
@@ -692,7 +693,7 @@ void test_at_random()
         exit(1);
     }
 
-    bddNodeIndex* node_index = bddNodeIndex_makeIndexZ(g);
+    node_index = bddNodeIndex_makeIndexZ(g);
     test_eq(bddNodeIndex_count(node_index), bddcard(g));
     bddNodeIndex_destruct(node_index);
 
@@ -839,12 +840,17 @@ void test_io()
 void test_index()
 {
     int i, count;
-    bddp f = make_test_zbdd();
-    bddNodeIndex* node_index = bddNodeIndex_makeIndexZ(f);
+    bddp f;
+    bddNodeIndex* node_index;
+    bddNodeIterator* itor;
+    bddvar vararr[40];
+
+    f = make_test_zbdd();
+    node_index = bddNodeIndex_makeIndexZ(f);
     test_eq(bddNodeIndex_count(node_index), 3);
     test_eq(bddNodeIndex_size(node_index), 4);
 
-    bddNodeIterator* itor = bddNodeIterator_make(node_index);
+    itor = bddNodeIterator_make(node_index);
     count = 0;
     while (bddNodeIterator_hasNext(itor)) {
         bddNodeIterator_next(itor);
@@ -853,7 +859,6 @@ void test_index()
     test_eq(count, 4);
     bddNodeIndex_destruct(node_index);
 
-    bddvar vararr[40];
     for (i = 0; i < 40; ++i) {
         vararr[i] = (bddvar)i + 1;
     }
@@ -878,12 +883,16 @@ void test_index()
 
 void test_elementIterator()
 {
-    bddp f = make_test_zbdd();
-    bddvar* arr = (bddvar*)malloc(bddgetlev(f) * sizeof(bddvar));
+    bddp f;
+    bddvar* arr;
+    bddElementIterator* itor;
+    bddp g;
 
+    f = make_test_zbdd();
     // f is expected to be {{3, 2}, {3, 1}, {2, 1}}
+    arr = (bddvar*)malloc(bddgetlev(f) * sizeof(bddvar));
 
-    bddElementIterator* itor = bddElementIterator_make(f);
+    itor = bddElementIterator_make(f);
     test(bddElementIterator_hasNext(itor) != 0);
     bddElementIterator_next(itor, arr);
     test_eq(arr[0], 3);
@@ -906,7 +915,7 @@ void test_elementIterator()
 
     bddElementIterator_destruct(itor);
 
-    bddp g = bddunion(f, bddsingle);
+    g = bddunion(f, bddsingle);
     // g is expected to be {{}, {3, 2}, {3, 1}, {2, 1}}
 
     itor = bddElementIterator_make(g);
