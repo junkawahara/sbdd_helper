@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../SBDD/bddc.h"
+#include "bddc.h"
 #include "../devel/SBDD_helper.h"
 
 #ifdef __cplusplus

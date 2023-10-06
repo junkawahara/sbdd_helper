@@ -375,6 +375,7 @@ bddvar* sbddextended_getsortedarraybylevel_inner(const bddvar* vararr, int n)
     int i;
     bddvar* ar;
 
+    assert(n >= 0);
     ar = (bddvar*)malloc((size_t)n * sizeof(bddvar));
     if (ar == NULL) {
         fprintf(stderr, "out of memory\n");

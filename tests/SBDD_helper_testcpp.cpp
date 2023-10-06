@@ -27,9 +27,9 @@
 #include <fstream>
 
 #define BDD_CPP
-#include "../SBDD/bddc.h"
-#include "../SBDD/BDD.h"
-#include "../SBDD/ZBDD.h"
+#include "bddc.h"
+#include "BDD.h"
+#include "ZBDD.h"
 
 #include "SBDD_helper_testc_cpp.h"
 

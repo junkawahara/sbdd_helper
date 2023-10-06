@@ -31,6 +31,19 @@ C/C++ 言語の両方に対応しています。C++ は C++98 以降、C++17 ま
     * 辞書順と集合の相互変換
     * [GMP (GNU Multiple Precision Arithmetic Library)](https://gmplib.org/) を用いた、2^64 を超える要素の数え上げ、重み和の計算、ランダムサンプリング
 
+## 対応環境
+
+以下の環境で（C, C++ 版ともに）コンパイルできることを確認しています。
+
+* Windows 10 + Cygwin + gcc 11.4.0
+* Windows 10 + MinGW + gcc 12.2.0
+* Mac 12.5.1 + clang 13.1.6
+* Linux Ubuntu 22.04 + gcc 11.4.0
+* Linux CentOS 7 + gcc 4.1.2
+* Linux Ubuntu 20.04 + clang 10.0.0
+
+Visual C++ ではコンパイルに失敗します。
+
 ## インストール
 
 [SBDD_helper.h ファイル](SBDD_helper.h) をダウンロードして、任意の場所に配置してください
