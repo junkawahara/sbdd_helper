@@ -1,23 +1,23 @@
-//
-// One header library for SAPPOROBDD C/C++ version
-// version 1.0.1
-//
-// Copyright (c) 2017 -- 2023 Jun Kawahara
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-// and associated documentation files (the "Software"), to deal in the Software without
-// restriction, including without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all copies or
-// substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
-// BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+/*
+One header library for SAPPOROBDD C/C++ version
+version 1.0.1
+
+Copyright (c) 2017 -- 2023 Jun Kawahara
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+and associated documentation files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #ifndef SBDD_HELPER_H
 #define SBDD_HELPER_H
@@ -40,7 +40,7 @@
 #include <set>
 #include <algorithm>
 
-#if __cplusplus >= 201103L // use rand() function
+#if __cplusplus >= 201103L /* use rand() function */
 #include <random>
 #endif
 
@@ -49,7 +49,7 @@
 #include <gmpxx.h>
 #endif
 
-#else // __cplusplus
+#else /* __cplusplus */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,7 +59,7 @@
 #include <assert.h>
 #include <stdarg.h>
 
-#endif // __cplusplus
+#endif /* __cplusplus */
 
 #ifdef __cplusplus
 namespace sbddh {
@@ -70,8 +70,8 @@ typedef unsigned long long int ullint;
 
 #define unused(a) (void)(a)
 
-// inline function qualifier for gcc
-// if a compile error occurs, change the qualifier
+/* inline function qualifier for gcc */
+/* if a compile error occurs, change the qualifier */
 #define sbddextended_INLINE_FUNC static inline
 
 #define sbddextended_BDDNODE_START 2
@@ -91,7 +91,7 @@ typedef unsigned long long int ullint;
     const llint sbddextended_VALUE_ONE = 1;
 #endif
 
-// for compatibility
+/* for compatibility */
 #define getAllSetsIncluding getPowerSetIncluding
 #define getAllPowerSetsIncluding getPowerSetIncluding
 #define getAllPowerSetsNotIncluding getPowerSetNotIncluding
@@ -139,7 +139,7 @@ typedef unsigned long long int ullint;
 #include "io_svg.h"
 
 #ifdef __cplusplus
-} // end of namespace sbddh
+} /* end of namespace sbddh */
 #endif
 
-#endif // SBDD_HELPER_H
+#endif /* SBDD_HELPER_H */

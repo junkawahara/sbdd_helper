@@ -35,12 +35,12 @@ void sbddextended_MySet_add(sbddextended_MySet* d, llint key)
 #ifdef __cplusplus
     d->se->insert(key);
 #else
-    // value is unused
+    /* value is unused */
     sbddextended_MyDict_add(&d->dict, key, 0ll);
 #endif
 }
 
-// returned value: 1 -> found, 0 -> not found
+/* returned value: 1 -> found, 0 -> not found */
 sbddextended_INLINE_FUNC
 int sbddextended_MySet_exists(const sbddextended_MySet* d, llint key)
 {

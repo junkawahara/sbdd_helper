@@ -1,10 +1,10 @@
 
-#ifdef __cplusplus // currently svg is supported only in C++ version
+#ifdef __cplusplus /* currently svg is supported only in C++ version */
 
 struct ExportAsSvg_arcinfo {
 public:
     bddp f;
-    int arc; // 0 or 1-arc
+    int arc; /* 0 or 1-arc */
     int fposx;
     int fposy;
 
@@ -32,9 +32,9 @@ template<typename T>
 sbddextended_INLINE_FUNC
 void bddexportassvg_inner(FILE* fp, bddp f,
                             DDIndex<T>* index, int is_zbdd
-//#ifdef __cplusplus
+/*#ifdef __cplusplus */
                             , const WriteObject& sbddextended_writeLine
-//#endif
+/*#endif */
                         )
 {
     char ss[sbddextended_BUFSIZE];
@@ -127,7 +127,7 @@ void bddexportassvg_inner(FILE* fp, bddp f,
         ++itor;
     }
 
-    // draw svg
+    /* draw svg */
     sbddextended_snprintf2(ss, sbddextended_BUFSIZE, "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%d\" height=\"%d\">", max_x, max_y);
     sbddextended_writeLine(ss, fp);
 
@@ -135,7 +135,7 @@ void bddexportassvg_inner(FILE* fp, bddp f,
     sbddextended_writeLine("    <polygon points=\"-10,-4 0,0 -10,4\" fill=\"#1b3966\" stroke=\"none\" />", fp);
     sbddextended_writeLine("</marker>", fp);
 
-    // draw nodes
+    /* draw nodes */
     for (int level = index->height(); level >= 1; --level) {
         for (llint j = 0; j < index->size(level); ++j) {
             bddp g = index->getNode(level, j).getBddp();
@@ -146,7 +146,7 @@ void bddexportassvg_inner(FILE* fp, bddp f,
         }
     }
 
-    // draw arcs
+    /* draw arcs */
     for (int level = index->height(); level >= 1; --level) {
         for (llint j = 0; j < index->size(level); ++j) {
             bddp g = index->getNode(level, j).getBddp();
@@ -165,7 +165,7 @@ void bddexportassvg_inner(FILE* fp, bddp f,
         }
     }
 
-    //draw terminals
+    /*draw terminals */
     sbddextended_snprintf5(ss, sbddextended_BUFSIZE, "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />", pos_map[bddempty].first - terminal_x / 2, pos_map[bddempty].second - terminal_y / 2, terminal_x, terminal_y, arc_width);
     sbddextended_writeLine(ss, fp);
     sbddextended_snprintf5(ss, sbddextended_BUFSIZE, "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />", pos_map[bddsingle].first - terminal_x / 2, pos_map[bddsingle].second - terminal_y / 2, terminal_x, terminal_y, arc_width);

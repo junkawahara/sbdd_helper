@@ -1,4 +1,4 @@
-// *************** import functions
+/* *************** import functions */
 
 sbddextended_INLINE_FUNC
 bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
@@ -20,8 +20,8 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
     sbddextended_MyVector node_vec, level_vec, lo_vec, hi_vec;
     sbddextended_MyDict node_dict;
 
-    sbddextended_readLine(buf, fp); // read first line
-    if (buf[0] == '.') { // end of file
+    sbddextended_readLine(buf, fp); /* read first line */
+    if (buf[0] == '.') { /* end of file */
         return bddnull;
     } else if (buf[0] == 'B' && (buf[1] == '\0' || isspace((int)buf[1]))) {
         return (is_zdd == 0 ? bddfalse : bddempty);
@@ -36,7 +36,7 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
 
     do {
         ++line_count;
-        if (buf[0] == '.') { // end of file
+        if (buf[0] == '.') { /* end of file */
             break;
         }
         c = sscanf(buf, "%s %s %s %s", buf1, buf2, buf3, buf4);
@@ -94,7 +94,7 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
         lo = sbddextended_MyVector_get(&lo_vec, i);
         hi = sbddextended_MyVector_get(&hi_vec, i);
         var = bddvaroflev((bddvar)(root_level - level + 1));
-        if (is_zdd == 0) { // BDD
+        if (is_zdd == 0) { /* BDD */
             pf = bddprime(var);
             pfn = bddnot(pf);
             sbddextended_MyDict_find(&node_dict, lo, &value);
@@ -106,7 +106,7 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
             bddfree(pfn);
             bddfree(p0);
             bddfree(p1);
-        } else { // ZDD
+        } else { /* ZDD */
             sbddextended_MyDict_find(&node_dict, lo, &value);
             p0 = (bddp)value;
             sbddextended_MyDict_find(&node_dict, hi, &value);
@@ -114,7 +114,7 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
             sbddextended_MyDict_add(&node_dict, id, (llint)bddunion(p0, p1));
             bddfree(p1);
         }
-        root_node_id = id; // The root node is the last node.
+        root_node_id = id; /* The root node is the last node. */
     }
     for (i = 0; i < (llint)node_vec.count; ++i) {
         id = sbddextended_MyVector_get(&node_vec, i);
@@ -204,7 +204,7 @@ bddp bddimportzbddasgraphillion(FILE* fp, int root_level)
 
 #endif
 
-// *************** export functions
+/* *************** export functions */
 
 
 sbddextended_INLINE_FUNC
@@ -368,7 +368,7 @@ void bddexportbddasgraphillion(FILE* fp, bddp f,
                                 bddNodeIndex* node_index, int root_level)
 {
     WriteObject wo(false, true, NULL);
-    // can be used for BDD/ZBDD
+    /* can be used for BDD/ZBDD */
     bddexportbddasgraphillion_inner(fp, f, node_index, -1, root_level, wo);
 }
 
@@ -377,7 +377,7 @@ void bddexportzbddasgraphillion(FILE* fp, bddp f,
                                 bddNodeIndex* node_index, int root_level)
 {
     WriteObject wo(false, true, NULL);
-    // only for ZBDD
+    /* only for ZBDD */
     bddexportbddasgraphillion_inner(fp, f, node_index, 1, root_level, wo);
 }
 
@@ -387,7 +387,7 @@ sbddextended_INLINE_FUNC
 void bddexportbddasgraphillion(FILE* fp, bddp f,
                                 bddNodeIndex* node_index, int root_level)
 {
-    // can be used for BDD/ZBDD
+    /* can be used for BDD/ZBDD */
     bddexportbddasgraphillion_inner(fp, f, node_index, -1, root_level);
 }
 
@@ -395,7 +395,7 @@ sbddextended_INLINE_FUNC
 void bddexportzbddasgraphillion(FILE* fp, bddp f,
                                 bddNodeIndex* node_index, int root_level)
 {
-    // only for ZBDD
+    /* only for ZBDD */
     bddexportbddasgraphillion_inner(fp, f, node_index, 1, root_level);
 }
 

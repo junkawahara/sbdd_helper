@@ -1,4 +1,4 @@
-// *************** import functions
+/* *************** import functions */
 
 sbddextended_INLINE_FUNC
 bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
@@ -22,7 +22,7 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
     unsigned short v16;
     ullint v64;
 
-    // read head 'B' 'D' 'D'
+    /* read head 'B' 'D' 'D' */
     for (i = 0; i < 3; ++i) {
         sbddextended_readUint8(&v8, fp);
         if ((i == 0 && v8 != 'B') || (i >= 1 && v8 != 'D')) {
@@ -30,13 +30,13 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
             return bddnull;
         }
     }
-    sbddextended_readUint8(&v8, fp); // version
+    sbddextended_readUint8(&v8, fp); /* version */
     if (v8 != 1) {
         fprintf(stderr, "This function supports only version 1.\n");
         return bddnull;
     }
 
-    sbddextended_readUint8(&v8, fp); // type
+    sbddextended_readUint8(&v8, fp); /* type */
     if (is_zbdd < 0 && v8 == 1) {
         fprintf(stderr, "Need to specify BDD or ZBDD.\n");
         return bddnull;
@@ -46,32 +46,32 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
         fprintf(stderr, "The binary indicates that it is ZDDD, but we interpret it as a BDD.\n");
     }
 
-    sbddextended_readUint16(&v16, fp); // number_of_arcs
+    sbddextended_readUint16(&v16, fp); /* number_of_arcs */
     if (v16 != 2) {
         fprintf(stderr, "Currently, this function supports only 2 branches.\n");
         return bddnull;
     }
 
-    sbddextended_readUint32(&number_of_terminals, fp); // number_of_terminals
+    sbddextended_readUint32(&number_of_terminals, fp); /* number_of_terminals */
     if (number_of_terminals != 2) {
         fprintf(stderr, "Currently, this function supports only 2 terminals.\n");
         return bddnull;
     }
 
-    sbddextended_readUint8(&v8, fp); // number_of_bits_for_level
+    sbddextended_readUint8(&v8, fp); /* number_of_bits_for_level */
     if (v8 != 16) {
         fprintf(stderr, "Currently, this function supports only the case of number_of_bits_for_level == 16.\n");
         return bddnull;
     }
 
-    sbddextended_readUint8(&v8, fp); // number_of_bits_for_id
+    sbddextended_readUint8(&v8, fp); /* number_of_bits_for_id */
     if (v8 != 64) {
         fprintf(stderr, "Currently, this function supports only the case of number_of_bits_for_id == 64.\n");
         return bddnull;
     }
 
-    sbddextended_readUint8(&use_negative_arcs, fp); // use_negative_arcs
-    sbddextended_readUint64(&max_level, fp); // max_level
+    sbddextended_readUint8(&use_negative_arcs, fp); /* use_negative_arcs */
+    sbddextended_readUint64(&max_level, fp); /* max_level */
 
     if (root_level < 0) {
         root_level = (int)max_level;
@@ -81,17 +81,17 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
         return bddnull;
     }
 
-    sbddextended_readUint64(&v64, fp); // number_of_roots
+    sbddextended_readUint64(&v64, fp); /* number_of_roots */
     if (v64 != 1) {
         fprintf(stderr, "Currently, this function supports only 1 root.\n");
         return bddnull;
     }
-    // reserved
+    /* reserved */
     for (i = 0; i < 8; ++i) {
         sbddextended_readUint64(&v64, fp);
     }
 
-    if (max_level == 0) { // case of a constant function (0/1-terminal)
+    if (max_level == 0) { /* case of a constant function (0/1-terminal) */
         sbddextended_readUint64(&v64, fp);
         if (v64 == 0) {
             return bddempty;
@@ -105,7 +105,7 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
 
     sbddextended_MyVector_initialize(&level_vec);
 
-    // level 0, unused (dummy)
+    /* level 0, unused (dummy) */
     sbddextended_MyVector_add(&level_vec, 0ll);
 
     number_of_nodes = number_of_terminals;
@@ -116,7 +116,7 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
     }
     sbddextended_readUint64(&root_id, fp);
 
-    //bddnode_buf = (bddp*)malloc((number_of_nodes + 1) * sizeof(bddp));
+    /*bddnode_buf = (bddp*)malloc((number_of_nodes + 1) * sizeof(bddp)); */
     bddnode_buf = (bddp*)malloc((size_t)number_of_nodes * sizeof(bddp));
     if (bddnode_buf == NULL) {
         fprintf(stderr, "out of memory\n");
@@ -131,13 +131,13 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
 
     for (node_count = number_of_terminals;
             node_count < number_of_nodes; ++node_count) {
-        // read 0-child
+        /* read 0-child */
         if (!sbddextended_readUint64(&v64, fp)) {
             break;
         }
-        //fprintf(stderr, "%lld\n", v64);
+        /*fprintf(stderr, "%lld\n", v64); */
 
-        //fprintf(stderr, "0-child: %lld\n", v64);
+        /*fprintf(stderr, "0-child: %lld\n", v64); */
         if (v64 <= 1) {
             f0 = bddgetterminal((int)v64, is_zbdd);
         } else {
@@ -152,7 +152,7 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
             }
         }
 
-        // read 1-child
+        /* read 1-child */
         if (!sbddextended_readUint64(&v64, fp)) {
             fprintf(stderr, "illegal format\n");
             return bddnull;
@@ -170,12 +170,12 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
             }
         }
 
-        // obtain node's level
+        /* obtain node's level */
         node_sum = number_of_terminals;
         for (level = 1; level <= max_level; ++level) {
-            // add the number of nodes at the level
+            /* add the number of nodes at the level */
             node_sum += (ullint)sbddextended_MyVector_get(&level_vec, (llint)level);
-            //fprintf(stderr, "node_sum: %lld\n", node_sum);
+            /*fprintf(stderr, "node_sum: %lld\n", node_sum); */
             if (node_sum > node_count) {
                 break;
             }
@@ -190,7 +190,7 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
         }
     }
     if (use_negative_arcs != 0) {
-        if (root_id % 2 == 1) { // negative arc
+        if (root_id % 2 == 1) { /* negative arc */
             f = bddtakenot(bddnode_buf[root_id >> 1]);
         } else {
             f = bddnode_buf[root_id >> 1];
@@ -198,7 +198,7 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
     } else {
         f = bddnode_buf[root_id];
     }
-    // FIX ME: need to free of bddnode_buf[*]
+    /* FIX ME: need to free of bddnode_buf[*] */
     return f;
 }
 
@@ -283,7 +283,7 @@ bddp bddimportzbddasbinary(FILE* fp, int root_level)
 #endif
 
 
-// *************** export functions
+/* *************** export functions */
 
 
 sbddextended_INLINE_FUNC
@@ -299,8 +299,8 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
 #endif
                                 )
 {
-    // Since only BDD/ZDD is treated in the current version,
-    // the number of terminals is fixed to be 2.
+    /* Since only BDD/ZDD is treated in the current version, */
+    /* the number of terminals is fixed to be 2. */
     const unsigned int number_of_terminals = 2;
     ullint i, j;
     int k, is_making_index = 0;
@@ -325,52 +325,52 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
 
     max_level = (ullint)bddgetlev(f);
 
-    // start header
+    /* start header */
 
     sbddextended_writeUint8((unsigned char)'B', fp);
     sbddextended_writeUint8((unsigned char)'D', fp);
     sbddextended_writeUint8((unsigned char)'D', fp);
 
-    sbddextended_writeUint8((unsigned char)1u, fp); // version
-    // DD type
-    if (is_zbdd < 0) { // can be interpreted as BDD/ZBDD
+    sbddextended_writeUint8((unsigned char)1u, fp); /* version */
+    /* DD type */
+    if (is_zbdd < 0) { /* can be interpreted as BDD/ZBDD */
         sbddextended_writeUint8((unsigned char)1u, fp);
-    } else if (is_zbdd == 0) { // BDD
+    } else if (is_zbdd == 0) { /* BDD */
         sbddextended_writeUint8((unsigned char)2u, fp);
-    } else { // ZBDD
+    } else { /* ZBDD */
         sbddextended_writeUint8((unsigned char)3u, fp);
     }
-    // number_of_arcs
+    /* number_of_arcs */
     sbddextended_writeUint16((unsigned short)2u, fp);
-    // number_of_terminals
+    /* number_of_terminals */
     sbddextended_writeUint32(number_of_terminals, fp);
-    // number_of_bits_for_level
+    /* number_of_bits_for_level */
     sbddextended_writeUint8((unsigned char)16u, fp);
-    // number_of_bits_for_id
+    /* number_of_bits_for_id */
     sbddextended_writeUint8((unsigned char)64u, fp);
-    // use_negative_arcs
+    /* use_negative_arcs */
     if (use_negative_arcs != 0) {
         sbddextended_writeUint8((unsigned char)1u, fp);
     } else {
         sbddextended_writeUint8((unsigned char)0u, fp);
     }
-    // max_level
+    /* max_level */
     sbddextended_writeUint64(max_level, fp);
-    // number_of_roots
+    /* number_of_roots */
     sbddextended_writeUint64((ullint)1u, fp);
 
-    // reserved
+    /* reserved */
     for (i = 0; i < 8; ++i) {
         sbddextended_writeUint64((ullint)0u, fp);
     }
 
-    // end header
+    /* end header */
 
     if (is_zbdd < 0) {
         is_zbdd = (!bddisbdd(f) ? 1 : 0);
     }
 
-    if (max_level == 0) { // case of a constant function (0/1-terminal)
+    if (max_level == 0) { /* case of a constant function (0/1-terminal) */
         if (f == bddempty) {
             sbddextended_writeUint64((ullint)0ull, fp);
         } else if (f == bddsingle) {
@@ -400,7 +400,7 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
 
     assert((ullint)node_index->height == max_level);
 
-    // write the number of nodes in level i and compute the number of nodes
+    /* write the number of nodes in level i and compute the number of nodes */
     for (i = 1; i <= max_level; ++i) {
         sbddextended_writeUint64((ullint)node_index->level_vec_arr[i].count, fp);
         number_of_nodes += (ullint)node_index->level_vec_arr[i].count;
@@ -417,8 +417,8 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
         id_prefix[i + 1] = id_prefix[i] + (ullint)node_index->level_vec_arr[i].count;
     }
 
-    // write the number of the root id
-    // (In the current version, assume that the number of roots is 2.)
+    /* write the number of the root id */
+    /* (In the current version, assume that the number of roots is 2.) */
     root_id = (ullint)number_of_terminals + number_of_nodes - 1;
     assert(root_id == id_prefix[max_level]);
 

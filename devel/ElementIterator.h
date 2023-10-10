@@ -124,8 +124,8 @@ private:
     std::vector<char> op_stack_;
     mutable std::set<bddvar> buffSet_;
 
-    // This function is written by copy-paste of void
-    // bddElementIterator_proceed(bddElementIterator* itor).
+    /* This function is written by copy-paste of void */
+    /* bddElementIterator_proceed(bddElementIterator* itor). */
     void proceed()
     {
         char op;

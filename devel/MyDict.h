@@ -90,7 +90,7 @@ void sbddextended_MyDict_deinitialize(sbddextended_MyDict* d)
     node_stack[sp] = d->root;
     op_stack[sp] = 0;
 
-    // free each node (not using a recursive function)
+    /* free each node (not using a recursive function) */
     while (sp >= 0) {
         node = node_stack[sp];
         op = op_stack[sp];
@@ -102,7 +102,7 @@ void sbddextended_MyDict_deinitialize(sbddextended_MyDict* d)
         while (op <= 1) {
             if (op == 0) {
                 child = node->left;
-            } else { // op == 1
+            } else { /* op == 1 */
                 child = node->right;
             }
             if (child == NULL) {
@@ -140,7 +140,7 @@ void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
 {
 #ifdef __cplusplus
     std::map<llint, llint>::const_iterator itor = d->dict->find(key);
-    if (itor == d->dict->end()) { // not found
+    if (itor == d->dict->end()) { /* not found */
         ++d->count;
     }
     (*d->dict)[key] = value;
@@ -153,7 +153,7 @@ void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
     } else {
         node = d->root;
         while (node != NULL) {
-            if (node->key == key) { // found
+            if (node->key == key) { /* found */
                 node->value = value;
                 break;
             } else if (key < node->key) {
@@ -165,7 +165,7 @@ void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
                     ++d->count;
                     break;
                 }
-            } else { // key > node->key
+            } else { /* key > node->key */
                 if (node->right != NULL) {
                     node = node->right;
                 } else {
@@ -180,8 +180,8 @@ void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
 #endif
 }
 
-// returned value: 1 -> found, 0 -> not found
-// The found value is stored into "value" argument.
+/* returned value: 1 -> found, 0 -> not found */
+/* The found value is stored into "value" argument. */
 sbddextended_INLINE_FUNC
 int sbddextended_MyDict_find(const sbddextended_MyDict* d, llint key, llint* value)
 {
@@ -206,7 +206,7 @@ int sbddextended_MyDict_find(const sbddextended_MyDict* d, llint key, llint* val
             return 1;
         } else if (key < node->key) {
             node = node->left;
-        } else {// key > node->key
+        } else {/* key > node->key */
             node = node->right;
         }
     }
@@ -270,7 +270,7 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
     dest_node_stack[sp] = dest->root;
     op_stack[sp] = 0;
 
-    // free each node (not using a recursive function)
+    /* free each node (not using a recursive function) */
     while (sp >= 0) {
         node = node_stack[sp];
         dest_node = dest_node_stack[sp];
@@ -283,7 +283,7 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
         while (op <= 1) {
             if (op == 0) {
                 child = node->left;
-            } else { // op == 1
+            } else { /* op == 1 */
                 child = node->right;
             }
             if (child == NULL) {
@@ -302,7 +302,7 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
 
             if (op == 0) {
                 dest_node->left = dest_node_stack[sp];
-            } else { // op == 1
+            } else { /* op == 1 */
                 dest_node->right = dest_node_stack[sp];
             }
         } else {

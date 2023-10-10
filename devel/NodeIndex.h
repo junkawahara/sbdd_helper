@@ -1,11 +1,11 @@
 typedef struct tagbddNodeIndex {
     int is_raw;
     int is_zbdd;
-    // All of the following four pointers are NULL if f is a terminal or bddnull.
+    /* All of the following four pointers are NULL if f is a terminal or bddnull. */
     sbddextended_MyDict* node_dict_arr;
-    sbddextended_MyVector* level_vec_arr; // stores all nodes at level i
+    sbddextended_MyVector* level_vec_arr; /* stores all nodes at level i */
     llint* offset_arr;
-    llint* count_arr; // array representing the number of solutions for node i
+    llint* count_arr; /* array representing the number of solutions for node i */
     int height;
     bddp f;
 } bddNodeIndex;
@@ -59,7 +59,7 @@ bddNodeIndex* bddNodeIndex_makeIndexWithoutCount_inner(bddp f, int is_raw, int i
 
     sbddextended_MyDict_add(&node_index->node_dict_arr[node_index->height],
                             (llint)f,
-                            0ll); // 0 means the first node in the level
+                            0ll); /* 0 means the first node in the level */
     sbddextended_MyVector_add(&node_index->level_vec_arr[node_index->height], (llint)f);
 
     for (i = node_index->height; i >= 1; --i) {
@@ -221,7 +221,7 @@ bddNodeIndex* bddNodeIndex_makeIndex_inner(bddp f, int is_raw, int is_zbdd)
             }
         }
     } else {
-        // not implemented yet.
+        /* not implemented yet. */
     }
     return node_index;
 }
@@ -369,11 +369,11 @@ void bddNodeIndex_copy(bddNodeIndex* dest,
 }
 
 
-// *************************** C++ version start *****************************
+/* *************************** C++ version start ***************************** */
 
 #ifdef __cplusplus
 
-// This class is obsolate.
+/* This class is obsolate. */
 class DDNodeIndex {
 private:
     bddNodeIndex* node_index_;
@@ -436,7 +436,7 @@ public:
         DDNodeIterator(const DDNodeIndex& node_index, bool is_end) : node_index_(node_index), pos_(0)
         {
             if (is_end) {
-                level_ = 0; // This means pointing at end;
+                level_ = 0; /* This means pointing at end; */
             } else {
                 level_ = node_index.node_index_->height;
             }
@@ -568,8 +568,8 @@ private:
 
     void initialize(bddp f, bool /*is_raw*/, int is_zbdd)
     {
-        // currently, we do not support raw mode. We set is_raw to be false.
-        //node_index_ = bddNodeIndex_makeIndexWithoutCount_inner(f, (is_raw ? 1 : 0), is_zbdd);
+        /* currently, we do not support raw mode. We set is_raw to be false. */
+        /*node_index_ = bddNodeIndex_makeIndexWithoutCount_inner(f, (is_raw ? 1 : 0), is_zbdd); */
         node_index_ = bddNodeIndex_makeIndexWithoutCount_inner(f, 0, is_zbdd);
     }
 
@@ -581,7 +581,7 @@ private:
             exit(1);
         }
 
-        // llint -> max/min value, bool -> 1-arc if true, 0-arc if false
+        /* llint -> max/min value, bool -> 1-arc if true, 0-arc if false */
         std::map<bddp, std::pair<llint, bool> > sto;
 
         if (is_max) {
@@ -601,29 +601,29 @@ private:
                     if (sto[child1].first == sto[bddempty].first
                             || sto[child0].first > sto[child1].first + weights[var]) {
                         sto[f].first = sto[child0].first;
-                        sto[f].second = false; // 0-arc side
+                        sto[f].second = false; /* 0-arc side */
                     } else {
                         sto[f].first = sto[child1].first + weights[var];
-                        sto[f].second = true; // 1-arc side
+                        sto[f].second = true; /* 1-arc side */
                     }
                 } else {
                     if (sto[child1].first == sto[bddempty].first
                             || sto[child0].first > sto[child1].first + weights[var]) {
                         sto[f].first = sto[child1].first + weights[var];
-                        sto[f].second = true; // 1-arc side
+                        sto[f].second = true; /* 1-arc side */
                     } else {
                         sto[f].first = sto[child0].first;
-                        sto[f].second = false; // 0-arc side
+                        sto[f].second = false; /* 0-arc side */
                     }
                 }
             }
         }
         bddp g = node_index_->f;
         while (!bddisterminal(g)) {
-            if (sto[g].second) { // 1-arc
+            if (sto[g].second) { /* 1-arc */
                 s.insert(bddgetvar(g));
                 g = bddgetchild1z(g);
-            } else { // 0-arc
+            } else { /* 0-arc */
                 g = bddgetchild0z(g);
             }
         }
@@ -869,7 +869,7 @@ public:
     {
         makeCountIndex();
 #ifdef USE_GMP
-        // only support 32 bit because GMP does not have get_sll
+        /* only support 32 bit because GMP does not have get_sll */
         return static_cast<llint>(count_storage_[node_index_->f].get_ui());
 #else
         return count_storage_[node_index_->f];
@@ -987,7 +987,7 @@ public:
     std::set<bddvar> getSet(llint order)
     {
         makeCountIndex();
-        if (order < 0 || order >= count()) { // out of range
+        if (order < 0 || order >= count()) { /* out of range */
             return std::set<bddvar>();
         }
         std::set<bddvar> s;
@@ -999,7 +999,7 @@ public:
     std::set<bddvar> getSet(mpz_class order)
     {
         makeCountIndex();
-        if (order < mpz_class(0) || order >= countMP()) { // out of range
+        if (order < mpz_class(0) || order >= countMP()) { /* out of range */
             return std::set<bddvar>();
         }
         std::set<bddvar> s;
@@ -1008,15 +1008,15 @@ public:
     }
 #endif
 
-#ifdef USE_GMP // use GMP random
+#ifdef USE_GMP /* use GMP random */
     std::set<bddvar> sampleRandomly(gmp_randclass& random)
     {
         makeCountIndex();
         return getSet(random.get_z_range(countMP()));
     }
-#else // USE_GMP
+#else /* USE_GMP */
 
-#if __cplusplus >= 201103L // use C++ random class
+#if __cplusplus >= 201103L /* use C++ random class */
 
     template <typename U>
     std::set<bddvar> sampleRandomly(U& random_engine)
@@ -1025,7 +1025,7 @@ public:
         return getSet(dist(random_engine));
     }
 
-#else // __cplusplus >= 201103L // use rand() function
+#else /* __cplusplus >= 201103L // use rand() function */
 
     std::set<bddvar> sampleRandomly()
     {
@@ -1037,9 +1037,9 @@ public:
         }
     }
 
-#endif // __cplusplus >= 201103L
+#endif /* __cplusplus >= 201103L */
 
-#endif // USE_GMP
+#endif /* USE_GMP */
 
     DDNode<T> root()
     {
@@ -1056,7 +1056,7 @@ public:
         return DDNode<T>(getBddp(level, pos), *this);
     }
 
-    void makeCountIndex() // currently support only for ZDD
+    void makeCountIndex() /* currently support only for ZDD */
     {
         if (!is_count_made) {
             is_count_made = true;
@@ -1089,7 +1089,7 @@ public:
         DDNodeIterator(const DDIndex& node_index, bool is_end) : node_index_(node_index), pos_(0)
         {
             if (is_end) {
-                level_ = 0; // This means pointing at end;
+                level_ = 0; /* This means pointing at end; */
             } else {
                 level_ = node_index.node_index_->height;
             }
@@ -1145,4 +1145,4 @@ public:
 
 };
 
-#endif // __cplusplus
+#endif /* __cplusplus */

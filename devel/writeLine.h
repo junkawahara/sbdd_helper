@@ -78,7 +78,7 @@ public:
     }
 
     bool operator()(unsigned char v, FILE* fp) const {
-        //std::cerr << "uint8 " << (ullint)v << std::endl;
+        /*std::cerr << "uint8 " << (ullint)v << std::endl; */
         if (is_fstream_) {
             if (!*ost_) {
                 return false;
@@ -92,7 +92,7 @@ public:
     }
 
     bool operator()(unsigned short v, FILE* fp) const {
-        //std::cerr << "uint16 " << (ullint)v << std::endl;
+        /*std::cerr << "uint16 " << (ullint)v << std::endl; */
         if (is_fstream_) {
             if (!*ost_) {
                 return false;
@@ -106,7 +106,7 @@ public:
     }
 
     bool operator()(unsigned int v, FILE* fp) const {
-        //std::cerr << "uint32 " << (ullint)v << std::endl;
+        /*std::cerr << "uint32 " << (ullint)v << std::endl; */
         if (is_fstream_) {
             if (!*ost_) {
                 return false;
@@ -120,7 +120,7 @@ public:
     }
 
     bool operator()(ullint v, FILE* fp) const {
-        //std::cerr << "uint64 " << (ullint)v << std::endl;
+        /*std::cerr << "uint64 " << (ullint)v << std::endl; */
         if (is_fstream_) {
             if (!*ost_) {
                 return false;

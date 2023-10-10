@@ -47,9 +47,9 @@ bddp bddNodeIterator_next(bddNodeIterator* itor)
     return f;
 }
 
-// *************************** C++ version start *****************************
+/* *************************** C++ version start ***************************** */
 
 #ifdef __cplusplus
 
 
-#endif // __cplusplus
+#endif /* __cplusplus */

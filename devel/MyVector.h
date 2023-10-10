@@ -4,7 +4,7 @@ typedef struct tagsbddextended_MyVector {
 #ifdef __cplusplus
     std::vector<llint>* vec;
 #endif
-    // in the C++ version, always vec.size() == count
+    /* in the C++ version, always vec.size() == count */
     size_t count;
 #ifndef __cplusplus
     size_t capacity;

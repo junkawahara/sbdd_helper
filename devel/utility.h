@@ -1,7 +1,7 @@
 
 #ifdef __cplusplus
 
-// need to free the returned value
+/* need to free the returned value */
 sbddextended_INLINE_FUNC
 const char** sbddextended_strVectorToArray(const std::vector<std::string>& vec)
 {
@@ -20,7 +20,7 @@ const char** sbddextended_strVectorToArray(const std::vector<std::string>& vec)
 
 #endif
 
-// XOR shift
+/* XOR shift */
 sbddextended_INLINE_FUNC
 ullint sbddextended_getXRand(ullint* state)
 {
@@ -34,13 +34,13 @@ ullint sbddextended_getXRand(ullint* state)
 
 
 
-#ifdef __cplusplus // C++
-    #if __cplusplus >= 201103L // C++11
+#ifdef __cplusplus /* C++ */
+    #if __cplusplus >= 201103L /* C++11 */
         #define SBDDH_SNPRINTF_EXISTS
     #endif
-#else // C
+#else /* C */
     #ifdef __STDC_VERSION__
-        #if __STDC_VERSION__ >= 199901L // C99
+        #if __STDC_VERSION__ >= 199901L /* C99 */
             #define SBDDH_SNPRINTF_EXISTS
         #endif
     #endif
@@ -48,9 +48,9 @@ ullint sbddextended_getXRand(ullint* state)
 
 #ifdef SBDDH_SNPRINTF_EXISTS
 
-// We use the following macros instead of vsnprintf because passing
-// a variable to the third argument of vsnprintf outputs warning
-// "format string is not a string literal [-Wformat-nonliteral]".
+/* We use the following macros instead of vsnprintf because passing */
+/* a variable to the third argument of vsnprintf outputs warning */
+/* "format string is not a string literal [-Wformat-nonliteral]". */
 
 #define sbddextended_snprintf0(str, size, format) \
 snprintf(str, size, format)
@@ -66,19 +66,19 @@ snprintf(str, size, format, arg1, arg2, arg3, arg4)
 arg5) \
 snprintf(str, size, format, arg1, arg2, arg3, arg4, arg5)
 
-// sbddextended_INLINE_FUNC
-// int sbddextended_sprintf(char *str, const char *format, ...)
-// {
-//     int v;
-//     va_list args;
+/* sbddextended_INLINE_FUNC
+int sbddextended_sprintf(char *str, const char *format, ...)
+{
+    int v;
+    va_list args;
 
-//     va_start(args, format);
-//     v = vsnprintf(str, sbddextended_BUFSIZE, format, args);
-//     va_end(args);
-//     return v;
-// }
+    va_start(args, format);
+    v = vsnprintf(str, sbddextended_BUFSIZE, format, args);
+    va_end(args);
+    return v;
+} */
 
-#else // SBDDH_SNPRINTF_EXISTS
+#else /* SBDDH_SNPRINTF_EXISTS */
 
 #define sbddextended_snprintf0(str, size, format) \
 sprintf(str, format)
@@ -94,16 +94,16 @@ sprintf(str, format, arg1, arg2, arg3, arg4)
 arg5) \
 sprintf(str, format, arg1, arg2, arg3, arg4, arg5)
 
-// sbddextended_INLINE_FUNC
-// int sbddextended_sprintf(char *str, const char *format, ...)
-// {
-//     int v;
-//     va_list args;
+/* sbddextended_INLINE_FUNC
+int sbddextended_sprintf(char *str, const char *format, ...)
+{
+    int v;
+    va_list args;
 
-//     va_start(args, format);
-//     v = sprintf(str, format, args);
-//     va_end(args);
-//     return v;
-// }
+    va_start(args, format);
+    v = sprintf(str, format, args);
+    va_end(args);
+    return v;
+} */
 
-#endif // SBDDH_SNPRINTF_EXISTS
+#endif /* SBDDH_SNPRINTF_EXISTS */

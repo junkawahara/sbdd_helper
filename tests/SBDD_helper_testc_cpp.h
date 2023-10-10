@@ -1,22 +1,22 @@
-//
-// One header library for SAPPOROBDD C/C++ version test code
-//
-// Copyright (c) 2017 Jun Kawahara
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-// and associated documentation files (the "Software"), to deal in the Software without
-// restriction, including without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all copies or
-// substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
-// BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+/*
+One header library for SAPPOROBDD C/C++ version test code
+
+Copyright (c) 2017 -- 2023 Jun Kawahara
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+and associated documentation files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,7 +77,7 @@ int is_expected_str(FILE* fp, const char* str)
     if (v != (long)len) {
         return 0;
     }
-    buf = (char*)malloc((size_t)v + 1); // +1 for '\0'
+    buf = (char*)malloc((size_t)v + 1); /* +1 for '\0' */
     if (buf == NULL) {
         fprintf(stderr, "malloc failed\n");
         exit(1);
@@ -302,7 +302,7 @@ void test_MySet(void)
     sbddextended_MySet_deinitialize(&s);
 }
 
-// make zbdd representing {{2}} from file
+/* make zbdd representing {{2}} from file */
 bddp construct_singleton(void)
 {
     bddp f;
@@ -346,8 +346,8 @@ void test_bddfunctions(void)
     test(bddisconstant(bddsingle));
     test(!bddisconstant(f));
 
-    // bddisnegative and bddtakenot will be tested at
-    // test_getsingleandpowerset
+    /* bddisnegative and bddtakenot will be tested at */
+    /* test_getsingleandpowerset */
 
     test(bddis64bitversion());
 
@@ -396,14 +396,14 @@ void test_bddfunctions(void)
         test(bddlshift(s2, (bddvar)i) == bddgetsingleton((bddvar)(2 + i)));
     }
 
-    // test bddprimenot
+    /* test bddprimenot */
     f = bddat1(bddxor(bddprime((bddvar)1), bddprime((bddvar)2)),
-               (bddvar)2); // compute (x_1 xor x_2)|_{x_2 = 0}, i.e., bar(x_1)
+               (bddvar)2); /* compute (x_1 xor x_2)|_{x_2 = 0}, i.e., bar(x_1) */
     test(f == bddprimenot((bddvar)1));
 
     for (i = 2; i <= 50; ++i) {
         f = bddat1(bddxor(bddprime((bddvar)i), bddprime((bddvar)1)),
-                   (bddvar)1); // compute (x_1 xor x_i)|_{x_i = 0}, i.e., bar(x_i)
+                   (bddvar)1); /* compute (x_1 xor x_i)|_{x_i = 0}, i.e., bar(x_i) */
         test(f == bddprimenot((bddvar)i));
     }
 
@@ -450,12 +450,12 @@ void test_getsingleandpowerset(void)
     for (i = 0; i < N; ++i) {
         vararr[i] = 2 * (bddvar)i + 1;
     }
-    // add duplicated values in purpose
+    /* add duplicated values in purpose */
     vararr[N] = (bddvar)(2 * (135 % N) + 1);
     vararr[N + 1] = (bddvar)(2 * (223 % N) + 1);
     vararr[N + 2] = (bddvar)(2 * (157 % N) + 1);
 
-    // test getsingleset
+    /* test getsingleset */
     f = bddgetsingleset(vararr, N);
 
     test_eq(bddsize(f), N);
@@ -469,7 +469,7 @@ void test_getsingleandpowerset(void)
     }
     test(f == bddsingle);
 
-    // test getsinglesetv
+    /* test getsinglesetv */
 
     f = bddgetsinglesetv(5, 2, 3, 5, 7, 11);
 
@@ -493,14 +493,14 @@ void test_getsingleandpowerset(void)
 
     test(bddgetsinglesetv(0) == bddsingle);
 
-    // test getpowerset
+    /* test getpowerset */
     f = bddgetpowerset(vararr, N);
 
     test_eq(bddsize(f), N);
-    test(N <= 38); // bddcard cannot return a value more than 2^38
-    test_eq(bddcard(f), (1llu << N)); // 2^N
+    test(N <= 38); /* bddcard cannot return a value more than 2^38 */
+    test_eq(bddcard(f), (1llu << N)); /* 2^N */
 
-    // test also bddisnegative and bddtakenot
+    /* test also bddisnegative and bddtakenot */
     while (f != bddempty) {
         f0 = bddgetchild0zraw(f);
         f1 = bddgetchild1zraw(f);
@@ -571,8 +571,8 @@ void ullint_to_vararr(ullint v, bddvar* vararr, int* num)
 
 void test_at_random(void)
 {
-    const size_t w = 30; // number of variables
-    const size_t N = 1000; // number of cardinality of the constructed ZDD
+    const size_t w = 30; /* number of variables */
+    const size_t N = 1000; /* number of cardinality of the constructed ZDD */
     int i, j, num, found;
     ullint w_pow, c;
     ullint* ar;
@@ -595,7 +595,7 @@ void test_at_random(void)
         exit(1);
     }
 
-    // make array whose elements are distinct
+    /* make array whose elements are distinct */
     while (sp < N) {
         c = (((ullint)rand() << 32) | ((ullint)rand())) % w_pow;
         if (c == 0) {
@@ -713,10 +713,10 @@ void test_io(void)
     FILE* fp2;
     bddvar vararr[3];
     const char* var_name_map[] = {"dummy", "e", "d", "c", "b", "a"};
-    //const unsigned char table1[] = {1, 1, 1, 1, 0, 1, 1, 1};
-    //const unsigned char table2[] = {0, 0, 1, 0, 0, 1, 0, 1};
+    /*const unsigned char table1[] = {1, 1, 1, 1, 0, 1, 1, 1}; */
+    /*const unsigned char table2[] = {0, 0, 1, 0, 0, 1, 0, 1}; */
 
-    // open as binary because treating '\n' as a normal charactor
+    /* open as binary because treating '\n' as a normal charactor */
     fp1 = fopen(g_filename1, "wb+");
     if (fp1 == NULL) {
         fprintf(stderr, "file cannot be opened\n");
@@ -776,24 +776,24 @@ void test_io(void)
         exit(1);
     }
 
-    // need test bddoutputbddforgraphviz(stderr, f, NULL); here
+    /* need test bddoutputbddforgraphviz(stderr, f, NULL); here */
 
-    //f = bddtruthtabletobdd(table1, vararr, 3);
-    //g = bddor(bddor(bddprime(2), bddprime(3)), bddnot(bddprime(5)));
-    //test(f == g);
+    /*f = bddtruthtabletobdd(table1, vararr, 3); */
+    /*g = bddor(bddor(bddprime(2), bddprime(3)), bddnot(bddprime(5))); */
+    /*test(f == g); */
 
-    //f = bddtruthtabletobdd(table2, vararr, 3);
-    //g = bddor(bddand(bddprime(2), bddprime(5)),
-    //          bddand(bddnot(bddor(bddprime(2), bddprime(5))),
-    //                 bddprime(3)));
-    //test(f == g);
+    /*f = bddtruthtabletobdd(table2, vararr, 3); */
+    /*g = bddor(bddand(bddprime(2), bddprime(5)), */
+    /*          bddand(bddnot(bddor(bddprime(2), bddprime(5))), */
+    /*                 bddprime(3))); */
+    /*test(f == g); */
 
-    //bddconstructzbddfromelements_inner_getoneset("10 20 30 40 50", 14, " ", 1);
-    //bddconstructzbddfromelements_inner_getoneset("10,2,30,4,50", 12, ",", 1);
-    //bddconstructzbddfromelements_inner_getoneset("30!&20!&10", 10, "!&", 2);
-    //bddconstructzbddfromelements_inner_getoneset("10!!30!!20", 10, "!!", 2);
-    //bddconstructzbddfromelements_inner_getoneset("1", 1, "!&", 2);
-    //bddconstructzbddfromelements(stdin, "!", ",");
+    /*bddconstructzbddfromelements_inner_getoneset("10 20 30 40 50", 14, " ", 1); */
+    /*bddconstructzbddfromelements_inner_getoneset("10,2,30,4,50", 12, ",", 1); */
+    /*bddconstructzbddfromelements_inner_getoneset("30!&20!&10", 10, "!&", 2); */
+    /*bddconstructzbddfromelements_inner_getoneset("10!!30!!20", 10, "!!", 2); */
+    /*bddconstructzbddfromelements_inner_getoneset("1", 1, "!&", 2); */
+    /*bddconstructzbddfromelements(stdin, "!", ","); */
 
     fp1 = fopen(g_filename3, "w+");
     if (fp1 == NULL) {
@@ -889,7 +889,7 @@ void test_elementIterator(void)
     bddp g;
 
     f = make_test_zbdd();
-    // f is expected to be {{3, 2}, {3, 1}, {2, 1}}
+    /* f is expected to be {{3, 2}, {3, 1}, {2, 1}} */
     arr = (bddvar*)malloc(bddgetlev(f) * sizeof(bddvar));
 
     itor = bddElementIterator_make(f);
@@ -916,7 +916,7 @@ void test_elementIterator(void)
     bddElementIterator_destruct(itor);
 
     g = bddunion(f, bddsingle);
-    // g is expected to be {{}, {3, 2}, {3, 1}, {2, 1}}
+    /* g is expected to be {{}, {3, 2}, {3, 1}, {2, 1}} */
 
     itor = bddElementIterator_make(g);
     test(bddElementIterator_hasNext(itor) != 0);
@@ -936,12 +936,12 @@ void test_elementIterator(void)
 
     bddElementIterator_destruct(itor);
 
-    // bddempty test
+    /* bddempty test */
     itor = bddElementIterator_make(bddempty);
     test(bddElementIterator_hasNext(itor) == 0);
     bddElementIterator_destruct(itor);
 
-    // bddsingle test
+    /* bddsingle test */
     itor = bddElementIterator_make(bddsingle);
     test(bddElementIterator_hasNext(itor) != 0);
     bddElementIterator_next(itor, arr);

@@ -1,4 +1,4 @@
-// *************** import functions
+/* *************** import functions */
 
 sbddextended_INLINE_FUNC
 bddp bddconstructzbddfromelements_inner(FILE* fp
@@ -24,7 +24,7 @@ bddp bddconstructzbddfromelements_inner(FILE* fp
     p = bddfalse;
     first = 1;
 
-    mode = 0; // 0: skip ws, 1: reading nums
+    mode = 0; /* 0: skip ws, 1: reading nums */
     v = 0;
     c = 0;
     while (c != -1) {
@@ -134,13 +134,13 @@ bddp bddconstructzbddfromelements(FILE* /*fp*/, const char* /*large_sep*/,
 
 #else
 
-// The following function is no longer supported.
-//sbddextended_INLINE_FUNC
-//bddp bddconstructzbddfromelements(FILE* fp, const char* large_sep,
-//                                    const char* small_sep)
-//{
-//    return bddconstructzbddfromelements_inner(fp, large_sep, small_sep);
-//}
+/* The following function is no longer supported.
+sbddextended_INLINE_FUNC
+bddp bddconstructzbddfromelements(FILE* fp, const char* large_sep,
+                                    const char* small_sep)
+{
+    return bddconstructzbddfromelements_inner(fp, large_sep, small_sep);
+}*/
 
 sbddextended_INLINE_FUNC
 bddp bddconstructzbddfromelements(FILE* fp)
@@ -151,10 +151,10 @@ bddp bddconstructzbddfromelements(FILE* fp)
 #endif
 
 
-// *************** export functions
+/* *************** export functions */
 
 
-// num_of_variables: 0 -> elements format, non 0 -> value list format
+/* num_of_variables: 0 -> elements format, non 0 -> value list format */
 sbddextended_INLINE_FUNC
 void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
                                 const char* delim2, const char* var_name_map[],
@@ -196,7 +196,7 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
 
     is_first_delim1 = 1;
     if (bddisnegative(f)) {
-        // Output bddsingle first
+        /* Output bddsingle first */
         if (num_of_variables != 0) {
             for (i = 1; i <= num_of_variables; ++i) {
                 sbddextended_snprintf0(buf, sbddextended_BUFSIZE, "0");
@@ -439,9 +439,9 @@ void printZBDDElementsAsValueList(std::ostream& ost, const ZBDD& zbdd, const std
 sbddextended_INLINE_FUNC
 std::string ZStr(const ZBDD& zbdd)
 {
-    if (zbdd == ZBDD(-1)) { // null
+    if (zbdd == ZBDD(-1)) { /* null */
         return std::string("N");
-    } if (zbdd == ZBDD(0)) { // 0-terminal
+    } if (zbdd == ZBDD(0)) { /* 0-terminal */
         return std::string("E");
     } else {
         std::ostringstream ost;

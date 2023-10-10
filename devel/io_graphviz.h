@@ -36,7 +36,7 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
     }
 
     sbddextended_writeLine("digraph {", fp);
-    // print terminals
+    /* print terminals */
     if (f != bddsingle) {
         sbddextended_writeLine("\tt0 [label = \"0\", shape = box, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, width = 0.4, height = 0.6, fontsize = 24];", fp);
     }
@@ -48,7 +48,7 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
         return;
     }
 
-    // print vars and levels
+    /* print vars and levels */
     sbddextended_snprintf1(ss, sbddextended_BUFSIZE, "\tr%d [shape = plaintext, label = \"var level\"]", node_index->height + 1);
     sbddextended_writeLine(ss, fp);
     sbddextended_snprintf3(ss, sbddextended_BUFSIZE, "\tr%d [shape = plaintext, label = \"%4d%7d\"]", node_index->height, bddvaroflev((bddvar)node_index->height), node_index->height);
@@ -214,7 +214,7 @@ void bddexportbddasgraphviz(FILE* fp, bddp f,
                             bddNodeIndex* node_index)
 {
     WriteObject wo(false, true, NULL);
-    // can be used for BDD/ZBDD
+    /* can be used for BDD/ZBDD */
     bddexportbddasgraphviz_inner(fp, f, node_index, -1, wo);
 }
 
@@ -223,7 +223,7 @@ void bddexportzbddasgraphviz(FILE* fp, bddp f,
                                 bddNodeIndex* node_index)
 {
     WriteObject wo(false, true, NULL);
-    // only for ZBDD
+    /* only for ZBDD */
     bddexportbddasgraphviz_inner(fp, f, node_index, 1, wo);
 }
 
@@ -233,7 +233,7 @@ sbddextended_INLINE_FUNC
 void bddexportbddasgraphviz(FILE* fp, bddp f,
                             bddNodeIndex* node_index)
 {
-    // can be used for BDD/ZBDD
+    /* can be used for BDD/ZBDD */
     bddexportbddasgraphviz_inner(fp, f, node_index, -1);
 }
 
@@ -241,7 +241,7 @@ sbddextended_INLINE_FUNC
 void bddexportzbddasgraphviz(FILE* fp, bddp f,
                             bddNodeIndex* node_index)
 {
-    // only for ZBDD
+    /* only for ZBDD */
     bddexportbddasgraphviz_inner(fp, f, node_index, 1);
 }
 

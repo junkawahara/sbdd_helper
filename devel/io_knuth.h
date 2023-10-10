@@ -1,4 +1,4 @@
-// *************** import functions
+/* *************** import functions */
 
 sbddextended_INLINE_FUNC
 bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
@@ -17,7 +17,7 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
     bddp* bddnode_buf;
     sbddextended_MyVector level_vec, lo_vec, hi_vec;
 
-    // To avoid compiler warning, we initialize it here.
+    /* To avoid compiler warning, we initialize it here. */
     sbddextended_MyVector_initialize(&level_vec);
 
     while (sbddextended_readLine(buf, fp)) {
@@ -117,7 +117,7 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
         assert(level < (llint)level_vec.count);
         assert((1 <= root_level - level + 1) && ((root_level - level + 1) <= (int)bddvarused()));
         var = bddvaroflev((bddvar)(root_level - level + 1));
-        if (is_zbdd == 0) { // BDD
+        if (is_zbdd == 0) { /* BDD */
             pf = bddprime(var);
             pfn = bddnot(pf);
             p0 = bddand(bddnode_buf[sbddextended_MyVector_get(&lo_vec, i)], pfn);
@@ -127,7 +127,7 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
             bddfree(pfn);
             bddfree(p0);
             bddfree(p1);
-        } else { // ZDD
+        } else { /* ZDD */
             p0 = bddnode_buf[sbddextended_MyVector_get(&lo_vec, i)];
             p1 = bddchange(bddnode_buf[sbddextended_MyVector_get(&hi_vec, i)],
                             var);
@@ -224,7 +224,7 @@ bddp bddimportzbddasknuth(FILE* fp, int is_hex, int root_level)
 #endif
 
 
-// *************** export functions
+/* *************** export functions */
 
 
 sbddextended_INLINE_FUNC

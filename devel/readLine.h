@@ -4,7 +4,7 @@ int sbddextended_readChar_inner(FILE* fp)
     return fgetc(fp);
 }
 
-// The size of buf should be sbddextended_BUFSIZE.
+/* The size of buf should be sbddextended_BUFSIZE. */
 sbddextended_INLINE_FUNC
 int sbddextended_readLine_inner(char* buf, FILE* fp)
 {
@@ -96,7 +96,7 @@ public:
                 return st_[stpos_ - 1];
             }
         }
-        return -1; // never come here
+        return -1; /* never come here */
     }
 
     bool operator()(unsigned char* v, FILE* fp) const {
@@ -216,7 +216,7 @@ public:
                 return true;
             }
         }
-        return false; // never come here
+        return false; /* never come here */
     }
 };
 

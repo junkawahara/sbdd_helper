@@ -1,22 +1,22 @@
-//
-// One header library for SAPPOROBDD C++ version test code
-//
-// Copyright (c) 2017 Jun Kawahara
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-// and associated documentation files (the "Software"), to deal in the Software without
-// restriction, including without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all copies or
-// substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
-// BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+/*
+One header library for SAPPOROBDD C++ version test code
+
+Copyright (c) 2017 -- 2023 Jun Kawahara
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+and associated documentation files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -87,12 +87,12 @@ void test_BDD_functions()
     bps[2] = ZBDD(-1);
     test_eq(countNodes(bps, false), 0);
 
-#if __cplusplus >= 201103L // use C++ random class
+#if __cplusplus >= 201103L /* use C++ random class */
     std::mt19937 mt(1);
     for (int i = 0; i < 10; ++i) {
         ZBDD fx = getUniformlyRandomZBDD(i, mt);
         test(fx.Top() <= i);
-        test(fx.Card() <= (1u << i)); // card <= 2^i
+        test(fx.Card() <= (1u << i)); /* card <= 2^i */
     }
 
     for (int i = 0; i < 10; ++i) {
@@ -107,7 +107,7 @@ void test_BDD_functions()
         test(fx.Top() <= i);
         ZBDD fy = getUniformlyRandomZBDDX(i, &rand_state);
         test(fy.Top() <= i);
-        test(fy.Card() <= (1u << i)); // card <= 2^i
+        test(fy.Card() <= (1u << i)); /* card <= 2^i */
     }
     for (int i = 0; i < 10; ++i) {
         ZBDD fx = getRandomZBDDWithCardX(i * 10 + 5, i * 10 + 10, &rand_state);
@@ -125,8 +125,8 @@ void test_BDD_functions()
 
 void test_at_random_cpp()
 {
-    const size_t w = 30; // number of variables
-    const size_t N = 1000; // number of cardinality of the constructed ZDD
+    const size_t w = 30; /* number of variables */
+    const size_t N = 1000; /* number of cardinality of the constructed ZDD */
     int i, j;
     bool found;
     ullint w_pow, c;
@@ -145,7 +145,7 @@ void test_at_random_cpp()
         exit(1);
     }
 
-    // make array whose elements are distinct
+    /* make array whose elements are distinct */
     while (sp < N) {
         c = (((ullint)rand() << 32) | ((ullint)rand())) % w_pow;
         if (c == 0) {
@@ -295,7 +295,7 @@ void test_at_random_cpp()
     sv.push_back(3);
     sv.push_back(5);
     f = makeDontCare(getSingleSet(basev), sv);
-    //printZBDDElements(std::cout, f);
+    /*printZBDDElements(std::cout, f); */
     test(f.Card() == 8);
     test(f.OnSet(3).Card() == 4);
     test(f.OffSet(3).Card() == 4);
@@ -334,7 +334,7 @@ void test_io_all_func_cpp()
 
     std::set<bddvar> s;
 
-    // generate all n variable families.
+    /* generate all n variable families. */
     for (int v = 0; v < n_powpow; ++v) {
         ZBDD f(0);
         BDD b(0);
@@ -499,15 +499,15 @@ void test_for_each(std::set<bddvar> s)
 void test_elementIterator_cpp()
 {
     ZBDD f = ZBDD_ID(make_test_zbdd());
-    // f is expected to be {{3, 2}, {3, 1}, {2, 1}}
+    /* f is expected to be {{3, 2}, {3, 1}, {2, 1}} */
 
-    std::set<bddvar> s12; // {1, 2}
+    std::set<bddvar> s12; /* {1, 2} */
     s12.insert(1); s12.insert(2);
-    std::set<bddvar> s13; // {1, 3}
+    std::set<bddvar> s13; /* {1, 3} */
     s13.insert(1); s13.insert(3);
-    std::set<bddvar> s23; // {2, 3}
+    std::set<bddvar> s23; /* {2, 3} */
     s23.insert(2); s23.insert(3);
-    std::set<bddvar> s123; // {1, 2, 3}
+    std::set<bddvar> s123; /* {1, 2, 3} */
     s123.insert(1); s123.insert(2); s123.insert(3);
 
     {
@@ -526,11 +526,11 @@ void test_elementIterator_cpp()
 
         ++itor;
         test(itor == eih.end());
-    } // itor destructed
+    } /* itor destructed */
 
     {
         ZBDD g = f + ZBDD(1);
-        // g is expected to be {{}, {3, 2}, {3, 1}, {2, 1}}
+        /* g is expected to be {{}, {3, 2}, {3, 1}, {2, 1}} */
         ElementIteratorHolder eih(g);
         ElementIterator itor = eih.begin();
         test(itor != eih.end());
@@ -550,16 +550,16 @@ void test_elementIterator_cpp()
 
         ++itor;
         test(itor == eih.end());
-    } // itor destructed
+    } /* itor destructed */
 
-    // bddempty test
+    /* bddempty test */
     {
         ElementIteratorHolder eih(ZBDD(0));
         ElementIterator itor = eih.begin();
         test(itor == eih.end());
     }
 
-    // bddsingle test
+    /* bddsingle test */
     {
         ElementIteratorHolder eih(ZBDD(1));
         ElementIterator itor = eih.begin();
@@ -569,14 +569,14 @@ void test_elementIterator_cpp()
         test(itor == eih.end());
     }
 
-    // algorithm start
+    /* algorithm start */
     {
         ElementIteratorHolder eih(f);
         ElementIterator itor = std::find(eih.begin(), eih.end(), s13);
-        test(itor != eih.end()); // found
+        test(itor != eih.end()); /* found */
 
         itor = std::find(eih.begin(), eih.end(), s123);
-        test(itor == eih.end()); // not found
+        test(itor == eih.end()); /* not found */
 
         test_eq(std::count(eih.begin(), eih.end(), s12), 1);
         test_eq(std::count(eih.begin(), eih.end(), s13), 1);
@@ -649,7 +649,7 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
     for (llint i = 0; i < card; ++i) {
         std::set<bddvar> varset = s.getSet(i);
         if (i < card - 1) {
-            // check dict order
+            /* check dict order */
             test(compare_dict_order(varset, s.getSet(i + 1)) < 0);
         }
         g += getSingleSet(varset);
@@ -679,7 +679,7 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
     llint min_s = 99999999;
     llint sum_s = 0;
     std::vector<llint> weights;
-    weights.push_back(0); // dummy
+    weights.push_back(0); /* dummy */
     for (int v = 1; v <= f.Top(); ++v) {
         weights.push_back(v_to_w(v));
     }
@@ -723,7 +723,7 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
     test_eq(sum_s, s.getSumMP(weights).get_si());
 #endif
 
-#ifdef USE_GMP // use GMP random
+#ifdef USE_GMP /* use GMP random */
     gmp_randclass random(gmp_randinit_default);
     random.seed(1);
     for (llint i = 0; i < 100; ++i) {
@@ -732,7 +732,7 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
     }
 #else
 
-#if __cplusplus >= 201103L // use C++ random class
+#if __cplusplus >= 201103L /* use C++ random class */
     std::mt19937 mt(1);
     for (llint i = 0; i < 100; ++i) {
         std::set<bddvar> varset = s.sampleRandomly(mt);
@@ -762,21 +762,21 @@ void test_ddindex()
     DDIndex<int> s3(f3);
     check_ddindex(f3, s3);
 
-    //std::mt19937 mt(0);
-    //for (int i = 0; i < 1000; ++i) {
-    //    ZBDD f4 = getUniformlyRandomZBDD(8, mt);
-    //    DDIndex<int> s4(f4);
-    //    check_ddindex(f4, s4);
-    //}
+    /*std::mt19937 mt(0); */
+    /*for (int i = 0; i < 1000; ++i) { */
+    /*    ZBDD f4 = getUniformlyRandomZBDD(8, mt); */
+    /*    DDIndex<int> s4(f4); */
+    /*    check_ddindex(f4, s4); */
+    /*} */
 
 #ifdef USE_GMP
     ZBDD fp = getPowerSetIncluding(100, 2);
     DDIndex<int> sp(fp);
-    // expect 2^99
+    /* expect 2^99 */
     test(sp.countMP().get_str() == "633825300114114700748351602688");
     llint l_sum = 0;
     std::vector<llint> weights;
-    weights.push_back(0); // dummy
+    weights.push_back(0); /* dummy */
     for (llint i = 1; i <= 100; ++i) {
         llint w = (i - 10) * (i - 10) + 15;
         weights.push_back(w);
@@ -785,23 +785,23 @@ void test_ddindex()
         }
     }
     mpz_class mp_sum(static_cast<int>(l_sum));
-    mp_sum *= mpz_class("316912650057057350374175801344"); // 2^98
+    mp_sum *= mpz_class("316912650057057350374175801344"); /* 2^98 */
     mp_sum += mpz_class((int)(weights[2]))
-                * mpz_class("633825300114114700748351602688"); // 2^99
+                * mpz_class("633825300114114700748351602688"); /* 2^99 */
     test(sp.getSumMP(weights) == mp_sum);
 
     std::set<bddvar> ss;
     ss.insert(1);
-    ss.insert(2); // last in dict order
+    ss.insert(2); /* last in dict order */
     mpz_class last_value("633825300114114700748351602687");
     test(sp.getOrderNumberMP(ss) == last_value);
     test(ss == sp.getSet(last_value));
-    ss.erase(1); // second last
+    ss.erase(1); /* second last */
     last_value -= mpz_class(1);
     test(sp.getOrderNumberMP(ss) == last_value);
     test(ss == sp.getSet(last_value));
     ss.insert(1);
-    ss.insert(3); // third last
+    ss.insert(3); /* third last */
     last_value -= mpz_class(1);
     test(sp.getOrderNumberMP(ss) == last_value);
     test(ss == sp.getSet(last_value));

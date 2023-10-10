@@ -54,7 +54,7 @@ sbddextended_INLINE_FUNC bddp bddgetterminal(int terminal, int is_zbdd)
     }
 }
 
-// assume that f is ZBDD
+/* assume that f is ZBDD */
 sbddextended_INLINE_FUNC int bddisemptymember(bddp f)
 {
     return bddisnegative(f);
@@ -312,7 +312,7 @@ bddp bddgetsingleset(bddvar* vararr, int n)
     f = bddsingle;
     for (i = 0; i < n; ++i) {
         assert(1 <= vararr[i] && vararr[i] <= bddvarused());
-        for (j = 0; j < i; ++j) { // check duplicate
+        for (j = 0; j < i; ++j) { /* check duplicate */
             if (vararr[j] == vararr[i]) {
                 continue;
             }
@@ -368,7 +368,7 @@ void sbddextended_sort_array(bddvar* arr, int n)
     }
 }
 
-// must free the returned pointer
+/* must free the returned pointer */
 sbddextended_INLINE_FUNC
 bddvar* sbddextended_getsortedarraybylevel_inner(const bddvar* vararr, int n)
 {
@@ -382,7 +382,7 @@ bddvar* sbddextended_getsortedarraybylevel_inner(const bddvar* vararr, int n)
         return NULL;
     }
 
-    // translate varIDs to levels
+    /* translate varIDs to levels */
     for (i = 0; i < n; ++i) {
         ar[i] = bddlevofvar(vararr[i]);
     }
@@ -448,7 +448,7 @@ int bddismemberz_inner(bddp f, const bddvar* levarr, int n)
     while (h != bddempty && h != bddsingle) {
         if (sp < 0 || bddgetlev(h) > levarr[sp]) {
             h = bddgetchild0z(h);
-        } else if (bddgetlev(h) < levarr[sp]) { // return false
+        } else if (bddgetlev(h) < levarr[sp]) { /* return false */
             break;
         } else {
             h = bddgetchild1z(h);
@@ -551,7 +551,7 @@ llint bddcountnodes(bddp* dds, int n, int is_raw)
                 } else {
                     is_zbdd = 0;
                 }
-            } else { // zbdd
+            } else { /* zbdd */
                 if (is_zbdd == 0) {
                     error = 0;
                     break;
@@ -568,7 +568,7 @@ llint bddcountnodes(bddp* dds, int n, int is_raw)
     return bddcountnodes_inner(dds, n, is_zbdd, is_raw);
 }
 
-// *************************** C++ version start *****************************
+/* *************************** C++ version start ***************************** */
 
 #ifdef __cplusplus
 
@@ -797,7 +797,7 @@ sbddextended_INLINE_FUNC ZBDD getSingleton(bddvar v)
 template<typename T>
 sbddextended_INLINE_FUNC ZBDD getSingleSet(const T& variables)
 {
-    // use set to remove duplicated elements
+    /* use set to remove duplicated elements */
     std::set<bddvar> s(variables.begin(), variables.end());
 
     bddp f, g;
@@ -838,7 +838,7 @@ sbddextended_INLINE_FUNC ZBDD getSingleSet(int n, ...)
     return ZBDD_ID(f);
 }
 
-// need to delete[] the returned pointer
+/* need to delete[] the returned pointer */
 template<typename T>
 sbddextended_INLINE_FUNC bddvar* containerToArray(const T& variables,
                                                   int* n)
@@ -902,7 +902,7 @@ sbddextended_INLINE_FUNC ZBDD getPowerSetIncluding_inner(const T1& base_variable
          itor != target_variables.end(); ++itor) {
         c = *itor;
         if (std::find(base_variables.begin(), base_variables.end(), c) !=
-            base_variables.end()) { // c found
+            base_variables.end()) { /* c found */
             f = f.OnSet(c);
         } else {
             f = f.Change(c);
@@ -1085,7 +1085,7 @@ sbddextended_INLINE_FUNC bool isMemberZ(const ZBDD& f, const T& variables)
         return false;
     }
 
-    // translate varIDs to levels
+    /* translate varIDs to levels */
     int c = 0;
     for (typename T::const_iterator itor = variables.begin();
          itor != variables.end(); ++itor) {
@@ -1262,7 +1262,7 @@ ZBDD getRandomZBDDWithCard(int level, llint card, T& random_engine)
     return DDUtilityCpp11::getRandomZBDDWithCard(level, card, random_engine);
 }
 
-#endif // __cplusplus >= 201103L
+#endif /* __cplusplus >= 201103L */
 
 class DDUtility {
 public:
@@ -1343,7 +1343,7 @@ ZBDD getRandomZBDDWithCardX(int level, llint card, ullint* rand_state)
 sbddextended_INLINE_FUNC
 BDD exampleBdd(ullint kind = 0ull)
 {
-    // kind == 0 cannot be used for rand_state
+    /* kind == 0 cannot be used for rand_state */
     kind += 1;
     ullint rand_state = kind;
     ullint v = sbddextended_getXRand(&rand_state);
@@ -1357,7 +1357,7 @@ BDD exampleBdd(ullint kind = 0ull)
 sbddextended_INLINE_FUNC
 ZBDD exampleZbdd(ullint kind = 0ull)
 {
-    // kind == 0 cannot be used for rand_state
+    /* kind == 0 cannot be used for rand_state */
     kind += 1;
     ullint rand_state = kind;
     ullint v = sbddextended_getXRand(&rand_state);
