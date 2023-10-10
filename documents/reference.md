@@ -4,8 +4,8 @@ Version 1.0.2
 
 本プログラムで提供している関数は開発中であるため、予告なく仕様を変更することがある。
 
-* [C++言語版リファレンス](documents/reference_cpp.md)
-* [C言語版リファレンス](documents/reference_c.md)
+* [C++言語版リファレンス](reference_cpp.md)
+* [C言語版リファレンス](reference_c.md)
 
 C++ 版では、C 版の全ての関数も使用可能である。
 
