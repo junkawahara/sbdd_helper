@@ -103,7 +103,7 @@ int is_expected_str(FILE* fp, const char* str)
 }
 
 
-void initialize()
+void initialize(void)
 {
     int i;
 
@@ -114,7 +114,7 @@ void initialize()
     }
 }
 
-bddp make_test_zbdd()
+bddp make_test_zbdd(void)
 {
     int i;
     bddp f;
@@ -138,7 +138,7 @@ bddp make_test_zbdd()
     return f;
 }
 
-void test_MyVector()
+void test_MyVector(void)
 {
     int N = 1024 * 1024 + 1024 + 1;
     int i;
@@ -194,7 +194,7 @@ void test_MyVector()
     sbddextended_MyVector_deinitialize(&v);
 }
 
-void test_MyDict()
+void test_MyDict(void)
 {
     int N = 1024 + 1;
     llint i;
@@ -250,7 +250,7 @@ void test_MyDict()
     sbddextended_MyDict_deinitialize(&d);
 }
 
-void test_MySet()
+void test_MySet(void)
 {
     int N = 1024 + 1;
     llint i;
@@ -303,7 +303,7 @@ void test_MySet()
 }
 
 // make zbdd representing {{2}} from file
-bddp construct_singleton()
+bddp construct_singleton(void)
 {
     bddp f;
     FILE* fp;
@@ -333,7 +333,7 @@ bddp construct_singleton()
     return f;
 }
 
-void test_bddfunctions()
+void test_bddfunctions(void)
 {
     bddp f, s2, g1, g2, g3, g4;
     bddp fs[10];
@@ -433,7 +433,7 @@ void test_bddfunctions()
     test_eq(bddcountnodes(bps, 5, 0), 0);
 }
 
-void test_getsingleandpowerset()
+void test_getsingleandpowerset(void)
 {
     int N = 35;
     int i;
@@ -516,7 +516,7 @@ void test_getsingleandpowerset()
     }
 }
 
-void test_ismemberz()
+void test_ismemberz(void)
 {
     bddp f;
     bddvar vararr[3];
@@ -569,7 +569,7 @@ void ullint_to_vararr(ullint v, bddvar* vararr, int* num)
     }
 }
 
-void test_at_random()
+void test_at_random(void)
 {
     const size_t w = 30; // number of variables
     const size_t N = 1000; // number of cardinality of the constructed ZDD
@@ -706,7 +706,7 @@ void test_at_random()
     free(ar);
 }
 
-void test_io()
+void test_io(void)
 {
     bddp f, g, h;
     FILE* fp1;
@@ -837,7 +837,7 @@ void test_io()
     test(f == g);
 }
 
-void test_index()
+void test_index(void)
 {
     int i, count;
     bddp f;
@@ -881,7 +881,7 @@ void test_index()
     bddNodeIndex_destruct(node_index);
 }
 
-void test_elementIterator()
+void test_elementIterator(void)
 {
     bddp f;
     bddvar* arr;
@@ -979,7 +979,7 @@ void test_bddbinaryformat_f(bddp f)
     test(f == g);
 }
 
-void test_bddbinaryformat()
+void test_bddbinaryformat(void)
 {
     bddp f;
 
@@ -995,7 +995,7 @@ void test_bddbinaryformat()
     bddfree(f);
 }
 
-void start_test()
+void start_test(void)
 {
     srand(1);
 

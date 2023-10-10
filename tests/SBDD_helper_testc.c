@@ -20,7 +20,7 @@
 
 #include "SBDD_helper_testc_cpp.h"
 
-int main()
+int main(void)
 {
     start_test();
 

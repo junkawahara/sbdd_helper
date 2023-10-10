@@ -23,7 +23,7 @@ sbddextended_INLINE_FUNC bddp bdderasenot(bddp f)
     return f & ~B_INV_MASK;
 }
 
-sbddextended_INLINE_FUNC int bddis64bitversion()
+sbddextended_INLINE_FUNC int bddis64bitversion(void)
 {
 #ifdef B_64
     return 1;
