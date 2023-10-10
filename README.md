@@ -3,7 +3,7 @@
 BDD/ZDD（Binary Decision Diagram、二分決定グラフ）ライブラリ[SAPPOROBDD](https://github.com/Shin-ichi-Minato/SAPPOROBDD) を使用する際に便利な関数を提供しています。
 ライブラリは基本的に1つのヘッダファイルだけから構成されているため、
 インクルードするだけで使用できます。
-C/C++ 言語の両方に対応しています。C++ は C++98 以降、C++17 までコンパイル可能であることを確認しています。
+C/C++ 言語の両方に対応しています。
 
 ## 免責事項
 
@@ -33,7 +33,14 @@ C/C++ 言語の両方に対応しています。C++ は C++98 以降、C++17 ま
 
 ## 対応環境
 
-以下の環境で（C, C++ 版ともに）コンパイルできることを確認しています。
+[SAPPOROBDD](https://github.com/Shin-ichi-Minato/SAPPOROBDD) Ver 1.85 (v.20171126) 以降が必要です。
+2023/10/6 時点の最新版（Ver 1.94、[v.20230102](https://github.com/Shin-ichi-Minato/SAPPOROBDD/tree/v.20230102)）で動作を確認しています。
+
+C++98, C++11, C++14, C++17 でコンパイルできることを確認しています。
+ただし、long long int を用いているため、（long long int が規格にない）C++98 では warning が出ます。
+
+以下の環境で（C, C++ 版ともに）コンパイルできることを確認しています
+（いくつかの環境では warning が出ます）。
 
 * Windows 10 + Cygwin + gcc 11.4.0
 * Windows 10 + MinGW + gcc 12.2.0

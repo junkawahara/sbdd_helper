@@ -278,7 +278,7 @@ void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
     }
 
     for (i = node_index->height; i >= 1; --i) {
-        sprintf(ss, "#%d", node_index->height - i + 1);
+        sbddextended_snprintf1(ss, sbddextended_BUFSIZE, "#%d", node_index->height - i + 1);
         sbddextended_writeLine(ss, fp);
         for (k = 0; k < (llint)node_index->level_vec_arr[i].count; ++k) {
             node = (bddp)sbddextended_MyVector_get(&node_index->level_vec_arr[i], k);
@@ -311,9 +311,9 @@ void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
                 id1 += node_index->offset_arr[clevel];
             }
             if (is_hex) {
-                sprintf(ss, "%llx:%llx,%llx", node_index->offset_arr[i] + k, id0, id1);
+                sbddextended_snprintf3(ss, sbddextended_BUFSIZE, "%llx:%llx,%llx", node_index->offset_arr[i] + k, id0, id1);
             } else {
-                sprintf(ss, "%lld:%lld,%lld", node_index->offset_arr[i] + k, id0, id1);
+                sbddextended_snprintf3(ss, sbddextended_BUFSIZE, "%lld:%lld,%lld", node_index->offset_arr[i] + k, id0, id1);
             }
             sbddextended_writeLine(ss, fp);
         }

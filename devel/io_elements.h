@@ -183,10 +183,10 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
     } else if (f == bddsingle) {
         if (num_of_variables != 0) {
             for (i = 1; i <= num_of_variables; ++i) {
-                sprintf(buf, "0");
+                sbddextended_snprintf0(buf, sbddextended_BUFSIZE, "0");
                 sbddextended_write(buf, fp);
                 if (i < num_of_variables) {
-                    sprintf(buf, "%s", delim2);
+                    sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%s", delim2);
                     sbddextended_write(buf, fp);
                 }
             }
@@ -199,10 +199,10 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
         // Output bddsingle first
         if (num_of_variables != 0) {
             for (i = 1; i <= num_of_variables; ++i) {
-                sprintf(buf, "0");
+                sbddextended_snprintf0(buf, sbddextended_BUFSIZE, "0");
                 sbddextended_write(buf, fp);
                 if (i < num_of_variables) {
-                    sprintf(buf, "%s", delim2);
+                    sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%s", delim2);
                     sbddextended_write(buf, fp);
                 }
             }
@@ -249,7 +249,7 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
             if (is_first_delim1 != 0) {
                 is_first_delim1 = 0;
             } else {
-                sprintf(buf, "%s", delim1);
+                sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%s", delim1);
                 sbddextended_write(buf, fp);
             }
             is_first_delim2 = 1;
@@ -269,10 +269,10 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
                     }
                 }
                 for (i = 1; i <= num_of_variables; ++i) {
-                    sprintf(buf, "%d", value_list[i]);
+                    sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%d", value_list[i]);
                     sbddextended_write(buf, fp);
                     if (i < num_of_variables) {
-                        sprintf(buf, "%s", delim2);
+                        sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%s", delim2);
                         sbddextended_write(buf, fp);
                     }
                 }
@@ -282,13 +282,13 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
                         if (is_first_delim2 != 0) {
                             is_first_delim2 = 0;
                         } else {
-                            sprintf(buf, "%s", delim2);
+                            sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%s", delim2);
                             sbddextended_write(buf, fp);
                         }
                         if (var_name_map != NULL) {
-                            sprintf(buf, "%s", var_name_map[bddgetvar(bddnode_stack[i])]);
+                            sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%s", var_name_map[bddgetvar(bddnode_stack[i])]);
                         } else {
-                            sprintf(buf, "%d", bddgetvar(bddnode_stack[i]));
+                            sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%d", bddgetvar(bddnode_stack[i]));
                         }
                         sbddextended_write(buf, fp);
                     }

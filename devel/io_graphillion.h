@@ -266,15 +266,15 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
     for (i = 1; i <= node_index->height; ++i) {
         for (j = 0; j < node_index->level_vec_arr[i].count; ++j) {
             node = (bddp)sbddextended_MyVector_get(&node_index->level_vec_arr[i], (llint)j);
-            n = sprintf(ss, "%lld %d", (llint)node, (root_level - i + 1));
+            n = sbddextended_snprintf2(ss, sbddextended_BUFSIZE, "%lld %d", (llint)node, (root_level - i + 1));
             for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
                 child = bddgetchildg(node, k, is_zbdd, 0);
                 if (!bddisterminal(child)) {
-                    n += sprintf(ss + n, " %lld", (llint)child);
+                    n += sbddextended_snprintf1(ss + n, sbddextended_BUFSIZE, " %lld", (llint)child);
                 } else if (child == bddempty) {
-                    n += sprintf(ss + n, " B");
+                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, " B");
                 } else if (child == bddsingle) {
-                    n += sprintf(ss + n, " T");
+                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, " T");
                 }
             }
             sbddextended_writeLine(ss, fp);

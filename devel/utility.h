@@ -18,6 +18,8 @@ const char** sbddextended_strVectorToArray(const std::vector<std::string>& vec)
     return arr;
 }
 
+#endif
+
 // XOR shift
 sbddextended_INLINE_FUNC
 ullint sbddextended_getXRand(ullint* state)
@@ -30,4 +32,78 @@ ullint sbddextended_getXRand(ullint* state)
     return v;
 }
 
+
+
+#ifdef __cplusplus // C++
+    #if __cplusplus >= 201103L // C++11
+        #define SBDDH_SNPRINTF_EXISTS
+    #endif
+#else // C
+    #ifdef __STDC_VERSION__
+        #if __STDC_VERSION__ >= 199901L // C99
+            #define SBDDH_SNPRINTF_EXISTS
+        #endif
+    #endif
 #endif
+
+#ifdef SBDDH_SNPRINTF_EXISTS
+
+// We use the following macros instead of vsnprintf because passing
+// a variable to the third argument of vsnprintf outputs warning
+// "format string is not a string literal [-Wformat-nonliteral]".
+
+#define sbddextended_snprintf0(str, size, format) \
+snprintf(str, size, format)
+#define sbddextended_snprintf1(str, size, format, arg1) \
+snprintf(str, size, format, arg1)
+#define sbddextended_snprintf2(str, size, format, arg1, arg2) \
+snprintf(str, size, format, arg1, arg2)
+#define sbddextended_snprintf3(str, size, format, arg1, arg2, arg3) \
+snprintf(str, size, format, arg1, arg2, arg3)
+#define sbddextended_snprintf4(str, size, format, arg1, arg2, arg3, arg4) \
+snprintf(str, size, format, arg1, arg2, arg3, arg4)
+#define sbddextended_snprintf5(str, size, format, arg1, arg2, arg3, arg4, \
+arg5) \
+snprintf(str, size, format, arg1, arg2, arg3, arg4, arg5)
+
+// sbddextended_INLINE_FUNC
+// int sbddextended_sprintf(char *str, const char *format, ...)
+// {
+//     int v;
+//     va_list args;
+
+//     va_start(args, format);
+//     v = vsnprintf(str, sbddextended_BUFSIZE, format, args);
+//     va_end(args);
+//     return v;
+// }
+
+#else // SBDDH_SNPRINTF_EXISTS
+
+#define sbddextended_snprintf0(str, size, format) \
+sprintf(str, format)
+#define sbddextended_snprintf1(str, size, format, arg1) \
+sprintf(str, format, arg1)
+#define sbddextended_snprintf2(str, size, format, arg1, arg2) \
+sprintf(str, format, arg1, arg2)
+#define sbddextended_snprintf3(str, size, format, arg1, arg2, arg3) \
+sprintf(str, format, arg1, arg2, arg3)
+#define sbddextended_snprintf4(str, size, format, arg1, arg2, arg3, arg4) \
+sprintf(str, format, arg1, arg2, arg3, arg4)
+#define sbddextended_snprintf5(str, size, format, arg1, arg2, arg3, arg4, \
+arg5) \
+sprintf(str, format, arg1, arg2, arg3, arg4, arg5)
+
+// sbddextended_INLINE_FUNC
+// int sbddextended_sprintf(char *str, const char *format, ...)
+// {
+//     int v;
+//     va_list args;
+
+//     va_start(args, format);
+//     v = sprintf(str, format, args);
+//     va_end(args);
+//     return v;
+// }
+
+#endif // SBDDH_SNPRINTF_EXISTS

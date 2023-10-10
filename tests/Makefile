@@ -16,7 +16,7 @@ WOPT2 = -Wall -Wextra -pedantic -Wshadow -Wformat=2 -Wfloat-equal \
 # -pedantic-errors
 
 WOPT3 = $(WOPT2) -Wlogical-op
-WOPT4 = $(WOPT4) -Wconversion
+WOPT4 = $(WOPT3) -Wconversion
 
 all: testc testcpp testcpp-gmp
 	./testc
