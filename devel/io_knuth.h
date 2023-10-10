@@ -311,9 +311,13 @@ void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
                 id1 += node_index->offset_arr[clevel];
             }
             if (is_hex) {
-                sbddextended_snprintf3(ss, sbddextended_BUFSIZE, "%llx:%llx,%llx", node_index->offset_arr[i] + k, id0, id1);
+                sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
+                    "%llx:%llx,%llx", node_index->offset_arr[i] + k,
+                    id0, id1);
             } else {
-                sbddextended_snprintf3(ss, sbddextended_BUFSIZE, "%lld:%lld,%lld", node_index->offset_arr[i] + k, id0, id1);
+                sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
+                    "%lld:%lld,%lld", node_index->offset_arr[i] + k,
+                    id0, id1);
             }
             sbddextended_writeLine(ss, fp);
         }

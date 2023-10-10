@@ -128,20 +128,30 @@ void bddexportassvg_inner(FILE* fp, bddp f,
     }
 
     /* draw svg */
-    sbddextended_snprintf2(ss, sbddextended_BUFSIZE, "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%d\" height=\"%d\">", max_x, max_y);
+    sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" "
+        "width=\"%d\" height=\"%d\">", max_x, max_y);
     sbddextended_writeLine(ss, fp);
 
-    sbddextended_writeLine("<marker id=\"arrow\" viewBox=\"-10 -4 20 8\" markerWidth=\"10\" markerHeight=\"10\" orient=\"auto\">", fp);
-    sbddextended_writeLine("    <polygon points=\"-10,-4 0,0 -10,4\" fill=\"#1b3966\" stroke=\"none\" />", fp);
+    sbddextended_writeLine("<marker id=\"arrow\" viewBox=\"-10 -4 20 8\" "
+        "markerWidth=\"10\" markerHeight=\"10\" orient=\"auto\">", fp);
+    sbddextended_writeLine("    <polygon points=\"-10,-4 0,0 -10,4\" "
+        "fill=\"#1b3966\" stroke=\"none\" />", fp);
     sbddextended_writeLine("</marker>", fp);
 
     /* draw nodes */
     for (int level = index->height(); level >= 1; --level) {
         for (llint j = 0; j < index->size(level); ++j) {
             bddp g = index->getNode(level, j).getBddp();
-            sbddextended_snprintf4(ss, sbddextended_BUFSIZE, "<circle cx=\"%d\" cy=\"%d\" r=\"%d\" fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />", pos_map[g].first, pos_map[g].second, node_radius, arc_width);
+            sbddextended_snprintf4(ss, sbddextended_BUFSIZE,
+                "<circle cx=\"%d\" cy=\"%d\" r=\"%d\" fill=\"#deebf7\" "
+                "stroke=\"#1b3966\" stroke-width=\"%d\" />",
+                pos_map[g].first, pos_map[g].second, node_radius, arc_width);
             sbddextended_writeLine(ss, fp);
-            sbddextended_snprintf3(ss, sbddextended_BUFSIZE, "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" font-size=\"24\">%d</text>", pos_map[g].first, pos_map[g].second + label_y, level);
+            sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
+                "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" "
+                "font-size=\"24\">%d</text>", pos_map[g].first,
+                pos_map[g].second + label_y, level);
             sbddextended_writeLine(ss, fp);
         }
     }
@@ -150,31 +160,60 @@ void bddexportassvg_inner(FILE* fp, bddp f,
     for (int level = index->height(); level >= 1; --level) {
         for (llint j = 0; j < index->size(level); ++j) {
             bddp g = index->getNode(level, j).getBddp();
-            int posx1 = ExportAsSvg_getCirclePosX(pos_map[g].first, node_radius, 4.0 / 3.0 * M_PI);
-            int posy1 = ExportAsSvg_getCirclePosY(pos_map[g].second, node_radius, 4.0 / 3.0 * M_PI);
+            int posx1 = ExportAsSvg_getCirclePosX(pos_map[g].first,
+                node_radius, 4.0 / 3.0 * M_PI);
+            int posy1 = ExportAsSvg_getCirclePosY(pos_map[g].second,
+                node_radius, 4.0 / 3.0 * M_PI);
             int posx2 = dest0_pos[g].first;
             int posy2 = dest0_pos[g].second;
-            sbddextended_snprintf5(ss, sbddextended_BUFSIZE, "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke=\"#1b3966\" stroke-width=\"%d\" stroke-dasharray=\"10,5\"  marker-end=\"url(#arrow)\" />", posx1, posy1, posx2, posy2, arc_width);
+            sbddextended_snprintf5(ss, sbddextended_BUFSIZE,
+                "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" "
+                "stroke=\"#1b3966\" stroke-width=\"%d\" "
+                "stroke-dasharray=\"10,5\" "
+                "marker-end=\"url(#arrow)\" />",
+                posx1, posy1, posx2, posy2, arc_width);
             sbddextended_writeLine(ss, fp);
-            posx1 = ExportAsSvg_getCirclePosX(pos_map[g].first, node_radius, 5.0 / 3.0 * M_PI);
-            posy1 = ExportAsSvg_getCirclePosY(pos_map[g].second, node_radius, 5.0 / 3.0 * M_PI);
+            posx1 = ExportAsSvg_getCirclePosX(pos_map[g].first,
+                node_radius, 5.0 / 3.0 * M_PI);
+            posy1 = ExportAsSvg_getCirclePosY(pos_map[g].second,
+                node_radius, 5.0 / 3.0 * M_PI);
             posx2 = dest1_pos[g].first;
             posy2 = dest1_pos[g].second;
-            sbddextended_snprintf5(ss, sbddextended_BUFSIZE, "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke=\"#1b3966\" stroke-width=\"%d\" marker-end=\"url(#arrow)\" />", posx1, posy1, posx2, posy2, arc_width);
+            sbddextended_snprintf5(ss, sbddextended_BUFSIZE,
+                "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" "
+                "stroke=\"#1b3966\" stroke-width=\"%d\" "
+                "marker-end=\"url(#arrow)\" />",
+                posx1, posy1, posx2, posy2, arc_width);
             sbddextended_writeLine(ss, fp);
         }
     }
 
     /*draw terminals */
-    sbddextended_snprintf5(ss, sbddextended_BUFSIZE, "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />", pos_map[bddempty].first - terminal_x / 2, pos_map[bddempty].second - terminal_y / 2, terminal_x, terminal_y, arc_width);
+    sbddextended_snprintf5(ss, sbddextended_BUFSIZE,
+        "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" "
+        "fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />",
+        pos_map[bddempty].first - terminal_x / 2,
+        pos_map[bddempty].second - terminal_y / 2,
+        terminal_x, terminal_y, arc_width);
     sbddextended_writeLine(ss, fp);
-    sbddextended_snprintf5(ss, sbddextended_BUFSIZE, "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />", pos_map[bddsingle].first - terminal_x / 2, pos_map[bddsingle].second - terminal_y / 2, terminal_x, terminal_y, arc_width);
+    sbddextended_snprintf5(ss, sbddextended_BUFSIZE,
+        "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" "
+        "fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />",
+        pos_map[bddsingle].first - terminal_x / 2,
+        pos_map[bddsingle].second - terminal_y / 2,
+        terminal_x, terminal_y, arc_width);
     sbddextended_writeLine(ss, fp);
 
-    sbddextended_snprintf2(ss, sbddextended_BUFSIZE, "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" font-size=\"24\">0</text>", pos_map[bddempty].first, pos_map[bddempty].second + label_y);
+    sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
+        "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" "
+        "font-size=\"24\">0</text>", pos_map[bddempty].first,
+        pos_map[bddempty].second + label_y);
     sbddextended_writeLine(ss, fp);
 
-    sbddextended_snprintf2(ss, sbddextended_BUFSIZE, "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" font-size=\"24\">1</text>", pos_map[bddsingle].first, pos_map[bddsingle].second + label_y);
+    sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
+        "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" "
+        "font-size=\"24\">1</text>", pos_map[bddsingle].first,
+        pos_map[bddsingle].second + label_y);
     sbddextended_writeLine(ss, fp);
 
     sbddextended_writeLine("</svg>", fp);

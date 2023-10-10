@@ -38,10 +38,16 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
     sbddextended_writeLine("digraph {", fp);
     /* print terminals */
     if (f != bddsingle) {
-        sbddextended_writeLine("\tt0 [label = \"0\", shape = box, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, width = 0.4, height = 0.6, fontsize = 24];", fp);
+        sbddextended_writeLine("\tt0 [label = \"0\", shape = box, "
+            "style = filled, color = \"#81B65D\", "
+            "fillcolor = \"#F6FAF4\", penwidth = 2.5, "
+            "width = 0.4, height = 0.6, fontsize = 24];", fp);
     }
     if (f != bddempty) {
-        sbddextended_writeLine("\tt1 [label = \"1\", shape = box, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, width = 0.4, height = 0.6, fontsize = 24];", fp);
+        sbddextended_writeLine("\tt1 [label = \"1\", shape = box, "
+            "style = filled, color = \"#81B65D\", "
+            "fillcolor = \"#F6FAF4\", penwidth = 2.5, width = 0.4, "
+            "height = 0.6, fontsize = 24];", fp);
     }
     if (f == bddempty || f == bddsingle) {
         sbddextended_writeLine("}", fp);
@@ -49,27 +55,41 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
     }
 
     /* print vars and levels */
-    sbddextended_snprintf1(ss, sbddextended_BUFSIZE, "\tr%d [shape = plaintext, label = \"var level\"]", node_index->height + 1);
+    sbddextended_snprintf1(ss, sbddextended_BUFSIZE, 
+        "\tr%d [shape = plaintext, label = \"var level\"]",
+        node_index->height + 1);
     sbddextended_writeLine(ss, fp);
-    sbddextended_snprintf3(ss, sbddextended_BUFSIZE, "\tr%d [shape = plaintext, label = \"%4d%7d\"]", node_index->height, bddvaroflev((bddvar)node_index->height), node_index->height);
+    sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
+        "\tr%d [shape = plaintext, label = \"%4d%7d\"]",
+        node_index->height, bddvaroflev((bddvar)node_index->height),
+        node_index->height);
     sbddextended_writeLine(ss, fp);
-    sbddextended_snprintf2(ss, sbddextended_BUFSIZE, "\tr%d -> r%d [style = invis];", node_index->height + 1, node_index->height);
+    sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
+        "\tr%d -> r%d [style = invis];", node_index->height + 1,
+        node_index->height);
     sbddextended_writeLine(ss, fp);
     for (i = node_index->height; i >= 1; --i) {
         if (i > 1) {
-            sbddextended_snprintf3(ss, sbddextended_BUFSIZE, "\tr%d [shape = plaintext, label = \"%4d%7d\"];", i - 1, bddvaroflev((bddvar)(i - 1)), i - 1);
+            sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
+                "\tr%d [shape = plaintext, label = \"%4d%7d\"];",
+                i - 1, bddvaroflev((bddvar)(i - 1)), i - 1);
             sbddextended_writeLine(ss, fp);
         } else {
             sbddextended_writeLine("\tr0 [style = invis];", fp);
         }
-        sbddextended_snprintf2(ss, sbddextended_BUFSIZE, "\tr%d -> r%d [style = invis];", i, i - 1);
+        sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
+            "\tr%d -> r%d [style = invis];", i, i - 1);
         sbddextended_writeLine(ss, fp);
     }
 
     for (i = node_index->height; i >= 1; --i) {
         for (j = 0; j < node_index->level_vec_arr[i].count; ++j) {
-            node = (bddp)sbddextended_MyVector_get(&node_index->level_vec_arr[i], (llint)j);
-            sbddextended_snprintf2(ss, sbddextended_BUFSIZE, "\tv%d_%lld [shape = circle, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, label = \"\"];", i, (llint)j);
+            node = (bddp)sbddextended_MyVector_get(
+                &node_index->level_vec_arr[i], (llint)j);
+            sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
+                "\tv%d_%lld [shape = circle, style = filled, "
+                "color = \"#81B65D\", fillcolor = \"#F6FAF4\", "
+                "penwidth = 2.5, label = \"\"];", i, (llint)j);
             sbddextended_writeLine(ss, fp);
             for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
                 if (is_zbdd != 0) {
@@ -83,29 +103,39 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
                                                     (llint)child, &cvalue);
                     assert(c != 0);
 
-                    n = sbddextended_snprintf4(ss, sbddextended_BUFSIZE, "\tv%d_%lld -> v%d_%lld", i, (llint)j,
-                                clevel, cvalue);
-                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, " [color = \"#81B65D\", penwidth = 2.5");
+                    n = sbddextended_snprintf4(ss, sbddextended_BUFSIZE,
+                        "\tv%d_%lld -> v%d_%lld", i, (llint)j,
+                        clevel, cvalue);
+                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
+                    " [color = \"#81B65D\", penwidth = 2.5");
                     if (k == 0) {
-                        n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, ", style = dotted");
+                        n += sbddextended_snprintf0(ss + n,
+                            sbddextended_BUFSIZE, ", style = dotted");
                     }
-                    sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, "];");
+                    sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
+                        "];");
                     sbddextended_writeLine(ss, fp);
                 } else {
-                    n = sbddextended_snprintf3(ss, sbddextended_BUFSIZE, "\tv%d_%lld -> t%d", i, (llint)j,
-                            (child == bddfalse ? 0 : 1));
-                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, " [color = \"#81B65D\", penwidth = 2.5");
+                    n = sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
+                        "\tv%d_%lld -> t%d", i, (llint)j,
+                        (child == bddfalse ? 0 : 1));
+                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
+                        " [color = \"#81B65D\", penwidth = 2.5");
                     if (k == 0) {
-                        n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, ", style = dotted");
+                        n += sbddextended_snprintf0(ss + n,
+                            sbddextended_BUFSIZE, ", style = dotted");
                     }
-                    sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, "];");
+                    sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
+                        "];");
                     sbddextended_writeLine(ss, fp);
                 }
             }
         }
-        n = sbddextended_snprintf1(ss, sbddextended_BUFSIZE, "\t{rank = same; r%d; ", i);
+        n = sbddextended_snprintf1(ss, sbddextended_BUFSIZE,
+            "\t{rank = same; r%d; ", i);
         for (j = 0; j < node_index->level_vec_arr[i].count; ++j) {
-            n += sbddextended_snprintf2(ss + n, sbddextended_BUFSIZE, "v%d_%lld; ", i, (llint)j);
+            n += sbddextended_snprintf2(ss + n, sbddextended_BUFSIZE,
+                "v%d_%lld; ", i, (llint)j);
             if (j % 10 == 9 && j < node_index->level_vec_arr[i].count - 1) {
                 sbddextended_writeLine(ss, fp);
                 n = sbddextended_snprintf0(ss, sbddextended_BUFSIZE, "\t\t");

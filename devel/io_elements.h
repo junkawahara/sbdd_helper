@@ -282,13 +282,18 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
                         if (is_first_delim2 != 0) {
                             is_first_delim2 = 0;
                         } else {
-                            sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%s", delim2);
+                            sbddextended_snprintf1(buf, sbddextended_BUFSIZE,
+                                "%s", delim2);
                             sbddextended_write(buf, fp);
                         }
                         if (var_name_map != NULL) {
-                            sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%s", var_name_map[bddgetvar(bddnode_stack[i])]);
+                            sbddextended_snprintf1(buf, sbddextended_BUFSIZE,
+                                "%s",
+                                var_name_map[bddgetvar(bddnode_stack[i])]);
                         } else {
-                            sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%d", bddgetvar(bddnode_stack[i]));
+                            sbddextended_snprintf1(buf, sbddextended_BUFSIZE,
+                                "%d",
+                                bddgetvar(bddnode_stack[i]));
                         }
                         sbddextended_write(buf, fp);
                     }
@@ -329,34 +334,43 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-void printZBDDElements(FILE* fp, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2)
+void printZBDDElements(FILE* fp, const ZBDD& zbdd,
+    const std::string& delim1, const std::string& delim2)
 {
     WriteObject wo(false, false, NULL);
-    bddprintzbddelements_inner(fp, zbdd.GetID(), delim1.c_str(), delim2.c_str(), NULL, 0, wo);
+    bddprintzbddelements_inner(fp, zbdd.GetID(), delim1.c_str(),
+        delim2.c_str(), NULL, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
-void printZBDDElements(FILE* fp, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2, const std::vector<std::string>& var_name_map)
+void printZBDDElements(FILE* fp, const ZBDD& zbdd, const std::string& delim1,
+    const std::string& delim2, const std::vector<std::string>& var_name_map)
 {
     WriteObject wo(false, false, NULL);
     const char** arr = sbddextended_strVectorToArray(var_name_map);
-    bddprintzbddelements_inner(fp, zbdd.GetID(), delim1.c_str(), delim2.c_str(), arr, 0, wo);
+    bddprintzbddelements_inner(fp, zbdd.GetID(), delim1.c_str(),
+        delim2.c_str(), arr, 0, wo);
     free(arr);
 }
 
 sbddextended_INLINE_FUNC
-void printZBDDElements(std::ostream& ost, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2)
+void printZBDDElements(std::ostream& ost, const ZBDD& zbdd,
+    const std::string& delim1, const std::string& delim2)
 {
     WriteObject wo(true, false, &ost);
-    bddprintzbddelements_inner(NULL, zbdd.GetID(), delim1.c_str(), delim2.c_str(), NULL, 0, wo);
+    bddprintzbddelements_inner(NULL, zbdd.GetID(), delim1.c_str(),
+    delim2.c_str(), NULL, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
-void printZBDDElements(std::ostream& ost, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2, const std::vector<std::string>& var_name_map)
+void printZBDDElements(std::ostream& ost, const ZBDD& zbdd,
+    const std::string& delim1, const std::string& delim2,
+    const std::vector<std::string>& var_name_map)
 {
     WriteObject wo(true, false, &ost);
     const char** arr = sbddextended_strVectorToArray(var_name_map);
-    bddprintzbddelements_inner(NULL, zbdd.GetID(), delim1.c_str(), delim2.c_str(), arr, 0, wo);
+    bddprintzbddelements_inner(NULL, zbdd.GetID(), delim1.c_str(),
+        delim2.c_str(), arr, 0, wo);
     free(arr);
 }
 
@@ -377,15 +391,16 @@ void printZBDDElements(std::ostream& ost, const ZBDD& zbdd)
 }
 
 sbddextended_INLINE_FUNC
-void bddprintzbddelements(FILE* fp, bddp f, const char* delim1, const char* delim2)
+void bddprintzbddelements(FILE* fp, bddp f, const char* delim1,
+    const char* delim2)
 {
     WriteObject wo(false, false, NULL);
     bddprintzbddelements_inner(fp, f, delim1, delim2, NULL, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
-void bddprintzbddelementswithmap(FILE* fp, bddp f, const char* delim1, const char* delim2,
-                                 const char* var_name_map[])
+void bddprintzbddelementswithmap(FILE* fp, bddp f, const char* delim1,
+    const char* delim2, const char* var_name_map[])
 {
     WriteObject wo(false, false, NULL);
     bddprintzbddelements_inner(fp, f, delim1, delim2, var_name_map, 0, wo);
@@ -394,14 +409,15 @@ void bddprintzbddelementswithmap(FILE* fp, bddp f, const char* delim1, const cha
 #else
 
 sbddextended_INLINE_FUNC
-void bddprintzbddelements(FILE* fp, bddp f, const char* delim1, const char* delim2)
+void bddprintzbddelements(FILE* fp, bddp f, const char* delim1,
+    const char* delim2)
 {
     bddprintzbddelements_inner(fp, f, delim1, delim2, NULL, 0);
 }
 
 sbddextended_INLINE_FUNC
-void bddprintzbddelementswithmap(FILE* fp, bddp f, const char* delim1, const char* delim2,
-                                 const char* var_name_map[])
+void bddprintzbddelementswithmap(FILE* fp, bddp f, const char* delim1,
+    const char* delim2, const char* var_name_map[])
 {
     bddprintzbddelements_inner(fp, f, delim1, delim2, var_name_map, 0);
 }
