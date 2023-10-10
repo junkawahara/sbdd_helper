@@ -37,7 +37,7 @@ void bddexportassvg_inner(FILE* fp, bddp f,
 //#endif
                         )
 {
-    char ss[sbddextended_TEMP_BUFSIZE];
+    char ss[sbddextended_BUFSIZE];
     const int node_radius = 20;
     const int node_interval_x = 30;
     const int node_interval_y = 40;

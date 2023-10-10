@@ -13,7 +13,7 @@ bddp bddconstructzbddfromelements_inner(FILE* fp
     int c, prev_c, v;
     int mode, first;
 
-    vararr_size = sbddextended_MAX_LINE;
+    vararr_size = sbddextended_BUFSIZE;
     vararr = (bddvar*)malloc((size_t)vararr_size * sizeof(bddvar));
     if (vararr == NULL) {
         fprintf(stderr, "out of memory\n");
@@ -172,7 +172,7 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
     int i, height, sp, is_first_delim1, is_first_delim2;
     bddvar v;
     bddp node, child;
-    char buf[sbddextended_MAX_LINE];
+    char buf[sbddextended_BUFSIZE];
 
     if (f == bddnull) {
         sbddextended_write("N", fp);

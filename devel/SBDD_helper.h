@@ -74,11 +74,10 @@ typedef unsigned long long int ullint;
 // if a compile error occurs, change the qualifier
 #define sbddextended_INLINE_FUNC static inline
 
-#define sbddextended_MAX_LINE 256
 #define sbddextended_BDDNODE_START 2
 #define sbddextended_NUMBER_OF_CHILDREN 2
 
-#define sbddextended_TEMP_BUFSIZE 1024
+#define sbddextended_BUFSIZE 1024
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

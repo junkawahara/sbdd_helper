@@ -12,7 +12,7 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
     llint i, id, lo, hi, line_count = 0;
     ullint idu, lou, hiu;
     bddvar var;
-    char buf[sbddextended_MAX_LINE];
+    char buf[sbddextended_BUFSIZE];
     bddp p, p0, p1, pf, pfn;
     bddp* bddnode_buf;
     sbddextended_MyVector level_vec, lo_vec, hi_vec;
@@ -239,7 +239,7 @@ void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
     int clevel, i, is_making_index = 0;
     bddp node, n0, n1;
     llint id0, id1, k;
-    char ss[sbddextended_TEMP_BUFSIZE];
+    char ss[sbddextended_BUFSIZE];
 
     if (f == bddnull) {
         return;

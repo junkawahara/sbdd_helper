@@ -11,11 +11,11 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
     llint i, id, lo, hi, value, line_count = 0;
     llint max_node_id = 0, root_node_id = 0;
     bddvar var;
-    char buf[sbddextended_MAX_LINE];
-    char buf1[sbddextended_MAX_LINE];
-    char buf2[sbddextended_MAX_LINE];
-    char buf3[sbddextended_MAX_LINE];
-    char buf4[sbddextended_MAX_LINE];
+    char buf[sbddextended_BUFSIZE];
+    char buf1[sbddextended_BUFSIZE];
+    char buf2[sbddextended_BUFSIZE];
+    char buf3[sbddextended_BUFSIZE];
+    char buf4[sbddextended_BUFSIZE];
     bddp p, p0, p1, pf, pfn;
     sbddextended_MyVector node_vec, level_vec, lo_vec, hi_vec;
     sbddextended_MyDict node_dict;
@@ -220,7 +220,7 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
     size_t j;
     bddp node, child;
     int is_making_index = 0;
-    char ss[sbddextended_TEMP_BUFSIZE];
+    char ss[sbddextended_BUFSIZE];
 
     if (f == bddnull) {
         return;

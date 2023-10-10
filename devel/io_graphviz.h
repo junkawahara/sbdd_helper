@@ -12,7 +12,7 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
     size_t j;
     bddp node, child;
     int is_making_index = 0;
-    char ss[sbddextended_TEMP_BUFSIZE];
+    char ss[sbddextended_BUFSIZE];
 
     if (f == bddnull) {
         return;

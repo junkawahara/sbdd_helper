@@ -4,20 +4,20 @@ int sbddextended_readChar_inner(FILE* fp)
     return fgetc(fp);
 }
 
-// The size of buf should be sbddextended_MAX_LINE.
+// The size of buf should be sbddextended_BUFSIZE.
 sbddextended_INLINE_FUNC
 int sbddextended_readLine_inner(char* buf, FILE* fp)
 {
     size_t n;
     char* p;
-    p = fgets(buf, sbddextended_MAX_LINE, fp);
+    p = fgets(buf, sbddextended_BUFSIZE, fp);
     if (p == NULL) {
         return 0;
     }
     n = strlen(buf);
     if (buf[n - 1] != '\n') {
         fprintf(stderr, "Each line must not exceed %d characters\n",
-                sbddextended_MAX_LINE);
+                sbddextended_BUFSIZE);
         exit(1);
     }
     return 1;
@@ -189,9 +189,9 @@ public:
             if (!std::getline(*ist_, str)) {
                 return false;
             }
-            if (str.length() >= sbddextended_MAX_LINE - 1) {
+            if (str.length() >= sbddextended_BUFSIZE - 1) {
                 fprintf(stderr, "Each line must not exceed %d characters\n",
-                    sbddextended_MAX_LINE);
+                    sbddextended_BUFSIZE);
                 exit(1);
             }
             strcpy(buf, str.c_str());
@@ -205,9 +205,9 @@ public:
                 llint start = stpos_;
                 while (stpos_ < stlen_ && st_[stpos_] != '\n') {
                     ++stpos_;
-                    if (stpos_ - start >= sbddextended_MAX_LINE - 1) {
+                    if (stpos_ - start >= sbddextended_BUFSIZE - 1) {
                         fprintf(stderr, "Each line must not exceed %d characters\n",
-                                sbddextended_MAX_LINE);
+                                sbddextended_BUFSIZE);
                         exit(1);
                     }
                 }
