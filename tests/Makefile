@@ -4,6 +4,7 @@ SBDDINCLUDEDIR = $(SBDDDIR)/include
 OPT = -O3 -DB_64 -I$(SBDDINCLUDEDIR)
 WOPT = -Wall -Wextra -Wformat=2
 OLDGCC = /usr/local/gcc-4.1.2/bin/gcc
+OLDGPP = /usr/local/gcc-4.1.2/bin/g++
 CLANG = clang
 CLANGPP = clang++
 
@@ -23,6 +24,14 @@ all: testc testcpp testcpp-gmp
 	./testcpp
 	./testcpp-gmp
 
+oldgcc: testoldgcc testoldgpp
+	./testoldgcc
+	./testoldgpp
+
+clang: testclang testcppclang
+	./testclang
+	./testcppclang
+
 testc: SBDD_helper_testc_cpp.h SBDD_helper_testc.c ../devel/SBDD_helper.h ../devel/*.h bddc.o
 	gcc $(OPT) $(WOPT4) -Wc++-compat bddc.o SBDD_helper_testc.c -o testc
 
@@ -34,6 +43,9 @@ testclang: SBDD_helper_testc_cpp.h SBDD_helper_testc.c ../devel/SBDD_helper.h ..
 
 testcpp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h bddc.o BDD.o ZBDD.o
 	g++ $(OPT) $(WOPT4) bddc.o BDD.o ZBDD.o SBDD_helper_testcpp.cpp -o testcpp
+
+testoldgpp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h bddc-oldgcc.o BDD-oldgpp.o ZBDD-oldgpp.o
+	$(OLDGPP) $(OPT) $(WOPT2) -Wno-long-long bddc-oldgcc.o BDD-oldgpp.o ZBDD-oldgpp.o SBDD_helper_testcpp.cpp -o testoldgpp
 
 testcppg: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h bddc.o BDD.o ZBDD.o
 	g++ -g -DB_64 $(WOPT4) bddc.o BDD.o ZBDD.o SBDD_helper_testcpp.cpp -o testcppg
@@ -65,14 +77,20 @@ bddc-clang.o: $(SBDDSRCDIR)/BDDc/bddc.c $(SBDDINCLUDEDIR)/bddc.h
 BDD.o: $(SBDDSRCDIR)/BDD+/BDD.cc $(SBDDINCLUDEDIR)/BDD.h
 	g++ $(OPT) $(SBDDSRCDIR)/BDD+/BDD.cc -c -o BDD.o
 
+BDD-oldgpp.o: $(SBDDSRCDIR)/BDD+/BDD.cc $(SBDDINCLUDEDIR)/BDD.h
+	$(OLDGPP) $(OPT) $(SBDDSRCDIR)/BDD+/BDD.cc -c -o BDD-oldgpp.o
+
 BDD-clang.o: $(SBDDSRCDIR)/BDD+/BDD.cc $(SBDDINCLUDEDIR)/BDD.h
 	$(CLANGPP) $(OPT) $(SBDDSRCDIR)/BDD+/BDD.cc -c -o BDD-clang.o
 
 ZBDD.o: $(SBDDSRCDIR)/BDD+/ZBDD.cc $(SBDDINCLUDEDIR)/ZBDD.h
 	g++ $(OPT) $(SBDDSRCDIR)/BDD+/ZBDD.cc -c -o ZBDD.o
 
+ZBDD-oldgpp.o: $(SBDDSRCDIR)/BDD+/ZBDD.cc $(SBDDINCLUDEDIR)/ZBDD.h
+	$(OLDGPP) $(OPT) $(SBDDSRCDIR)/BDD+/ZBDD.cc -c -o ZBDD-oldgpp.o
+
 ZBDD-clang.o: $(SBDDSRCDIR)/BDD+/ZBDD.cc $(SBDDINCLUDEDIR)/ZBDD.h
 	$(CLANGPP) $(OPT) $(SBDDSRCDIR)/BDD+/ZBDD.cc -c -o ZBDD-clang.o
 
 clean:
-	rm -f *.o *.stackdump testc.exe testc testcpp.exe testcpp testcpp98.exe testcppg.exe testcppg testcpp98 testcpp-gmp.exe testcpp-gmp testcppclang
+	rm -f *.o *.stackdump testc.exe testc testcpp.exe testcpp testoldgcc.exe testoldgcc testoldgpp.exe testoldgpp testcpp98.exe testcppg.exe testcppg testcpp98 testcpp-gmp.exe testcpp-gmp testcppclang
