@@ -620,7 +620,7 @@ fclose(fp);
 4:1,1
 ```
 
-## bddexportbddasgraphillion
+## bddexportbddasgraphviz
 
 ```
 void bddexportbddasgraphviz(FILE* fp, bddp f, bddNodeIndex* index)

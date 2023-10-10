@@ -1,23 +1,23 @@
-//
-// One header library for SAPPOROBDD C/C++ version
-// version 1.0.1
-//
-// Copyright (c) 2017 -- 2023 Jun Kawahara
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-// and associated documentation files (the "Software"), to deal in the Software without
-// restriction, including without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all copies or
-// substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
-// BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+/*
+One header library for SAPPOROBDD C/C++ version
+version 1.0.2
+
+Copyright (c) 2017 -- 2023 Jun Kawahara
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+and associated documentation files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #ifndef SBDD_HELPER_H
 #define SBDD_HELPER_H
@@ -40,7 +40,7 @@
 #include <set>
 #include <algorithm>
 
-#if __cplusplus >= 201103L // use rand() function
+#if __cplusplus >= 201103L /* use rand() function */
 #include <random>
 #endif
 
@@ -49,7 +49,7 @@
 #include <gmpxx.h>
 #endif
 
-#else // __cplusplus
+#else /* __cplusplus */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,7 +59,7 @@
 #include <assert.h>
 #include <stdarg.h>
 
-#endif // __cplusplus
+#endif /* __cplusplus */
 
 #ifdef __cplusplus
 namespace sbddh {
@@ -70,15 +70,14 @@ typedef unsigned long long int ullint;
 
 #define unused(a) (void)(a)
 
-// inline function qualifier for gcc
-// if a compile error occurs, change the qualifier
+/* inline function qualifier for gcc */
+/* if a compile error occurs, change the qualifier */
 #define sbddextended_INLINE_FUNC static inline
 
-#define sbddextended_MAX_LINE 256
 #define sbddextended_BDDNODE_START 2
 #define sbddextended_NUMBER_OF_CHILDREN 2
 
-#define sbddextended_TEMP_BUFSIZE 1024
+#define sbddextended_BUFSIZE 1024
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -92,7 +91,7 @@ typedef unsigned long long int ullint;
     const llint sbddextended_VALUE_ONE = 1;
 #endif
 
-// for compatibility
+/* for compatibility */
 #define getAllSetsIncluding getPowerSetIncluding
 #define getAllPowerSetsIncluding getPowerSetIncluding
 #define getAllPowerSetsNotIncluding getPowerSetNotIncluding
@@ -125,7 +124,7 @@ typedef unsigned long long int ullint;
 
 #ifdef __cplusplus
 
-// need to free the returned value
+/* need to free the returned value */
 sbddextended_INLINE_FUNC
 const char** sbddextended_strVectorToArray(const std::vector<std::string>& vec)
 {
@@ -142,7 +141,9 @@ const char** sbddextended_strVectorToArray(const std::vector<std::string>& vec)
     return arr;
 }
 
-// XOR shift
+#endif
+
+/* XOR shift */
 sbddextended_INLINE_FUNC
 ullint sbddextended_getXRand(ullint* state)
 {
@@ -154,7 +155,81 @@ ullint sbddextended_getXRand(ullint* state)
     return v;
 }
 
+
+
+#ifdef __cplusplus /* C++ */
+    #if __cplusplus >= 201103L /* C++11 */
+        #define SBDDH_SNPRINTF_EXISTS
+    #endif
+#else /* C */
+    #ifdef __STDC_VERSION__
+        #if __STDC_VERSION__ >= 199901L /* C99 */
+            #define SBDDH_SNPRINTF_EXISTS
+        #endif
+    #endif
 #endif
+
+#ifdef SBDDH_SNPRINTF_EXISTS
+
+/* We use the following macros instead of vsnprintf because passing */
+/* a variable to the third argument of vsnprintf outputs warning */
+/* "format string is not a string literal [-Wformat-nonliteral]". */
+
+#define sbddextended_snprintf0(str, size, format) \
+snprintf(str, size, format)
+#define sbddextended_snprintf1(str, size, format, arg1) \
+snprintf(str, size, format, arg1)
+#define sbddextended_snprintf2(str, size, format, arg1, arg2) \
+snprintf(str, size, format, arg1, arg2)
+#define sbddextended_snprintf3(str, size, format, arg1, arg2, arg3) \
+snprintf(str, size, format, arg1, arg2, arg3)
+#define sbddextended_snprintf4(str, size, format, arg1, arg2, arg3, arg4) \
+snprintf(str, size, format, arg1, arg2, arg3, arg4)
+#define sbddextended_snprintf5(str, size, format, arg1, arg2, arg3, arg4, \
+arg5) \
+snprintf(str, size, format, arg1, arg2, arg3, arg4, arg5)
+
+/* sbddextended_INLINE_FUNC
+int sbddextended_sprintf(char *str, const char *format, ...)
+{
+    int v;
+    va_list args;
+
+    va_start(args, format);
+    v = vsnprintf(str, sbddextended_BUFSIZE, format, args);
+    va_end(args);
+    return v;
+} */
+
+#else /* SBDDH_SNPRINTF_EXISTS */
+
+#define sbddextended_snprintf0(str, size, format) \
+sprintf(str, format)
+#define sbddextended_snprintf1(str, size, format, arg1) \
+sprintf(str, format, arg1)
+#define sbddextended_snprintf2(str, size, format, arg1, arg2) \
+sprintf(str, format, arg1, arg2)
+#define sbddextended_snprintf3(str, size, format, arg1, arg2, arg3) \
+sprintf(str, format, arg1, arg2, arg3)
+#define sbddextended_snprintf4(str, size, format, arg1, arg2, arg3, arg4) \
+sprintf(str, format, arg1, arg2, arg3, arg4)
+#define sbddextended_snprintf5(str, size, format, arg1, arg2, arg3, arg4, \
+arg5) \
+sprintf(str, format, arg1, arg2, arg3, arg4, arg5)
+
+/* sbddextended_INLINE_FUNC
+int sbddextended_sprintf(char *str, const char *format, ...)
+{
+    int v;
+    va_list args;
+
+    va_start(args, format);
+    v = sprintf(str, format, args);
+    va_end(args);
+    return v;
+} */
+
+#endif /* SBDDH_SNPRINTF_EXISTS */
 
 #define sbddextended_MyVector_INITIAL_BUFSIZE 1024
 
@@ -162,7 +237,7 @@ typedef struct tagsbddextended_MyVector {
 #ifdef __cplusplus
     std::vector<llint>* vec;
 #endif
-    // in the C++ version, always vec.size() == count
+    /* in the C++ version, always vec.size() == count */
     size_t count;
 #ifndef __cplusplus
     size_t capacity;
@@ -202,27 +277,27 @@ void sbddextended_MyVector_deinitialize(sbddextended_MyVector* v)
 }
 
 sbddextended_INLINE_FUNC
-llint sbddextended_MyVector_get(const sbddextended_MyVector* v, llint index)
+llint sbddextended_MyVector_get(const sbddextended_MyVector* v, llint v_index)
 {
 #ifdef __cplusplus
-    assert(0 <= index && (size_t)index < v->vec->size());
-    return (*v->vec)[index];
+    assert(0 <= v_index && (size_t)v_index < v->vec->size());
+    return (*v->vec)[(size_t)v_index];
 #else
-    assert(0 <= index && (size_t)index < v->count);
-    return v->buf[index];
+    assert(0 <= v_index && (size_t)v_index < v->count);
+    return v->buf[v_index];
 #endif
 }
 
 sbddextended_INLINE_FUNC
 void sbddextended_MyVector_set(sbddextended_MyVector* v,
-                                llint index, llint value)
+                                llint v_index, llint value)
 {
 #ifdef __cplusplus
-    assert(0 <= index && (size_t)index < v->vec->size());
-    (*v->vec)[index] = value;
+    assert(0 <= v_index && (size_t)v_index < v->vec->size());
+    (*v->vec)[(size_t)v_index] = value;
 #else
-    assert(0 <= index && (size_t)index < v->count);
-    v->buf[index] = value;
+    assert(0 <= v_index && (size_t)v_index < v->count);
+    v->buf[v_index] = value;
 #endif
 }
 
@@ -370,7 +445,7 @@ void sbddextended_MyDict_deinitialize(sbddextended_MyDict* d)
     node_stack[sp] = d->root;
     op_stack[sp] = 0;
 
-    // free each node (not using a recursive function)
+    /* free each node (not using a recursive function) */
     while (sp >= 0) {
         node = node_stack[sp];
         op = op_stack[sp];
@@ -382,7 +457,7 @@ void sbddextended_MyDict_deinitialize(sbddextended_MyDict* d)
         while (op <= 1) {
             if (op == 0) {
                 child = node->left;
-            } else { // op == 1
+            } else { /* op == 1 */
                 child = node->right;
             }
             if (child == NULL) {
@@ -420,7 +495,7 @@ void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
 {
 #ifdef __cplusplus
     std::map<llint, llint>::const_iterator itor = d->dict->find(key);
-    if (itor == d->dict->end()) { // not found
+    if (itor == d->dict->end()) { /* not found */
         ++d->count;
     }
     (*d->dict)[key] = value;
@@ -433,7 +508,7 @@ void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
     } else {
         node = d->root;
         while (node != NULL) {
-            if (node->key == key) { // found
+            if (node->key == key) { /* found */
                 node->value = value;
                 break;
             } else if (key < node->key) {
@@ -445,7 +520,7 @@ void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
                     ++d->count;
                     break;
                 }
-            } else { // key > node->key
+            } else { /* key > node->key */
                 if (node->right != NULL) {
                     node = node->right;
                 } else {
@@ -460,8 +535,8 @@ void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
 #endif
 }
 
-// returned value: 1 -> found, 0 -> not found
-// The found value is stored into "value" argument.
+/* returned value: 1 -> found, 0 -> not found */
+/* The found value is stored into "value" argument. */
 sbddextended_INLINE_FUNC
 int sbddextended_MyDict_find(const sbddextended_MyDict* d, llint key, llint* value)
 {
@@ -486,7 +561,7 @@ int sbddextended_MyDict_find(const sbddextended_MyDict* d, llint key, llint* val
             return 1;
         } else if (key < node->key) {
             node = node->left;
-        } else {// key > node->key
+        } else {/* key > node->key */
             node = node->right;
         }
     }
@@ -550,7 +625,7 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
     dest_node_stack[sp] = dest->root;
     op_stack[sp] = 0;
 
-    // free each node (not using a recursive function)
+    /* free each node (not using a recursive function) */
     while (sp >= 0) {
         node = node_stack[sp];
         dest_node = dest_node_stack[sp];
@@ -563,7 +638,7 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
         while (op <= 1) {
             if (op == 0) {
                 child = node->left;
-            } else { // op == 1
+            } else { /* op == 1 */
                 child = node->right;
             }
             if (child == NULL) {
@@ -582,7 +657,7 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
 
             if (op == 0) {
                 dest_node->left = dest_node_stack[sp];
-            } else { // op == 1
+            } else { /* op == 1 */
                 dest_node->right = dest_node_stack[sp];
             }
         } else {
@@ -636,12 +711,12 @@ void sbddextended_MySet_add(sbddextended_MySet* d, llint key)
 #ifdef __cplusplus
     d->se->insert(key);
 #else
-    // value is unused
-    sbddextended_MyDict_add(&d->dict, key, 0);
+    /* value is unused */
+    sbddextended_MyDict_add(&d->dict, key, 0ll);
 #endif
 }
 
-// returned value: 1 -> found, 0 -> not found
+/* returned value: 1 -> found, 0 -> not found */
 sbddextended_INLINE_FUNC
 int sbddextended_MySet_exists(const sbddextended_MySet* d, llint key)
 {
@@ -679,20 +754,20 @@ int sbddextended_readChar_inner(FILE* fp)
     return fgetc(fp);
 }
 
-// The size of buf should be sbddextended_MAX_LINE.
+/* The size of buf should be sbddextended_BUFSIZE. */
 sbddextended_INLINE_FUNC
 int sbddextended_readLine_inner(char* buf, FILE* fp)
 {
     size_t n;
     char* p;
-    p = fgets(buf, sbddextended_MAX_LINE, fp);
+    p = fgets(buf, sbddextended_BUFSIZE, fp);
     if (p == NULL) {
         return 0;
     }
     n = strlen(buf);
     if (buf[n - 1] != '\n') {
         fprintf(stderr, "Each line must not exceed %d characters\n",
-                sbddextended_MAX_LINE);
+                sbddextended_BUFSIZE);
         exit(1);
     }
     return 1;
@@ -702,28 +777,28 @@ sbddextended_INLINE_FUNC
 int sbddextended_readUint8_inner(unsigned char* v, FILE* fp)
 {
     assert(fp != NULL);
-    return fread(v, sizeof(unsigned char), 1, fp) != 0;
+    return fread(v, sizeof(unsigned char), (size_t)1, fp) != 0;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_readUint16_inner(unsigned short* v, FILE* fp)
 {
     assert(fp != NULL);
-    return fread(v, sizeof(unsigned short), 1, fp) != 0;
+    return fread(v, sizeof(unsigned short), (size_t)1, fp) != 0;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_readUint32_inner(unsigned int* v, FILE* fp)
 {
     assert(fp != NULL);
-    return fread(v, sizeof(unsigned int), 1, fp) != 0;
+    return fread(v, sizeof(unsigned int), (size_t)1, fp) != 0;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_readUint64_inner(ullint* v, FILE* fp)
 {
     assert(fp != NULL);
-    return fread(v, sizeof(ullint), 1, fp) != 0;
+    return fread(v, sizeof(ullint), (size_t)1, fp) != 0;
 }
 
 
@@ -771,7 +846,7 @@ public:
                 return st_[stpos_ - 1];
             }
         }
-        return -1; // never come here
+        return -1; /* never come here */
     }
 
     bool operator()(unsigned char* v, FILE* fp) const {
@@ -864,9 +939,9 @@ public:
             if (!std::getline(*ist_, str)) {
                 return false;
             }
-            if (str.length() >= sbddextended_MAX_LINE - 1) {
+            if (str.length() >= sbddextended_BUFSIZE - 1) {
                 fprintf(stderr, "Each line must not exceed %d characters\n",
-                    sbddextended_MAX_LINE);
+                    sbddextended_BUFSIZE);
                 exit(1);
             }
             strcpy(buf, str.c_str());
@@ -880,18 +955,18 @@ public:
                 llint start = stpos_;
                 while (stpos_ < stlen_ && st_[stpos_] != '\n') {
                     ++stpos_;
-                    if (stpos_ - start >= sbddextended_MAX_LINE - 1) {
+                    if (stpos_ - start >= sbddextended_BUFSIZE - 1) {
                         fprintf(stderr, "Each line must not exceed %d characters\n",
-                                sbddextended_MAX_LINE);
+                                sbddextended_BUFSIZE);
                         exit(1);
                     }
                 }
-                strncpy(buf, st_ + start, stpos_ - start);
+                strncpy(buf, st_ + start, static_cast<size_t>(stpos_ - start));
                 ++stpos_;
                 return true;
             }
         }
-        return false; // never come here
+        return false; /* never come here */
     }
 };
 
@@ -959,28 +1034,28 @@ sbddextended_INLINE_FUNC
 int sbddextended_writeUint8_inner(unsigned char v, FILE* fp)
 {
     assert(fp != NULL);
-    return fwrite(&v, sizeof(unsigned char), 1, fp) != 0;
+    return fwrite(&v, sizeof(unsigned char), (size_t)1, fp) != 0;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_writeUint16_inner(unsigned short v, FILE* fp)
 {
     assert(fp != NULL);
-    return fwrite(&v, sizeof(unsigned short), 1, fp) != 0;
+    return fwrite(&v, sizeof(unsigned short), (size_t)1, fp) != 0;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_writeUint32_inner(unsigned int v, FILE* fp)
 {
     assert(fp != NULL);
-    return fwrite(&v, sizeof(unsigned int), 1, fp) != 0;
+    return fwrite(&v, sizeof(unsigned int), (size_t)1, fp) != 0;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_writeUint64_inner(ullint v, FILE* fp)
 {
     assert(fp != NULL);
-    return fwrite(&v, sizeof(ullint), 1, fp) != 0;
+    return fwrite(&v, sizeof(ullint), (size_t)1, fp) != 0;
 }
 
 #ifdef __cplusplus
@@ -1017,7 +1092,7 @@ public:
     }
 
     bool operator()(unsigned char v, FILE* fp) const {
-        //std::cerr << "uint8 " << (ullint)v << std::endl;
+        /*std::cerr << "uint8 " << (ullint)v << std::endl; */
         if (is_fstream_) {
             if (!*ost_) {
                 return false;
@@ -1031,7 +1106,7 @@ public:
     }
 
     bool operator()(unsigned short v, FILE* fp) const {
-        //std::cerr << "uint16 " << (ullint)v << std::endl;
+        /*std::cerr << "uint16 " << (ullint)v << std::endl; */
         if (is_fstream_) {
             if (!*ost_) {
                 return false;
@@ -1045,7 +1120,7 @@ public:
     }
 
     bool operator()(unsigned int v, FILE* fp) const {
-        //std::cerr << "uint32 " << (ullint)v << std::endl;
+        /*std::cerr << "uint32 " << (ullint)v << std::endl; */
         if (is_fstream_) {
             if (!*ost_) {
                 return false;
@@ -1059,7 +1134,7 @@ public:
     }
 
     bool operator()(ullint v, FILE* fp) const {
-        //std::cerr << "uint64 " << (ullint)v << std::endl;
+        /*std::cerr << "uint64 " << (ullint)v << std::endl; */
         if (is_fstream_) {
             if (!*ost_) {
                 return false;
@@ -1139,7 +1214,7 @@ sbddextended_INLINE_FUNC bddp bdderasenot(bddp f)
     return f & ~B_INV_MASK;
 }
 
-sbddextended_INLINE_FUNC int bddis64bitversion()
+sbddextended_INLINE_FUNC int bddis64bitversion(void)
 {
 #ifdef B_64
     return 1;
@@ -1170,7 +1245,7 @@ sbddextended_INLINE_FUNC bddp bddgetterminal(int terminal, int is_zbdd)
     }
 }
 
-// assume that f is ZBDD
+/* assume that f is ZBDD */
 sbddextended_INLINE_FUNC int bddisemptymember(bddp f)
 {
     return bddisnegative(f);
@@ -1428,7 +1503,7 @@ bddp bddgetsingleset(bddvar* vararr, int n)
     f = bddsingle;
     for (i = 0; i < n; ++i) {
         assert(1 <= vararr[i] && vararr[i] <= bddvarused());
-        for (j = 0; j < i; ++j) { // check duplicate
+        for (j = 0; j < i; ++j) { /* check duplicate */
             if (vararr[j] == vararr[i]) {
                 continue;
             }
@@ -1484,20 +1559,21 @@ void sbddextended_sort_array(bddvar* arr, int n)
     }
 }
 
-// must free the returned pointer
+/* must free the returned pointer */
 sbddextended_INLINE_FUNC
 bddvar* sbddextended_getsortedarraybylevel_inner(const bddvar* vararr, int n)
 {
     int i;
     bddvar* ar;
 
+    assert(n >= 0);
     ar = (bddvar*)malloc((size_t)n * sizeof(bddvar));
     if (ar == NULL) {
         fprintf(stderr, "out of memory\n");
         return NULL;
     }
 
-    // translate varIDs to levels
+    /* translate varIDs to levels */
     for (i = 0; i < n; ++i) {
         ar[i] = bddlevofvar(vararr[i]);
     }
@@ -1563,7 +1639,7 @@ int bddismemberz_inner(bddp f, const bddvar* levarr, int n)
     while (h != bddempty && h != bddsingle) {
         if (sp < 0 || bddgetlev(h) > levarr[sp]) {
             h = bddgetchild0z(h);
-        } else if (bddgetlev(h) < levarr[sp]) { // return false
+        } else if (bddgetlev(h) < levarr[sp]) { /* return false */
             break;
         } else {
             h = bddgetchild1z(h);
@@ -1666,7 +1742,7 @@ llint bddcountnodes(bddp* dds, int n, int is_raw)
                 } else {
                     is_zbdd = 0;
                 }
-            } else { // zbdd
+            } else { /* zbdd */
                 if (is_zbdd == 0) {
                     error = 0;
                     break;
@@ -1683,7 +1759,7 @@ llint bddcountnodes(bddp* dds, int n, int is_raw)
     return bddcountnodes_inner(dds, n, is_zbdd, is_raw);
 }
 
-// *************************** C++ version start *****************************
+/* *************************** C++ version start ***************************** */
 
 #ifdef __cplusplus
 
@@ -1912,7 +1988,7 @@ sbddextended_INLINE_FUNC ZBDD getSingleton(bddvar v)
 template<typename T>
 sbddextended_INLINE_FUNC ZBDD getSingleSet(const T& variables)
 {
-    // use set to remove duplicated elements
+    /* use set to remove duplicated elements */
     std::set<bddvar> s(variables.begin(), variables.end());
 
     bddp f, g;
@@ -1953,7 +2029,7 @@ sbddextended_INLINE_FUNC ZBDD getSingleSet(int n, ...)
     return ZBDD_ID(f);
 }
 
-// need to delete[] the returned pointer
+/* need to delete[] the returned pointer */
 template<typename T>
 sbddextended_INLINE_FUNC bddvar* containerToArray(const T& variables,
                                                   int* n)
@@ -2017,7 +2093,7 @@ sbddextended_INLINE_FUNC ZBDD getPowerSetIncluding_inner(const T1& base_variable
          itor != target_variables.end(); ++itor) {
         c = *itor;
         if (std::find(base_variables.begin(), base_variables.end(), c) !=
-            base_variables.end()) { // c found
+            base_variables.end()) { /* c found */
             f = f.OnSet(c);
         } else {
             f = f.Change(c);
@@ -2200,7 +2276,7 @@ sbddextended_INLINE_FUNC bool isMemberZ(const ZBDD& f, const T& variables)
         return false;
     }
 
-    // translate varIDs to levels
+    /* translate varIDs to levels */
     int c = 0;
     for (typename T::const_iterator itor = variables.begin();
          itor != variables.end(); ++itor) {
@@ -2377,7 +2453,7 @@ ZBDD getRandomZBDDWithCard(int level, llint card, T& random_engine)
     return DDUtilityCpp11::getRandomZBDDWithCard(level, card, random_engine);
 }
 
-#endif // __cplusplus >= 201103L
+#endif /* __cplusplus >= 201103L */
 
 class DDUtility {
 public:
@@ -2458,7 +2534,7 @@ ZBDD getRandomZBDDWithCardX(int level, llint card, ullint* rand_state)
 sbddextended_INLINE_FUNC
 BDD exampleBdd(ullint kind = 0ull)
 {
-    // kind == 0 cannot be used for rand_state
+    /* kind == 0 cannot be used for rand_state */
     kind += 1;
     ullint rand_state = kind;
     ullint v = sbddextended_getXRand(&rand_state);
@@ -2472,7 +2548,7 @@ BDD exampleBdd(ullint kind = 0ull)
 sbddextended_INLINE_FUNC
 ZBDD exampleZbdd(ullint kind = 0ull)
 {
-    // kind == 0 cannot be used for rand_state
+    /* kind == 0 cannot be used for rand_state */
     kind += 1;
     ullint rand_state = kind;
     ullint v = sbddextended_getXRand(&rand_state);
@@ -2488,11 +2564,11 @@ ZBDD exampleZbdd(ullint kind = 0ull)
 typedef struct tagbddNodeIndex {
     int is_raw;
     int is_zbdd;
-    // All of the following four pointers are NULL if f is a terminal or bddnull.
+    /* All of the following four pointers are NULL if f is a terminal or bddnull. */
     sbddextended_MyDict* node_dict_arr;
-    sbddextended_MyVector* level_vec_arr; // stores all nodes at level i
+    sbddextended_MyVector* level_vec_arr; /* stores all nodes at level i */
     llint* offset_arr;
-    llint* count_arr; // array representing the number of solutions for node i
+    llint* count_arr; /* array representing the number of solutions for node i */
     int height;
     bddp f;
 } bddNodeIndex;
@@ -2503,55 +2579,55 @@ bddNodeIndex* bddNodeIndex_makeIndexWithoutCount_inner(bddp f, int is_raw, int i
     int i, k, level;
     size_t j;
     bddp node, child;
-    bddNodeIndex* index;
+    bddNodeIndex* node_index;
 
-    index = (bddNodeIndex*)malloc(sizeof(bddNodeIndex));
-    if (index == NULL) {
+    node_index = (bddNodeIndex*)malloc(sizeof(bddNodeIndex));
+    if (node_index == NULL) {
         fprintf(stderr, "out of memory\n");
         exit(1);
     }
-    index->is_raw = (is_raw != 0 ? 1 : 0);
-    index->f = f;
-    index->height = (int)bddgetlev(f);
-    index->is_zbdd = (is_zbdd != 0 ? 1 : 0);
+    node_index->is_raw = (is_raw != 0 ? 1 : 0);
+    node_index->f = f;
+    node_index->height = (int)bddgetlev(f);
+    node_index->is_zbdd = (is_zbdd != 0 ? 1 : 0);
 
     if (f == bddnull || f == bddfalse || f == bddtrue) {
-        index->node_dict_arr = NULL;
-        index->level_vec_arr = NULL;
-        index->offset_arr = NULL;
-        index->count_arr = NULL;
-        return index;
+        node_index->node_dict_arr = NULL;
+        node_index->level_vec_arr = NULL;
+        node_index->offset_arr = NULL;
+        node_index->count_arr = NULL;
+        return node_index;
     }
 
     if (is_raw) {
         f = bdderasenot(f);
     }
 
-    index->node_dict_arr = (sbddextended_MyDict*)malloc(
-                            (size_t)(index->height + 1) * sizeof(sbddextended_MyDict));
-    if (index->node_dict_arr == NULL) {
+    node_index->node_dict_arr = (sbddextended_MyDict*)malloc(
+                            (size_t)(node_index->height + 1) * sizeof(sbddextended_MyDict));
+    if (node_index->node_dict_arr == NULL) {
         fprintf(stderr, "out of memory\n");
         exit(1);
     }
-    index->level_vec_arr = (sbddextended_MyVector*)malloc(
-                            (size_t)(index->height + 1) * sizeof(sbddextended_MyVector));
-    if (index->level_vec_arr == NULL) {
+    node_index->level_vec_arr = (sbddextended_MyVector*)malloc(
+                            (size_t)(node_index->height + 1) * sizeof(sbddextended_MyVector));
+    if (node_index->level_vec_arr == NULL) {
         fprintf(stderr, "out of memory\n");
         exit(1);
     }
-    for (i = 1; i <= index->height; ++i) {
-        sbddextended_MyDict_initialize(&index->node_dict_arr[i]);
-        sbddextended_MyVector_initialize(&index->level_vec_arr[i]);
+    for (i = 1; i <= node_index->height; ++i) {
+        sbddextended_MyDict_initialize(&node_index->node_dict_arr[i]);
+        sbddextended_MyVector_initialize(&node_index->level_vec_arr[i]);
     }
 
-    sbddextended_MyDict_add(&index->node_dict_arr[index->height],
+    sbddextended_MyDict_add(&node_index->node_dict_arr[node_index->height],
                             (llint)f,
-                            0); // 0 means the first node in the level
-    sbddextended_MyVector_add(&index->level_vec_arr[index->height], (llint)f);
+                            0ll); /* 0 means the first node in the level */
+    sbddextended_MyVector_add(&node_index->level_vec_arr[node_index->height], (llint)f);
 
-    for (i = index->height; i >= 1; --i) {
-        for (j = 0; j < index->level_vec_arr[i].count; ++j) {
-            node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i], (llint)j);
+    for (i = node_index->height; i >= 1; --i) {
+        for (j = 0; j < node_index->level_vec_arr[i].count; ++j) {
+            node = (bddp)sbddextended_MyVector_get(&node_index->level_vec_arr[i], (llint)j);
             for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
                 if (is_raw) {
                     if (is_zbdd) {
@@ -2570,31 +2646,31 @@ bddNodeIndex* bddNodeIndex_makeIndexWithoutCount_inner(bddp f, int is_raw, int i
 
                 if (!bddisterminal(child)) {
                     level = (int)bddgetlev(child);
-                    if (sbddextended_MyDict_find(&index->node_dict_arr[level],
+                    if (sbddextended_MyDict_find(&node_index->node_dict_arr[level],
                                                  (llint)child, NULL) == 0) {
-                        sbddextended_MyDict_add(&index->node_dict_arr[level],
+                        sbddextended_MyDict_add(&node_index->node_dict_arr[level],
                                                 (llint)child,
-                                                (llint)index->node_dict_arr[level].count);
-                        sbddextended_MyVector_add(&index->level_vec_arr[level], (llint)child);
+                                                (llint)node_index->node_dict_arr[level].count);
+                        sbddextended_MyVector_add(&node_index->level_vec_arr[level], (llint)child);
                     }
                 }
             }
         }
     }
 
-    index->offset_arr = (llint*)malloc((size_t)(index->height + 1) * sizeof(llint));
-    if (index->offset_arr == NULL) {
+    node_index->offset_arr = (llint*)malloc((size_t)(node_index->height + 1) * sizeof(llint));
+    if (node_index->offset_arr == NULL) {
         fprintf(stderr, "out of memory\n");
         exit(1);
     }
-    index->offset_arr[index->height] = sbddextended_BDDNODE_START;
+    node_index->offset_arr[node_index->height] = sbddextended_BDDNODE_START;
 
-    for (i = index->height; i >= 1; --i) {
-        index->offset_arr[i - 1] = index->offset_arr[i] + (llint)index->level_vec_arr[i].count;
+    for (i = node_index->height; i >= 1; --i) {
+        node_index->offset_arr[i - 1] = node_index->offset_arr[i] + (llint)node_index->level_vec_arr[i].count;
     }
 
-    index->count_arr = NULL;
-    return index;
+    node_index->count_arr = NULL;
+    return node_index;
 }
 
 sbddextended_INLINE_FUNC
@@ -2639,27 +2715,27 @@ bddNodeIndex* bddNodeIndex_makeIndex_inner(bddp f, int is_raw, int is_zbdd)
     int i, clevel, raw_flag;
     llint j, id0, id1;
     bddp node, n0, n1;
-    bddNodeIndex* index;
+    bddNodeIndex* node_index;
 
-    index = bddNodeIndex_makeIndexWithoutCount_inner(f, is_raw, is_zbdd);
+    node_index = bddNodeIndex_makeIndexWithoutCount_inner(f, is_raw, is_zbdd);
 
     if (f == bddnull || f == bddfalse || f == bddtrue) {
-        return index;
+        return node_index;
     }
 
     if (is_zbdd) {
-        index->count_arr = (llint*)malloc((size_t)index->offset_arr[0] * sizeof(llint));
-        if (index->count_arr == NULL) {
+        node_index->count_arr = (llint*)malloc((size_t)node_index->offset_arr[0] * sizeof(llint));
+        if (node_index->count_arr == NULL) {
             fprintf(stderr, "out of memory\n");
             exit(1);
         }
-        index->count_arr[0] = 0;
-        index->count_arr[1] = 1;
+        node_index->count_arr[0] = 0;
+        node_index->count_arr[1] = 1;
 
-        for (i = 1; i <= index->height; ++i) {
-            for (j = index->offset_arr[i]; j < index->offset_arr[i - 1]; ++j) {
-                node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i],
-                                                       j - index->offset_arr[i]);
+        for (i = 1; i <= node_index->height; ++i) {
+            for (j = node_index->offset_arr[i]; j < node_index->offset_arr[i - 1]; ++j) {
+                node = (bddp)sbddextended_MyVector_get(&node_index->level_vec_arr[i],
+                                                       j - node_index->offset_arr[i]);
                 if (is_raw) {
                     n0 = bddgetchild0zraw(node);
                 } else {
@@ -2671,12 +2747,12 @@ bddNodeIndex* bddNodeIndex_makeIndex_inner(bddp f, int is_raw, int is_zbdd)
                     id0 = 1;
                 } else {
                     clevel = (int)bddgetlev(n0);
-                    if (sbddextended_MyDict_find(&index->node_dict_arr[clevel],
+                    if (sbddextended_MyDict_find(&node_index->node_dict_arr[clevel],
                                                      (llint)n0, &id0) == 0) {
                         fprintf(stderr, "node not found!\n");
                         exit(1);
                     }
-                    id0 += index->offset_arr[clevel];
+                    id0 += node_index->offset_arr[clevel];
                 }
                 raw_flag = 0;
                 if (is_raw) {
@@ -2694,23 +2770,23 @@ bddNodeIndex* bddNodeIndex_makeIndex_inner(bddp f, int is_raw, int is_zbdd)
                     id1 = 1;
                 } else {
                     clevel = (int)bddgetlev(n1);
-                    if (sbddextended_MyDict_find(&index->node_dict_arr[clevel],
+                    if (sbddextended_MyDict_find(&node_index->node_dict_arr[clevel],
                                                      (llint)n1, &id1) == 0) {
                         fprintf(stderr, "node not found!\n");
                         exit(1);
                     }
-                    id1 += index->offset_arr[clevel];
+                    id1 += node_index->offset_arr[clevel];
                 }
-                index->count_arr[j] = index->count_arr[id0] + index->count_arr[id1];
+                node_index->count_arr[j] = node_index->count_arr[id0] + node_index->count_arr[id1];
                 if (is_raw && raw_flag) {
-                    index->count_arr[j] += 1;
+                    node_index->count_arr[j] += 1;
                 }
             }
         }
     } else {
-        // not implemented yet.
+        /* not implemented yet. */
     }
-    return index;
+    return node_index;
 }
 
 sbddextended_INLINE_FUNC
@@ -2750,78 +2826,78 @@ bddNodeIndex* bddNodeIndex_makeRawIndex(bddp f)
 }
 
 sbddextended_INLINE_FUNC
-llint bddNodeIndex_size(const bddNodeIndex* index)
+llint bddNodeIndex_size(const bddNodeIndex* node_index)
 {
-    if (index->f == bddnull || index->f == bddfalse || index->f == bddtrue) {
+    if (node_index->f == bddnull || node_index->f == bddfalse || node_index->f == bddtrue) {
         return 0ll;
     }
-    return (llint)index->offset_arr[0] - sbddextended_BDDNODE_START;
+    return (llint)node_index->offset_arr[0] - sbddextended_BDDNODE_START;
 }
 
 sbddextended_INLINE_FUNC
-llint bddNodeIndex_sizeAtLevel(const bddNodeIndex* index, int level)
+llint bddNodeIndex_sizeAtLevel(const bddNodeIndex* node_index, int level)
 {
-    if (index->f == bddnull || index->f == bddfalse || index->f == bddtrue) {
+    if (node_index->f == bddnull || node_index->f == bddfalse || node_index->f == bddtrue) {
         return 0ll;
-    } else if (level <= 0 || index->height < level) {
+    } else if (level <= 0 || node_index->height < level) {
         return 0ll;
     }
-    return (llint)(index->offset_arr[level - 1] - index->offset_arr[level]);
+    return (llint)(node_index->offset_arr[level - 1] - node_index->offset_arr[level]);
 }
 
 sbddextended_INLINE_FUNC
-void bddNodeIndex_sizeEachLevel(const bddNodeIndex* index, bddvar* arr)
+void bddNodeIndex_sizeEachLevel(const bddNodeIndex* node_index, bddvar* arr)
 {
     int i;
-    if (!(index->f == bddnull || index->f == bddfalse || index->f == bddtrue)) {
-        for (i = 1; i <= index->height; ++i) {
-            arr[i] = (bddvar)(index->offset_arr[i - 1] - index->offset_arr[i]);
+    if (!(node_index->f == bddnull || node_index->f == bddfalse || node_index->f == bddtrue)) {
+        for (i = 1; i <= node_index->height; ++i) {
+            arr[i] = (bddvar)(node_index->offset_arr[i - 1] - node_index->offset_arr[i]);
         }
     }
 }
 
 sbddextended_INLINE_FUNC
-llint bddNodeIndex_count(const bddNodeIndex* index)
+llint bddNodeIndex_count(const bddNodeIndex* node_index)
 {
-    if (index->f == bddnull || index->f == bddfalse) {
+    if (node_index->f == bddnull || node_index->f == bddfalse) {
         return 0ll;
-    } else if (index->f == bddtrue) {
+    } else if (node_index->f == bddtrue) {
         return 1ll;
     }
-    if (index->is_raw) {
-        if (bddisnegative(index->f)) {
-            return index->count_arr[sbddextended_BDDNODE_START] + 1;
+    if (node_index->is_raw) {
+        if (bddisnegative(node_index->f)) {
+            return node_index->count_arr[sbddextended_BDDNODE_START] + 1;
         } else {
-            return index->count_arr[sbddextended_BDDNODE_START];
+            return node_index->count_arr[sbddextended_BDDNODE_START];
         }
     } else {
-        return index->count_arr[sbddextended_BDDNODE_START];
+        return node_index->count_arr[sbddextended_BDDNODE_START];
     }
 }
 
 sbddextended_INLINE_FUNC
-void bddNodeIndex_destruct(bddNodeIndex* index)
+void bddNodeIndex_destruct(bddNodeIndex* node_index)
 {
     int i;
 
-    if (index != NULL) {
-        if (index->level_vec_arr != NULL) {
-            for (i = 1; i <= index->height; ++i) {
-                sbddextended_MyVector_deinitialize(&index->level_vec_arr[i]);
+    if (node_index != NULL) {
+        if (node_index->level_vec_arr != NULL) {
+            for (i = 1; i <= node_index->height; ++i) {
+                sbddextended_MyVector_deinitialize(&node_index->level_vec_arr[i]);
             }
-            free(index->level_vec_arr);
+            free(node_index->level_vec_arr);
         }
-        if (index->node_dict_arr != NULL) {
-            for (i = 1; i <= index->height; ++i) {
-                sbddextended_MyDict_deinitialize(&index->node_dict_arr[i]);
+        if (node_index->node_dict_arr != NULL) {
+            for (i = 1; i <= node_index->height; ++i) {
+                sbddextended_MyDict_deinitialize(&node_index->node_dict_arr[i]);
             }
-            free(index->node_dict_arr);
+            free(node_index->node_dict_arr);
         }
-        if (index->offset_arr != NULL) {
-            free(index->offset_arr);
+        if (node_index->offset_arr != NULL) {
+            free(node_index->offset_arr);
         }
-        if (index->count_arr != NULL) {
-            free(index->count_arr);
+        if (node_index->count_arr != NULL) {
+            free(node_index->count_arr);
         }
     }
 }
@@ -2856,76 +2932,76 @@ void bddNodeIndex_copy(bddNodeIndex* dest,
 }
 
 
-// *************************** C++ version start *****************************
+/* *************************** C++ version start ***************************** */
 
 #ifdef __cplusplus
 
-// This class is obsolate.
+/* This class is obsolate. */
 class DDNodeIndex {
 private:
-    bddNodeIndex* index_;
+    bddNodeIndex* node_index_;
 
 public:
     DDNodeIndex(const BDD& f, bool is_raw = true)
     {
-        index_ = bddNodeIndex_makeIndex_inner(f.GetID(), (is_raw ? 1 : 0), 0);
+        node_index_ = bddNodeIndex_makeIndex_inner(f.GetID(), (is_raw ? 1 : 0), 0);
     }
 
     DDNodeIndex(const ZBDD& f, bool is_raw = true)
     {
-        index_ = bddNodeIndex_makeIndex_inner(f.GetID(), (is_raw ? 1 : 0), 1);
+        node_index_ = bddNodeIndex_makeIndex_inner(f.GetID(), (is_raw ? 1 : 0), 1);
     }
 
     bddNodeIndex* getRawPointer()
     {
-        return index_;
+        return node_index_;
     }
 
     llint size()
     {
-        return bddNodeIndex_size(index_);
+        return bddNodeIndex_size(node_index_);
     }
 
     llint sizeAtLevel(int level)
     {
-        return bddNodeIndex_sizeAtLevel(index_, level);
+        return bddNodeIndex_sizeAtLevel(node_index_, level);
     }
 
     void sizeEachLevel(std::vector<bddvar>& arr)
     {
-        if (!(index_->f == bddnull || index_->f == bddfalse || index_->f == bddtrue)) {
-            arr.resize(index_->height + 1);
-            for (int i = 1; i <= index_->height; ++i) {
-                arr[i] = (bddvar)(index_->offset_arr[i - 1] - index_->offset_arr[i]);
+        if (!(node_index_->f == bddnull || node_index_->f == bddfalse || node_index_->f == bddtrue)) {
+            arr.resize(node_index_->height + 1);
+            for (int i = 1; i <= node_index_->height; ++i) {
+                arr[i] = (bddvar)(node_index_->offset_arr[i - 1] - node_index_->offset_arr[i]);
             }
         }
     }
 
     llint count()
     {
-        return bddNodeIndex_count(index_);
+        return bddNodeIndex_count(node_index_);
     }
 
     ~DDNodeIndex()
     {
-        bddNodeIndex_destruct(index_);
-        free(index_);
+        bddNodeIndex_destruct(node_index_);
+        free(node_index_);
     }
 
     class DDNodeIterator : public std::iterator<std::input_iterator_tag, bddp>
     {
     private:
-        const DDNodeIndex& index_;
+        const DDNodeIndex& node_index_;
         size_t pos_;
         size_t level_;
 
     public:
-        DDNodeIterator(const DDNodeIndex& index, bool is_end) : index_(index), pos_(0)
+        DDNodeIterator(const DDNodeIndex& node_index, bool is_end) : node_index_(node_index), pos_(0)
         {
             if (is_end) {
-                level_ = 0; // This means pointing at end;
+                level_ = 0; /* This means pointing at end; */
             } else {
-                level_ = index.index_->height;
+                level_ = node_index.node_index_->height;
             }
         }
 
@@ -2934,9 +3010,9 @@ public:
             if (level_ <= 0) {
                 return bddfalse;
             }
-            return sbddextended_MyVector_get(&index_.index_->
-                                              level_vec_arr[level_],
-                                             (llint)pos_);
+            return (bddp)sbddextended_MyVector_get(&node_index_.node_index_->
+                                                    level_vec_arr[level_],
+                                                    (llint)pos_);
         }
 
         DDNodeIterator& operator++()
@@ -2944,7 +3020,7 @@ public:
             if (level_ > 0) {
                 ++pos_;
                 while (level_ > 0 &&
-                       pos_ >= index_.index_->level_vec_arr[level_].count) {
+                       pos_ >= node_index_.node_index_->level_vec_arr[level_].count) {
                     pos_ = 0;
                     --level_;
                 }
@@ -2985,12 +3061,12 @@ template <typename T>
 class DDNode {
 private:
     const bddp f_;
-    DDIndex<T>& index_;
+    DDIndex<T>& node_index_;
 public:
     T& value;
 
 public:
-    DDNode(bddp f, DDIndex<T>& index) : f_(f), index_(index), value(index.getStorageRef(f)) { }
+    DDNode(bddp f, DDIndex<T>& node_index) : f_(f), node_index_(node_index), value(node_index.getStorageRef(f)) { }
 
     bddp getBddp() const
     {
@@ -3007,7 +3083,7 @@ public:
         } else {
             g = bddgetchildz(f_, c);
         }
-        DDNode<T> node(g, index_);
+        DDNode<T> node(g, node_index_);
         return node;
     }
 
@@ -3043,7 +3119,7 @@ bool operator!=(const DDNode<T>& node1, const DDNode<T>& node2)
 template <typename T>
 class DDIndex {
 private:
-    bddNodeIndex* index_;
+    bddNodeIndex* node_index_;
     std::map<bddp, T> storage_;
     bool is_count_made;
 
@@ -3055,20 +3131,20 @@ private:
 
     void initialize(bddp f, bool /*is_raw*/, int is_zbdd)
     {
-        // currently, we do not support raw mode. We set is_raw to be false.
-        //index_ = bddNodeIndex_makeIndexWithoutCount_inner(f, (is_raw ? 1 : 0), is_zbdd);
-        index_ = bddNodeIndex_makeIndexWithoutCount_inner(f, 0, is_zbdd);
+        /* currently, we do not support raw mode. We set is_raw to be false. */
+        /*node_index_ = bddNodeIndex_makeIndexWithoutCount_inner(f, (is_raw ? 1 : 0), is_zbdd); */
+        node_index_ = bddNodeIndex_makeIndexWithoutCount_inner(f, 0, is_zbdd);
     }
 
     llint optimize(const std::vector<llint>& weights, bool is_max,
                     std::set<bddvar>& s) const
     {
-        if (index_->is_raw) {
+        if (node_index_->is_raw) {
             std::cerr << "DDIndex currently does not support raw mode." << std::endl;
             exit(1);
         }
 
-        // llint -> max/min value, bool -> 1-arc if true, 0-arc if false
+        /* llint -> max/min value, bool -> 1-arc if true, 0-arc if false */
         std::map<bddp, std::pair<llint, bool> > sto;
 
         if (is_max) {
@@ -3088,34 +3164,34 @@ private:
                     if (sto[child1].first == sto[bddempty].first
                             || sto[child0].first > sto[child1].first + weights[var]) {
                         sto[f].first = sto[child0].first;
-                        sto[f].second = false; // 0-arc side
+                        sto[f].second = false; /* 0-arc side */
                     } else {
                         sto[f].first = sto[child1].first + weights[var];
-                        sto[f].second = true; // 1-arc side
+                        sto[f].second = true; /* 1-arc side */
                     }
                 } else {
                     if (sto[child1].first == sto[bddempty].first
                             || sto[child0].first > sto[child1].first + weights[var]) {
                         sto[f].first = sto[child1].first + weights[var];
-                        sto[f].second = true; // 1-arc side
+                        sto[f].second = true; /* 1-arc side */
                     } else {
                         sto[f].first = sto[child0].first;
-                        sto[f].second = false; // 0-arc side
+                        sto[f].second = false; /* 0-arc side */
                     }
                 }
             }
         }
-        bddp g = index_->f;
+        bddp g = node_index_->f;
         while (!bddisterminal(g)) {
-            if (sto[g].second) { // 1-arc
+            if (sto[g].second) { /* 1-arc */
                 s.insert(bddgetvar(g));
                 g = bddgetchild1z(g);
-            } else { // 0-arc
+            } else { /* 0-arc */
                 g = bddgetchild0z(g);
             }
         }
         assert(g == bddsingle);
-        return sto[index_->f].first;
+        return sto[node_index_->f].first;
     }
 
 #ifdef USE_GMP
@@ -3290,9 +3366,9 @@ private:
 
     bddp getBddp(int level, llint pos) const
     {
-        return sbddextended_MyVector_get(&index_->
-                                            level_vec_arr[level],
-                                            pos);
+        return static_cast<bddp>(sbddextended_MyVector_get(&node_index_->
+                                                    level_vec_arr[level],
+                                                    pos));
     }
 
 public:
@@ -3313,13 +3389,13 @@ public:
 
     ~DDIndex()
     {
-        bddNodeIndex_destruct(index_);
-        free(index_);
+        bddNodeIndex_destruct(node_index_);
+        free(node_index_);
     }
 
     bddNodeIndex* getRawPointer()
     {
-        return index_;
+        return node_index_;
     }
 
     T& getStorageRef(bddp f)
@@ -3329,25 +3405,25 @@ public:
 
     int height() const
     {
-        return bddgetlev(index_->f);
+        return bddgetlev(node_index_->f);
     }
 
     llint size() const
     {
-        return bddNodeIndex_size(index_);
+        return bddNodeIndex_size(node_index_);
     }
 
     llint size(int level) const
     {
-        return bddNodeIndex_sizeAtLevel(index_, level);
+        return bddNodeIndex_sizeAtLevel(node_index_, level);
     }
 
     void sizeEachLevel(std::vector<bddvar>& arr) const
     {
-        if (!(index_->f == bddnull || index_->f == bddfalse || index_->f == bddtrue)) {
-            arr.resize(index_->height + 1);
-            for (int i = 1; i <= index_->height; ++i) {
-                arr[i] = (bddvar)(index_->offset_arr[i - 1] - index_->offset_arr[i]);
+        if (!(node_index_->f == bddnull || node_index_->f == bddfalse || node_index_->f == bddtrue)) {
+            arr.resize(node_index_->height + 1);
+            for (int i = 1; i <= node_index_->height; ++i) {
+                arr[i] = (bddvar)(node_index_->offset_arr[i - 1] - node_index_->offset_arr[i]);
             }
         }
     }
@@ -3356,10 +3432,10 @@ public:
     {
         makeCountIndex();
 #ifdef USE_GMP
-        // only support 32 bit because GMP does not have get_sll
-        return static_cast<llint>(count_storage_[index_->f].get_ui());
+        /* only support 32 bit because GMP does not have get_sll */
+        return static_cast<llint>(count_storage_[node_index_->f].get_ui());
 #else
-        return count_storage_[index_->f];
+        return count_storage_[node_index_->f];
 #endif
     }
 
@@ -3367,7 +3443,7 @@ public:
     mpz_class countMP()
     {
         makeCountIndex();
-        return count_storage_[index_->f];
+        return count_storage_[node_index_->f];
     }
 #endif
 
@@ -3395,7 +3471,7 @@ public:
 
     llint getSum(const std::vector<llint>& weights)
     {
-        if (index_->is_raw) {
+        if (node_index_->is_raw) {
             std::cerr << "DDIndex currently does not support raw mode." << std::endl;
             exit(1);
         }
@@ -3416,13 +3492,13 @@ public:
                 sto[f] = sto[child0] + sto[child1] + weights[var] * getStorageValue(child1);
             }
         }
-        return sto[index_->f];
+        return sto[node_index_->f];
     }
 
 #ifdef USE_GMP
     mpz_class getSumMP(const std::vector<llint>& weights)
     {
-        if (index_->is_raw) {
+        if (node_index_->is_raw) {
             std::cerr << "DDIndex currently does not support raw mode." << std::endl;
             exit(1);
         }
@@ -3451,7 +3527,7 @@ public:
                 sto[f] = sto[child0] + sto[child1] + w_mp * count_storage_.at(child1);
             }
         }
-        return sto[index_->f];
+        return sto[node_index_->f];
     }
 #endif
 
@@ -3459,7 +3535,7 @@ public:
     {
         makeCountIndex();
         std::set<bddvar> ss(s);
-        return getOrderNumber(index_->f, ss);
+        return getOrderNumber(node_index_->f, ss);
     }
 
 #ifdef USE_GMP
@@ -3467,18 +3543,18 @@ public:
     {
         makeCountIndex();
         std::set<bddvar> ss(s);
-        return getOrderNumberMP(index_->f, ss);
+        return getOrderNumberMP(node_index_->f, ss);
     }
 #endif
 
     std::set<bddvar> getSet(llint order)
     {
         makeCountIndex();
-        if (order < 0 || order >= count()) { // out of range
+        if (order < 0 || order >= count()) { /* out of range */
             return std::set<bddvar>();
         }
         std::set<bddvar> s;
-        getSet(index_->f, order, s);
+        getSet(node_index_->f, order, s);
         return s;
     }
 
@@ -3486,24 +3562,24 @@ public:
     std::set<bddvar> getSet(mpz_class order)
     {
         makeCountIndex();
-        if (order < mpz_class(0) || order >= countMP()) { // out of range
+        if (order < mpz_class(0) || order >= countMP()) { /* out of range */
             return std::set<bddvar>();
         }
         std::set<bddvar> s;
-        getSetMP(index_->f, order, s);
+        getSetMP(node_index_->f, order, s);
         return s;
     }
 #endif
 
-#ifdef USE_GMP // use GMP random
+#ifdef USE_GMP /* use GMP random */
     std::set<bddvar> sampleRandomly(gmp_randclass& random)
     {
         makeCountIndex();
         return getSet(random.get_z_range(countMP()));
     }
-#else // USE_GMP
+#else /* USE_GMP */
 
-#if __cplusplus >= 201103L // use C++ random class
+#if __cplusplus >= 201103L /* use C++ random class */
 
     template <typename U>
     std::set<bddvar> sampleRandomly(U& random_engine)
@@ -3512,7 +3588,7 @@ public:
         return getSet(dist(random_engine));
     }
 
-#else // __cplusplus >= 201103L // use rand() function
+#else /* __cplusplus >= 201103L // use rand() function */
 
     std::set<bddvar> sampleRandomly()
     {
@@ -3524,13 +3600,13 @@ public:
         }
     }
 
-#endif // __cplusplus >= 201103L
+#endif /* __cplusplus >= 201103L */
 
-#endif // USE_GMP
+#endif /* USE_GMP */
 
     DDNode<T> root()
     {
-        return DDNode<T>(index_->f, *this);
+        return DDNode<T>(node_index_->f, *this);
     }
 
     DDNode<T> terminal(int t)
@@ -3543,12 +3619,12 @@ public:
         return DDNode<T>(getBddp(level, pos), *this);
     }
 
-    void makeCountIndex() // currently support only for ZDD
+    void makeCountIndex() /* currently support only for ZDD */
     {
         if (!is_count_made) {
             is_count_made = true;
 
-            if (index_->is_raw) {
+            if (node_index_->is_raw) {
                 std::cerr << "DDIndex currently does not support raw mode." << std::endl;
                 exit(1);
             }
@@ -3568,17 +3644,17 @@ public:
     class DDNodeIterator : public std::iterator<std::input_iterator_tag, bddp>
     {
     private:
-        const DDIndex& index_;
+        const DDIndex& node_index_;
         size_t pos_;
         size_t level_;
 
     public:
-        DDNodeIterator(const DDIndex& index, bool is_end) : index_(index), pos_(0)
+        DDNodeIterator(const DDIndex& node_index, bool is_end) : node_index_(node_index), pos_(0)
         {
             if (is_end) {
-                level_ = 0; // This means pointing at end;
+                level_ = 0; /* This means pointing at end; */
             } else {
-                level_ = index.index_->height;
+                level_ = node_index.node_index_->height;
             }
         }
 
@@ -3587,7 +3663,7 @@ public:
             if (level_ <= 0) {
                 return bddfalse;
             }
-            return sbddextended_MyVector_get(&index_.index_->
+            return sbddextended_MyVector_get(&node_index_.node_index_->
                                                 level_vec_arr[level_],
                                                 (llint)pos_);
         }
@@ -3597,7 +3673,7 @@ public:
             if (level_ > 0) {
                 ++pos_;
                 while (level_ > 0 &&
-                        pos_ >= index_.index_->level_vec_arr[level_].count) {
+                        pos_ >= node_index_.node_index_->level_vec_arr[level_].count) {
                     pos_ = 0;
                     --level_;
                 }
@@ -3632,17 +3708,17 @@ public:
 
 };
 
-#endif // __cplusplus
+#endif /* __cplusplus */
 
 
 typedef struct tagbddNodeIterator {
-    bddNodeIndex* index;
+    bddNodeIndex* node_index;
     size_t pos;
     llint level;
 } bddNodeIterator;
 
 sbddextended_INLINE_FUNC
-bddNodeIterator* bddNodeIterator_make(bddNodeIndex* index)
+bddNodeIterator* bddNodeIterator_make(bddNodeIndex* node_index)
 {
     bddNodeIterator* itor;
 
@@ -3651,9 +3727,9 @@ bddNodeIterator* bddNodeIterator_make(bddNodeIndex* index)
         fprintf(stderr, "out of memory\n");
         exit(1);
     }
-    itor->index = index;
+    itor->node_index = node_index;
     itor->pos = 0;
-    itor->level = itor->index->height;
+    itor->level = itor->node_index->height;
     return itor;
 }
 
@@ -3672,23 +3748,23 @@ bddp bddNodeIterator_next(bddNodeIterator* itor)
         return bddfalse;
     }
 
-    f = (bddp)sbddextended_MyVector_get(&itor->index->level_vec_arr[itor->level],
+    f = (bddp)sbddextended_MyVector_get(&itor->node_index->level_vec_arr[itor->level],
                                         (llint)itor->pos);
     ++itor->pos;
 
-    while (itor->level > 0 && itor->pos >= itor->index->level_vec_arr[itor->level].count) {
+    while (itor->level > 0 && itor->pos >= itor->node_index->level_vec_arr[itor->level].count) {
         itor->pos = 0;
         --itor->level;
     }
     return f;
 }
 
-// *************************** C++ version start *****************************
+/* *************************** C++ version start ***************************** */
 
 #ifdef __cplusplus
 
 
-#endif // __cplusplus
+#endif /* __cplusplus */
 
 typedef struct tagbddElementIterator {
     int sp;
@@ -3816,8 +3892,8 @@ private:
     std::vector<char> op_stack_;
     mutable std::set<bddvar> buffSet_;
 
-    // This function is written by copy-paste of void
-    // bddElementIterator_proceed(bddElementIterator* itor).
+    /* This function is written by copy-paste of void */
+    /* bddElementIterator_proceed(bddElementIterator* itor). */
     void proceed()
     {
         char op;
@@ -3948,7 +4024,7 @@ public:
 
 #endif
 
-// *************** import functions
+/* *************** import functions */
 
 sbddextended_INLINE_FUNC
 bddp bddconstructzbddfromelements_inner(FILE* fp
@@ -3963,7 +4039,7 @@ bddp bddconstructzbddfromelements_inner(FILE* fp
     int c, prev_c, v;
     int mode, first;
 
-    vararr_size = sbddextended_MAX_LINE;
+    vararr_size = sbddextended_BUFSIZE;
     vararr = (bddvar*)malloc((size_t)vararr_size * sizeof(bddvar));
     if (vararr == NULL) {
         fprintf(stderr, "out of memory\n");
@@ -3974,7 +4050,7 @@ bddp bddconstructzbddfromelements_inner(FILE* fp
     p = bddfalse;
     first = 1;
 
-    mode = 0; // 0: skip ws, 1: reading nums
+    mode = 0; /* 0: skip ws, 1: reading nums */
     v = 0;
     c = 0;
     while (c != -1) {
@@ -4084,13 +4160,13 @@ bddp bddconstructzbddfromelements(FILE* /*fp*/, const char* /*large_sep*/,
 
 #else
 
-// The following function is no longer supported.
-//sbddextended_INLINE_FUNC
-//bddp bddconstructzbddfromelements(FILE* fp, const char* large_sep,
-//                                    const char* small_sep)
-//{
-//    return bddconstructzbddfromelements_inner(fp, large_sep, small_sep);
-//}
+/* The following function is no longer supported.
+sbddextended_INLINE_FUNC
+bddp bddconstructzbddfromelements(FILE* fp, const char* large_sep,
+                                    const char* small_sep)
+{
+    return bddconstructzbddfromelements_inner(fp, large_sep, small_sep);
+}*/
 
 sbddextended_INLINE_FUNC
 bddp bddconstructzbddfromelements(FILE* fp)
@@ -4101,10 +4177,10 @@ bddp bddconstructzbddfromelements(FILE* fp)
 #endif
 
 
-// *************** export functions
+/* *************** export functions */
 
 
-// num_of_variables: 0 -> elements format, non 0 -> value list format
+/* num_of_variables: 0 -> elements format, non 0 -> value list format */
 sbddextended_INLINE_FUNC
 void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
                                 const char* delim2, const char* var_name_map[],
@@ -4117,12 +4193,12 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
     bddp* bddnode_stack;
     bddp g;
     char* op_stack;
-    char* value_list;
+    char* value_list = NULL;
     char op;
     int i, height, sp, is_first_delim1, is_first_delim2;
     bddvar v;
     bddp node, child;
-    char buf[sbddextended_MAX_LINE];
+    char buf[sbddextended_BUFSIZE];
 
     if (f == bddnull) {
         sbddextended_write("N", fp);
@@ -4133,10 +4209,10 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
     } else if (f == bddsingle) {
         if (num_of_variables != 0) {
             for (i = 1; i <= num_of_variables; ++i) {
-                sprintf(buf, "0");
+                sbddextended_snprintf0(buf, sbddextended_BUFSIZE, "0");
                 sbddextended_write(buf, fp);
                 if (i < num_of_variables) {
-                    sprintf(buf, "%s", delim2);
+                    sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%s", delim2);
                     sbddextended_write(buf, fp);
                 }
             }
@@ -4146,13 +4222,13 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
 
     is_first_delim1 = 1;
     if (bddisnegative(f)) {
-        // Output bddsingle first
+        /* Output bddsingle first */
         if (num_of_variables != 0) {
             for (i = 1; i <= num_of_variables; ++i) {
-                sprintf(buf, "0");
+                sbddextended_snprintf0(buf, sbddextended_BUFSIZE, "0");
                 sbddextended_write(buf, fp);
                 if (i < num_of_variables) {
-                    sprintf(buf, "%s", delim2);
+                    sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%s", delim2);
                     sbddextended_write(buf, fp);
                 }
             }
@@ -4199,7 +4275,7 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
             if (is_first_delim1 != 0) {
                 is_first_delim1 = 0;
             } else {
-                sprintf(buf, "%s", delim1);
+                sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%s", delim1);
                 sbddextended_write(buf, fp);
             }
             is_first_delim2 = 1;
@@ -4219,10 +4295,10 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
                     }
                 }
                 for (i = 1; i <= num_of_variables; ++i) {
-                    sprintf(buf, "%d", value_list[i]);
+                    sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%d", value_list[i]);
                     sbddextended_write(buf, fp);
                     if (i < num_of_variables) {
-                        sprintf(buf, "%s", delim2);
+                        sbddextended_snprintf1(buf, sbddextended_BUFSIZE, "%s", delim2);
                         sbddextended_write(buf, fp);
                     }
                 }
@@ -4232,13 +4308,18 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
                         if (is_first_delim2 != 0) {
                             is_first_delim2 = 0;
                         } else {
-                            sprintf(buf, "%s", delim2);
+                            sbddextended_snprintf1(buf, sbddextended_BUFSIZE,
+                                "%s", delim2);
                             sbddextended_write(buf, fp);
                         }
                         if (var_name_map != NULL) {
-                            sprintf(buf, "%s", var_name_map[bddgetvar(bddnode_stack[i])]);
+                            sbddextended_snprintf1(buf, sbddextended_BUFSIZE,
+                                "%s",
+                                var_name_map[bddgetvar(bddnode_stack[i])]);
                         } else {
-                            sprintf(buf, "%d", bddgetvar(bddnode_stack[i]));
+                            sbddextended_snprintf1(buf, sbddextended_BUFSIZE,
+                                "%d",
+                                bddgetvar(bddnode_stack[i]));
                         }
                         sbddextended_write(buf, fp);
                     }
@@ -4279,34 +4360,43 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
 #ifdef __cplusplus
 
 sbddextended_INLINE_FUNC
-void printZBDDElements(FILE* fp, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2)
+void printZBDDElements(FILE* fp, const ZBDD& zbdd,
+    const std::string& delim1, const std::string& delim2)
 {
     WriteObject wo(false, false, NULL);
-    bddprintzbddelements_inner(fp, zbdd.GetID(), delim1.c_str(), delim2.c_str(), NULL, 0, wo);
+    bddprintzbddelements_inner(fp, zbdd.GetID(), delim1.c_str(),
+        delim2.c_str(), NULL, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
-void printZBDDElements(FILE* fp, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2, const std::vector<std::string>& var_name_map)
+void printZBDDElements(FILE* fp, const ZBDD& zbdd, const std::string& delim1,
+    const std::string& delim2, const std::vector<std::string>& var_name_map)
 {
     WriteObject wo(false, false, NULL);
     const char** arr = sbddextended_strVectorToArray(var_name_map);
-    bddprintzbddelements_inner(fp, zbdd.GetID(), delim1.c_str(), delim2.c_str(), arr, 0, wo);
+    bddprintzbddelements_inner(fp, zbdd.GetID(), delim1.c_str(),
+        delim2.c_str(), arr, 0, wo);
     free(arr);
 }
 
 sbddextended_INLINE_FUNC
-void printZBDDElements(std::ostream& ost, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2)
+void printZBDDElements(std::ostream& ost, const ZBDD& zbdd,
+    const std::string& delim1, const std::string& delim2)
 {
     WriteObject wo(true, false, &ost);
-    bddprintzbddelements_inner(NULL, zbdd.GetID(), delim1.c_str(), delim2.c_str(), NULL, 0, wo);
+    bddprintzbddelements_inner(NULL, zbdd.GetID(), delim1.c_str(),
+    delim2.c_str(), NULL, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
-void printZBDDElements(std::ostream& ost, const ZBDD& zbdd, const std::string& delim1, const std::string& delim2, const std::vector<std::string>& var_name_map)
+void printZBDDElements(std::ostream& ost, const ZBDD& zbdd,
+    const std::string& delim1, const std::string& delim2,
+    const std::vector<std::string>& var_name_map)
 {
     WriteObject wo(true, false, &ost);
     const char** arr = sbddextended_strVectorToArray(var_name_map);
-    bddprintzbddelements_inner(NULL, zbdd.GetID(), delim1.c_str(), delim2.c_str(), arr, 0, wo);
+    bddprintzbddelements_inner(NULL, zbdd.GetID(), delim1.c_str(),
+        delim2.c_str(), arr, 0, wo);
     free(arr);
 }
 
@@ -4327,15 +4417,16 @@ void printZBDDElements(std::ostream& ost, const ZBDD& zbdd)
 }
 
 sbddextended_INLINE_FUNC
-void bddprintzbddelements(FILE* fp, bddp f, const char* delim1, const char* delim2)
+void bddprintzbddelements(FILE* fp, bddp f, const char* delim1,
+    const char* delim2)
 {
     WriteObject wo(false, false, NULL);
     bddprintzbddelements_inner(fp, f, delim1, delim2, NULL, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
-void bddprintzbddelementswithmap(FILE* fp, bddp f, const char* delim1, const char* delim2,
-                                 const char* var_name_map[])
+void bddprintzbddelementswithmap(FILE* fp, bddp f, const char* delim1,
+    const char* delim2, const char* var_name_map[])
 {
     WriteObject wo(false, false, NULL);
     bddprintzbddelements_inner(fp, f, delim1, delim2, var_name_map, 0, wo);
@@ -4344,14 +4435,15 @@ void bddprintzbddelementswithmap(FILE* fp, bddp f, const char* delim1, const cha
 #else
 
 sbddextended_INLINE_FUNC
-void bddprintzbddelements(FILE* fp, bddp f, const char* delim1, const char* delim2)
+void bddprintzbddelements(FILE* fp, bddp f, const char* delim1,
+    const char* delim2)
 {
     bddprintzbddelements_inner(fp, f, delim1, delim2, NULL, 0);
 }
 
 sbddextended_INLINE_FUNC
-void bddprintzbddelementswithmap(FILE* fp, bddp f, const char* delim1, const char* delim2,
-                                 const char* var_name_map[])
+void bddprintzbddelementswithmap(FILE* fp, bddp f, const char* delim1,
+    const char* delim2, const char* var_name_map[])
 {
     bddprintzbddelements_inner(fp, f, delim1, delim2, var_name_map, 0);
 }
@@ -4389,9 +4481,9 @@ void printZBDDElementsAsValueList(std::ostream& ost, const ZBDD& zbdd, const std
 sbddextended_INLINE_FUNC
 std::string ZStr(const ZBDD& zbdd)
 {
-    if (zbdd == ZBDD(-1)) { // null
+    if (zbdd == ZBDD(-1)) { /* null */
         return std::string("N");
-    } if (zbdd == ZBDD(0)) { // 0-terminal
+    } if (zbdd == ZBDD(0)) { /* 0-terminal */
         return std::string("E");
     } else {
         std::ostringstream ost;
@@ -4408,7 +4500,7 @@ std::string zstr(const ZBDD& zbdd)
 
 #endif
 
-// *************** import functions
+/* *************** import functions */
 
 sbddextended_INLINE_FUNC
 bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
@@ -4432,7 +4524,7 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
     unsigned short v16;
     ullint v64;
 
-    // read head 'B' 'D' 'D'
+    /* read head 'B' 'D' 'D' */
     for (i = 0; i < 3; ++i) {
         sbddextended_readUint8(&v8, fp);
         if ((i == 0 && v8 != 'B') || (i >= 1 && v8 != 'D')) {
@@ -4440,13 +4532,13 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
             return bddnull;
         }
     }
-    sbddextended_readUint8(&v8, fp); // version
+    sbddextended_readUint8(&v8, fp); /* version */
     if (v8 != 1) {
         fprintf(stderr, "This function supports only version 1.\n");
         return bddnull;
     }
 
-    sbddextended_readUint8(&v8, fp); // type
+    sbddextended_readUint8(&v8, fp); /* type */
     if (is_zbdd < 0 && v8 == 1) {
         fprintf(stderr, "Need to specify BDD or ZBDD.\n");
         return bddnull;
@@ -4456,32 +4548,32 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
         fprintf(stderr, "The binary indicates that it is ZDDD, but we interpret it as a BDD.\n");
     }
 
-    sbddextended_readUint16(&v16, fp); // number_of_arcs
+    sbddextended_readUint16(&v16, fp); /* number_of_arcs */
     if (v16 != 2) {
         fprintf(stderr, "Currently, this function supports only 2 branches.\n");
         return bddnull;
     }
 
-    sbddextended_readUint32(&number_of_terminals, fp); // number_of_terminals
+    sbddextended_readUint32(&number_of_terminals, fp); /* number_of_terminals */
     if (number_of_terminals != 2) {
         fprintf(stderr, "Currently, this function supports only 2 terminals.\n");
         return bddnull;
     }
 
-    sbddextended_readUint8(&v8, fp); // number_of_bits_for_level
+    sbddextended_readUint8(&v8, fp); /* number_of_bits_for_level */
     if (v8 != 16) {
         fprintf(stderr, "Currently, this function supports only the case of number_of_bits_for_level == 16.\n");
         return bddnull;
     }
 
-    sbddextended_readUint8(&v8, fp); // number_of_bits_for_id
+    sbddextended_readUint8(&v8, fp); /* number_of_bits_for_id */
     if (v8 != 64) {
         fprintf(stderr, "Currently, this function supports only the case of number_of_bits_for_id == 64.\n");
         return bddnull;
     }
 
-    sbddextended_readUint8(&use_negative_arcs, fp); // use_negative_arcs
-    sbddextended_readUint64(&max_level, fp); // max_level
+    sbddextended_readUint8(&use_negative_arcs, fp); /* use_negative_arcs */
+    sbddextended_readUint64(&max_level, fp); /* max_level */
 
     if (root_level < 0) {
         root_level = (int)max_level;
@@ -4491,17 +4583,17 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
         return bddnull;
     }
 
-    sbddextended_readUint64(&v64, fp); // number_of_roots
+    sbddextended_readUint64(&v64, fp); /* number_of_roots */
     if (v64 != 1) {
         fprintf(stderr, "Currently, this function supports only 1 root.\n");
         return bddnull;
     }
-    // reserved
+    /* reserved */
     for (i = 0; i < 8; ++i) {
         sbddextended_readUint64(&v64, fp);
     }
 
-    if (max_level == 0) { // case of a constant function (0/1-terminal)
+    if (max_level == 0) { /* case of a constant function (0/1-terminal) */
         sbddextended_readUint64(&v64, fp);
         if (v64 == 0) {
             return bddempty;
@@ -4515,8 +4607,8 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
 
     sbddextended_MyVector_initialize(&level_vec);
 
-    // level 0, unused (dummy)
-    sbddextended_MyVector_add(&level_vec, 0);
+    /* level 0, unused (dummy) */
+    sbddextended_MyVector_add(&level_vec, 0ll);
 
     number_of_nodes = number_of_terminals;
     for (level = 1; level <= max_level; ++level) {
@@ -4526,8 +4618,8 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
     }
     sbddextended_readUint64(&root_id, fp);
 
-    //bddnode_buf = (bddp*)malloc((number_of_nodes + 1) * sizeof(bddp));
-    bddnode_buf = (bddp*)malloc(number_of_nodes * sizeof(bddp));
+    /*bddnode_buf = (bddp*)malloc((number_of_nodes + 1) * sizeof(bddp)); */
+    bddnode_buf = (bddp*)malloc((size_t)number_of_nodes * sizeof(bddp));
     if (bddnode_buf == NULL) {
         fprintf(stderr, "out of memory\n");
         exit(1);
@@ -4541,13 +4633,13 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
 
     for (node_count = number_of_terminals;
             node_count < number_of_nodes; ++node_count) {
-        // read 0-child
+        /* read 0-child */
         if (!sbddextended_readUint64(&v64, fp)) {
             break;
         }
-        //fprintf(stderr, "%lld\n", v64);
+        /*fprintf(stderr, "%lld\n", v64); */
 
-        //fprintf(stderr, "0-child: %lld\n", v64);
+        /*fprintf(stderr, "0-child: %lld\n", v64); */
         if (v64 <= 1) {
             f0 = bddgetterminal((int)v64, is_zbdd);
         } else {
@@ -4562,7 +4654,7 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
             }
         }
 
-        // read 1-child
+        /* read 1-child */
         if (!sbddextended_readUint64(&v64, fp)) {
             fprintf(stderr, "illegal format\n");
             return bddnull;
@@ -4580,12 +4672,12 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
             }
         }
 
-        // obtain node's level
+        /* obtain node's level */
         node_sum = number_of_terminals;
         for (level = 1; level <= max_level; ++level) {
-            // add the number of nodes at the level
+            /* add the number of nodes at the level */
             node_sum += (ullint)sbddextended_MyVector_get(&level_vec, (llint)level);
-            //fprintf(stderr, "node_sum: %lld\n", node_sum);
+            /*fprintf(stderr, "node_sum: %lld\n", node_sum); */
             if (node_sum > node_count) {
                 break;
             }
@@ -4600,7 +4692,7 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
         }
     }
     if (use_negative_arcs != 0) {
-        if (root_id % 2 == 1) { // negative arc
+        if (root_id % 2 == 1) { /* negative arc */
             f = bddtakenot(bddnode_buf[root_id >> 1]);
         } else {
             f = bddnode_buf[root_id >> 1];
@@ -4608,7 +4700,7 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
     } else {
         f = bddnode_buf[root_id];
     }
-    // FIX ME: need to free of bddnode_buf[*]
+    /* FIX ME: need to free of bddnode_buf[*] */
     return f;
 }
 
@@ -4693,12 +4785,12 @@ bddp bddimportzbddasbinary(FILE* fp, int root_level)
 #endif
 
 
-// *************** export functions
+/* *************** export functions */
 
 
 sbddextended_INLINE_FUNC
 void bddexportbddasbinary_inner(FILE* fp, bddp f,
-                                bddNodeIndex* index,
+                                bddNodeIndex* node_index,
                                 int is_zbdd,
                                 int use_negative_arcs
 #ifdef __cplusplus
@@ -4709,8 +4801,8 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
 #endif
                                 )
 {
-    // Since only BDD/ZDD is treated in the current version,
-    // the number of terminals is fixed to be 2.
+    /* Since only BDD/ZDD is treated in the current version, */
+    /* the number of terminals is fixed to be 2. */
     const unsigned int number_of_terminals = 2;
     ullint i, j;
     int k, is_making_index = 0;
@@ -4721,13 +4813,13 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
     ullint* id_prefix;
     bddp node, child, rchild;
 
-    if (index != NULL) {
-        if (index->is_raw != 0 && use_negative_arcs == 0) {
-            fprintf(stderr, "The index must not be constructed in the raw mode "
+    if (node_index != NULL) {
+        if (node_index->is_raw != 0 && use_negative_arcs == 0) {
+            fprintf(stderr, "The node index must not be constructed in the raw mode "
                             "when not using negative arcs.\n");
             return;
-        } else if (index->is_raw == 0 && use_negative_arcs != 0) {
-            fprintf(stderr, "The index must be constructed in the raw mode "
+        } else if (node_index->is_raw == 0 && use_negative_arcs != 0) {
+            fprintf(stderr, "The node index must be constructed in the raw mode "
                             "when using negative arcs.\n");
             return;
         }
@@ -4735,52 +4827,52 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
 
     max_level = (ullint)bddgetlev(f);
 
-    // start header
+    /* start header */
 
     sbddextended_writeUint8((unsigned char)'B', fp);
     sbddextended_writeUint8((unsigned char)'D', fp);
     sbddextended_writeUint8((unsigned char)'D', fp);
 
-    sbddextended_writeUint8((unsigned char)1u, fp); // version
-    // DD type
-    if (is_zbdd < 0) { // can be interpreted as BDD/ZBDD
+    sbddextended_writeUint8((unsigned char)1u, fp); /* version */
+    /* DD type */
+    if (is_zbdd < 0) { /* can be interpreted as BDD/ZBDD */
         sbddextended_writeUint8((unsigned char)1u, fp);
-    } else if (is_zbdd == 0) { // BDD
+    } else if (is_zbdd == 0) { /* BDD */
         sbddextended_writeUint8((unsigned char)2u, fp);
-    } else { // ZBDD
+    } else { /* ZBDD */
         sbddextended_writeUint8((unsigned char)3u, fp);
     }
-    // number_of_arcs
+    /* number_of_arcs */
     sbddextended_writeUint16((unsigned short)2u, fp);
-    // number_of_terminals
+    /* number_of_terminals */
     sbddextended_writeUint32(number_of_terminals, fp);
-    // number_of_bits_for_level
+    /* number_of_bits_for_level */
     sbddextended_writeUint8((unsigned char)16u, fp);
-    // number_of_bits_for_id
+    /* number_of_bits_for_id */
     sbddextended_writeUint8((unsigned char)64u, fp);
-    // use_negative_arcs
+    /* use_negative_arcs */
     if (use_negative_arcs != 0) {
         sbddextended_writeUint8((unsigned char)1u, fp);
     } else {
         sbddextended_writeUint8((unsigned char)0u, fp);
     }
-    // max_level
+    /* max_level */
     sbddextended_writeUint64(max_level, fp);
-    // number_of_roots
+    /* number_of_roots */
     sbddextended_writeUint64((ullint)1u, fp);
 
-    // reserved
+    /* reserved */
     for (i = 0; i < 8; ++i) {
         sbddextended_writeUint64((ullint)0u, fp);
     }
 
-    // end header
+    /* end header */
 
     if (is_zbdd < 0) {
         is_zbdd = (!bddisbdd(f) ? 1 : 0);
     }
 
-    if (max_level == 0) { // case of a constant function (0/1-terminal)
+    if (max_level == 0) { /* case of a constant function (0/1-terminal) */
         if (f == bddempty) {
             sbddextended_writeUint64((ullint)0ull, fp);
         } else if (f == bddsingle) {
@@ -4791,32 +4883,32 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
         return;
     }
 
-    if (index == NULL) {
+    if (node_index == NULL) {
         is_making_index = 1;
         if (is_zbdd != 0) {
             if (use_negative_arcs != 0) {
-                index = bddNodeIndex_makeRawIndexZWithoutCount(f);
+                node_index = bddNodeIndex_makeRawIndexZWithoutCount(f);
             } else {
-                index = bddNodeIndex_makeIndexZWithoutCount(f);
+                node_index = bddNodeIndex_makeIndexZWithoutCount(f);
             }
         } else {
             if (use_negative_arcs != 0) {
-                index = bddNodeIndex_makeRawIndexBWithoutCount(f);
+                node_index = bddNodeIndex_makeRawIndexBWithoutCount(f);
             } else {
-                index = bddNodeIndex_makeIndexBWithoutCount(f);
+                node_index = bddNodeIndex_makeIndexBWithoutCount(f);
             }
         }
     }
 
-    assert((ullint)index->height == max_level);
+    assert((ullint)node_index->height == max_level);
 
-    // write the number of nodes in level i and compute the number of nodes
+    /* write the number of nodes in level i and compute the number of nodes */
     for (i = 1; i <= max_level; ++i) {
-        sbddextended_writeUint64((ullint)index->level_vec_arr[i].count, fp);
-        number_of_nodes += (ullint)index->level_vec_arr[i].count;
+        sbddextended_writeUint64((ullint)node_index->level_vec_arr[i].count, fp);
+        number_of_nodes += (ullint)node_index->level_vec_arr[i].count;
     }
 
-    id_prefix = (ullint*)malloc((max_level + 1) * sizeof(ullint));
+    id_prefix = (ullint*)malloc((size_t)(max_level + 1) * sizeof(ullint));
     if (id_prefix == NULL) {
         fprintf(stderr, "out of memory\n");
         return;
@@ -4824,11 +4916,11 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
 
     id_prefix[1] = number_of_terminals;
     for (i = 1; i < max_level; ++i) {
-        id_prefix[i + 1] = id_prefix[i] + (ullint)index->level_vec_arr[i].count;
+        id_prefix[i + 1] = id_prefix[i] + (ullint)node_index->level_vec_arr[i].count;
     }
 
-    // write the number of the root id
-    // (In the current version, assume that the number of roots is 2.)
+    /* write the number of the root id */
+    /* (In the current version, assume that the number of roots is 2.) */
     root_id = (ullint)number_of_terminals + number_of_nodes - 1;
     assert(root_id == id_prefix[max_level]);
 
@@ -4842,17 +4934,17 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
     sbddextended_writeUint64(root_id, fp);
 
     for (i = 1; i <= max_level; ++i) {
-        for (j = 0; j < index->level_vec_arr[i].count; ++j) {
-            node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i], (llint)j);
+        for (j = 0; j < node_index->level_vec_arr[i].count; ++j) {
+            node = (bddp)sbddextended_MyVector_get(&node_index->level_vec_arr[i], (llint)j);
             for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
-                child = bddgetchildg(node, k, index->is_zbdd, index->is_raw);
+                child = bddgetchildg(node, k, node_index->is_zbdd, node_index->is_raw);
                 if (child == bddempty) {
                     sbddextended_writeUint64(0llu, fp);
                 } else if (child == bddsingle) {
                     sbddextended_writeUint64(1llu, fp);
                 } else {
                     rchild = (use_negative_arcs != 0 ? bdderasenot(child) : child);
-                    if (sbddextended_MyDict_find(&index->node_dict_arr[bddgetlev(child)],
+                    if (sbddextended_MyDict_find(&node_index->node_dict_arr[bddgetlev(child)],
                                                     (llint)rchild, &id) == 0) {
                         fprintf(stderr, "node not found\n");
                         exit(1);
@@ -4871,8 +4963,8 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
     }
 
     if (is_making_index) {
-        bddNodeIndex_destruct(index);
-        free(index);
+        bddNodeIndex_destruct(node_index);
+        free(node_index);
     }
     free(id_prefix);
 }
@@ -4881,14 +4973,14 @@ void bddexportbddasbinary_inner(FILE* fp, bddp f,
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsBinary(FILE* fp, const BDD& bdd, bool use_negative_arcs, DDIndex<T>* index)
+void exportBDDAsBinary(FILE* fp, const BDD& bdd, bool use_negative_arcs, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddexportbddasbinary_inner(fp, bdd.GetID(), bindex,
+    bddexportbddasbinary_inner(fp, bdd.GetID(), bnode_index,
                                 0, (use_negative_arcs ? 1 : 0),
                                 wo, wo, wo, wo);
 }
@@ -4901,14 +4993,14 @@ void exportBDDAsBinary(FILE* fp, const BDD& bdd, bool use_negative_arcs = true)
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsBinary(std::ostream& ost, const BDD& bdd, bool use_negative_arcs, DDIndex<T>* index)
+void exportBDDAsBinary(std::ostream& ost, const BDD& bdd, bool use_negative_arcs, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddexportbddasbinary_inner(NULL, bdd.GetID(), bindex,
+    bddexportbddasbinary_inner(NULL, bdd.GetID(), bnode_index,
                                 0, (use_negative_arcs ? 1 : 0),
                                 wo, wo, wo, wo);
 }
@@ -4921,14 +5013,14 @@ void exportBDDAsBinary(std::ostream& ost, const BDD& bdd, bool use_negative_arcs
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportZBDDAsBinary(FILE* fp, const ZBDD& zbdd, bool use_negative_arcs, DDIndex<T>* index)
+void exportZBDDAsBinary(FILE* fp, const ZBDD& zbdd, bool use_negative_arcs, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddexportbddasbinary_inner(fp, zbdd.GetID(), bindex,
+    bddexportbddasbinary_inner(fp, zbdd.GetID(), bnode_index,
                                 1, (use_negative_arcs ? 1 : 0),
                                 wo, wo, wo, wo);
 }
@@ -4941,14 +5033,14 @@ void exportZBDDAsBinary(FILE* fp, const ZBDD& zbdd, bool use_negative_arcs = tru
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportZBDDAsBinary(std::ostream& ost, const ZBDD& zbdd, bool use_negative_arcs, DDIndex<T>* index)
+void exportZBDDAsBinary(std::ostream& ost, const ZBDD& zbdd, bool use_negative_arcs, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddexportbddasbinary_inner(NULL, zbdd.GetID(), bindex,
+    bddexportbddasbinary_inner(NULL, zbdd.GetID(), bnode_index,
                                 1, (use_negative_arcs ? 1 : 0),
                                 wo, wo, wo, wo);
 }
@@ -4960,19 +5052,19 @@ void exportZBDDAsBinary(std::ostream& ost, const ZBDD& zbdd, bool use_negative_a
 }
 
 sbddextended_INLINE_FUNC
-void bddexportbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* index)
+void bddexportbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* node_index)
 {
     WriteObject wo(false, true, NULL);
-    bddexportbddasbinary_inner(fp, f, index,
+    bddexportbddasbinary_inner(fp, f, node_index,
                                 0, use_negative_arcs,
                                 wo, wo, wo, wo);
 }
 
 sbddextended_INLINE_FUNC
-void bddexportzbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* index)
+void bddexportzbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* node_index)
 {
     WriteObject wo(false, true, NULL);
-    bddexportbddasbinary_inner(fp, f, index,
+    bddexportbddasbinary_inner(fp, f, node_index,
                                 1, use_negative_arcs,
                                 wo, wo, wo, wo);
 }
@@ -4980,20 +5072,20 @@ void bddexportzbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex
 #else
 
 sbddextended_INLINE_FUNC
-void bddexportbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* index)
+void bddexportbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* node_index)
 {
-    bddexportbddasbinary_inner(fp, f, index, 0, use_negative_arcs);
+    bddexportbddasbinary_inner(fp, f, node_index, 0, use_negative_arcs);
 }
 
 sbddextended_INLINE_FUNC
-void bddexportzbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* index)
+void bddexportzbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex* node_index)
 {
-    bddexportbddasbinary_inner(fp, f, index, 1, use_negative_arcs);
+    bddexportbddasbinary_inner(fp, f, node_index, 1, use_negative_arcs);
 }
 
 #endif
 
-// *************** import functions
+/* *************** import functions */
 
 sbddextended_INLINE_FUNC
 bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
@@ -5006,17 +5098,17 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
     llint i, id, lo, hi, value, line_count = 0;
     llint max_node_id = 0, root_node_id = 0;
     bddvar var;
-    char buf[sbddextended_MAX_LINE];
-    char buf1[sbddextended_MAX_LINE];
-    char buf2[sbddextended_MAX_LINE];
-    char buf3[sbddextended_MAX_LINE];
-    char buf4[sbddextended_MAX_LINE];
+    char buf[sbddextended_BUFSIZE];
+    char buf1[sbddextended_BUFSIZE];
+    char buf2[sbddextended_BUFSIZE];
+    char buf3[sbddextended_BUFSIZE];
+    char buf4[sbddextended_BUFSIZE];
     bddp p, p0, p1, pf, pfn;
     sbddextended_MyVector node_vec, level_vec, lo_vec, hi_vec;
     sbddextended_MyDict node_dict;
 
-    sbddextended_readLine(buf, fp); // read first line
-    if (buf[0] == '.') { // end of file
+    sbddextended_readLine(buf, fp); /* read first line */
+    if (buf[0] == '.') { /* end of file */
         return bddnull;
     } else if (buf[0] == 'B' && (buf[1] == '\0' || isspace((int)buf[1]))) {
         return (is_zdd == 0 ? bddfalse : bddempty);
@@ -5031,7 +5123,7 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
 
     do {
         ++line_count;
-        if (buf[0] == '.') { // end of file
+        if (buf[0] == '.') { /* end of file */
             break;
         }
         c = sscanf(buf, "%s %s %s %s", buf1, buf2, buf3, buf4);
@@ -5080,8 +5172,8 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
     }
 
     sbddextended_MyDict_initialize(&node_dict);
-    sbddextended_MyDict_add(&node_dict, 0, (is_zdd == 0 ? bddfalse : bddempty));
-    sbddextended_MyDict_add(&node_dict, 1, (is_zdd == 0 ? bddtrue : bddsingle));
+    sbddextended_MyDict_add(&node_dict, 0ll, (is_zdd == 0 ? bddfalse : bddempty));
+    sbddextended_MyDict_add(&node_dict, 1ll, (is_zdd == 0 ? bddtrue : bddsingle));
 
     for (i = 0; i < (llint)node_vec.count; ++i) {
         id = sbddextended_MyVector_get(&node_vec, i);
@@ -5089,7 +5181,7 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
         lo = sbddextended_MyVector_get(&lo_vec, i);
         hi = sbddextended_MyVector_get(&hi_vec, i);
         var = bddvaroflev((bddvar)(root_level - level + 1));
-        if (is_zdd == 0) { // BDD
+        if (is_zdd == 0) { /* BDD */
             pf = bddprime(var);
             pfn = bddnot(pf);
             sbddextended_MyDict_find(&node_dict, lo, &value);
@@ -5101,7 +5193,7 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
             bddfree(pfn);
             bddfree(p0);
             bddfree(p1);
-        } else { // ZDD
+        } else { /* ZDD */
             sbddextended_MyDict_find(&node_dict, lo, &value);
             p0 = (bddp)value;
             sbddextended_MyDict_find(&node_dict, hi, &value);
@@ -5109,7 +5201,7 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
             sbddextended_MyDict_add(&node_dict, id, (llint)bddunion(p0, p1));
             bddfree(p1);
         }
-        root_node_id = id; // The root node is the last node.
+        root_node_id = id; /* The root node is the last node. */
     }
     for (i = 0; i < (llint)node_vec.count; ++i) {
         id = sbddextended_MyVector_get(&node_vec, i);
@@ -5199,12 +5291,12 @@ bddp bddimportzbddasgraphillion(FILE* fp, int root_level)
 
 #endif
 
-// *************** export functions
+/* *************** export functions */
 
 
 sbddextended_INLINE_FUNC
 void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
-                                        bddNodeIndex* index, int is_zbdd,
+                                        bddNodeIndex* node_index, int is_zbdd,
                                         int root_level
 #ifdef __cplusplus
                         , const WriteObject& sbddextended_writeLine
@@ -5215,7 +5307,7 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
     size_t j;
     bddp node, child;
     int is_making_index = 0;
-    char ss[sbddextended_TEMP_BUFSIZE];
+    char ss[sbddextended_BUFSIZE];
 
     if (f == bddnull) {
         return;
@@ -5229,19 +5321,19 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
         }
     }
 
-    if (index != NULL) {
-        if (index->is_raw != 0) {
-            fprintf(stderr, "The index must be constructed in the raw mode ");
+    if (node_index != NULL) {
+        if (node_index->is_raw != 0) {
+            fprintf(stderr, "The node index must be constructed in the raw mode ");
             return;
         }
     }
 
-    if (index == NULL && !(f == bddempty || f == bddsingle)) {
+    if (node_index == NULL && !(f == bddempty || f == bddsingle)) {
         is_making_index = 1;
         if (is_zbdd != 0) {
-            index = bddNodeIndex_makeIndexZWithoutCount(f);
+            node_index = bddNodeIndex_makeIndexZWithoutCount(f);
         } else {
-            index = bddNodeIndex_makeIndexBWithoutCount(f);
+            node_index = bddNodeIndex_makeIndexBWithoutCount(f);
         }
     }
 
@@ -5258,18 +5350,18 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
         root_level = (int)bddlevofvar(bddtop(f));
     }
 
-    for (i = 1; i <= index->height; ++i) {
-        for (j = 0; j < index->level_vec_arr[i].count; ++j) {
-            node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i], (llint)j);
-            n = sprintf(ss, "%lld %d", (llint)node, (root_level - i + 1));
+    for (i = 1; i <= node_index->height; ++i) {
+        for (j = 0; j < node_index->level_vec_arr[i].count; ++j) {
+            node = (bddp)sbddextended_MyVector_get(&node_index->level_vec_arr[i], (llint)j);
+            n = sbddextended_snprintf2(ss, sbddextended_BUFSIZE, "%lld %d", (llint)node, (root_level - i + 1));
             for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
                 child = bddgetchildg(node, k, is_zbdd, 0);
                 if (!bddisterminal(child)) {
-                    n += sprintf(ss + n, " %lld", (llint)child);
+                    n += sbddextended_snprintf1(ss + n, sbddextended_BUFSIZE, " %lld", (llint)child);
                 } else if (child == bddempty) {
-                    n += sprintf(ss + n, " B");
+                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, " B");
                 } else if (child == bddsingle) {
-                    n += sprintf(ss + n, " T");
+                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, " T");
                 }
             }
             sbddextended_writeLine(ss, fp);
@@ -5279,8 +5371,8 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
     sbddextended_writeLine(".", fp);
 
     if (is_making_index) {
-        bddNodeIndex_destruct(index);
-        free(index);
+        bddNodeIndex_destruct(node_index);
+        free(node_index);
     }
 }
 
@@ -5288,14 +5380,14 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsGraphillion(FILE* fp, const BDD& bdd, int root_level, DDIndex<T>* index)
+void exportBDDAsGraphillion(FILE* fp, const BDD& bdd, int root_level, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddexportbddasgraphillion_inner(fp, bdd.GetID(), bindex, 0, root_level, wo);
+    bddexportbddasgraphillion_inner(fp, bdd.GetID(), bnode_index, 0, root_level, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -5306,14 +5398,14 @@ void exportBDDAsGraphillion(FILE* fp, const BDD& bdd, int root_level = -1)
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsGraphillion(std::ostream& ost, const BDD& bdd, int root_level, DDIndex<T>* index)
+void exportBDDAsGraphillion(std::ostream& ost, const BDD& bdd, int root_level, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddexportbddasgraphillion_inner(NULL, bdd.GetID(), bindex, 0, root_level, wo);
+    bddexportbddasgraphillion_inner(NULL, bdd.GetID(), bnode_index, 0, root_level, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -5324,14 +5416,14 @@ void exportBDDAsGraphillion(std::ostream& ost, const BDD& bdd, int root_level = 
 
 template<typename T>
 sbddextended_INLINE_FUNC
-void exportZBDDAsGraphillion(FILE* fp, const ZBDD& zbdd, int root_level, DDIndex<T>* index)
+void exportZBDDAsGraphillion(FILE* fp, const ZBDD& zbdd, int root_level, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddexportbddasgraphillion_inner(fp, zbdd.GetID(), bindex, 1, root_level, wo);
+    bddexportbddasgraphillion_inner(fp, zbdd.GetID(), bnode_index, 1, root_level, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -5342,14 +5434,14 @@ void exportZBDDAsGraphillion(FILE* fp, const ZBDD& zbdd, int root_level = -1)
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportZBDDAsGraphillion(std::ostream& ost, const ZBDD& zbdd, int root_level, DDIndex<T>* index)
+void exportZBDDAsGraphillion(std::ostream& ost, const ZBDD& zbdd, int root_level, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddexportbddasgraphillion_inner(NULL, zbdd.GetID(), bindex, 1, root_level, wo);
+    bddexportbddasgraphillion_inner(NULL, zbdd.GetID(), bnode_index, 1, root_level, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -5360,43 +5452,43 @@ void exportZBDDAsGraphillion(std::ostream& ost, const ZBDD& zbdd, int root_level
 
 sbddextended_INLINE_FUNC
 void bddexportbddasgraphillion(FILE* fp, bddp f,
-                                bddNodeIndex* index, int root_level)
+                                bddNodeIndex* node_index, int root_level)
 {
     WriteObject wo(false, true, NULL);
-    // can be used for BDD/ZBDD
-    bddexportbddasgraphillion_inner(fp, f, index, -1, root_level, wo);
+    /* can be used for BDD/ZBDD */
+    bddexportbddasgraphillion_inner(fp, f, node_index, -1, root_level, wo);
 }
 
 sbddextended_INLINE_FUNC
 void bddexportzbddasgraphillion(FILE* fp, bddp f,
-                                bddNodeIndex* index, int root_level)
+                                bddNodeIndex* node_index, int root_level)
 {
     WriteObject wo(false, true, NULL);
-    // only for ZBDD
-    bddexportbddasgraphillion_inner(fp, f, index, 1, root_level, wo);
+    /* only for ZBDD */
+    bddexportbddasgraphillion_inner(fp, f, node_index, 1, root_level, wo);
 }
 
 #else
 
 sbddextended_INLINE_FUNC
 void bddexportbddasgraphillion(FILE* fp, bddp f,
-                                bddNodeIndex* index, int root_level)
+                                bddNodeIndex* node_index, int root_level)
 {
-    // can be used for BDD/ZBDD
-    bddexportbddasgraphillion_inner(fp, f, index, -1, root_level);
+    /* can be used for BDD/ZBDD */
+    bddexportbddasgraphillion_inner(fp, f, node_index, -1, root_level);
 }
 
 sbddextended_INLINE_FUNC
 void bddexportzbddasgraphillion(FILE* fp, bddp f,
-                                bddNodeIndex* index, int root_level)
+                                bddNodeIndex* node_index, int root_level)
 {
-    // only for ZBDD
-    bddexportbddasgraphillion_inner(fp, f, index, 1, root_level);
+    /* only for ZBDD */
+    bddexportbddasgraphillion_inner(fp, f, node_index, 1, root_level);
 }
 
 #endif
 
-// *************** import functions
+/* *************** import functions */
 
 sbddextended_INLINE_FUNC
 bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
@@ -5410,12 +5502,12 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
     llint i, id, lo, hi, line_count = 0;
     ullint idu, lou, hiu;
     bddvar var;
-    char buf[sbddextended_MAX_LINE];
+    char buf[sbddextended_BUFSIZE];
     bddp p, p0, p1, pf, pfn;
     bddp* bddnode_buf;
     sbddextended_MyVector level_vec, lo_vec, hi_vec;
 
-    // To avoid compiler warning, we initialize it here.
+    /* To avoid compiler warning, we initialize it here. */
     sbddextended_MyVector_initialize(&level_vec);
 
     while (sbddextended_readLine(buf, fp)) {
@@ -5444,10 +5536,10 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
     sbddextended_MyVector_initialize(&lo_vec);
     sbddextended_MyVector_initialize(&hi_vec);
 
-    sbddextended_MyVector_add(&lo_vec, 0);
-    sbddextended_MyVector_add(&lo_vec, 1);
-    sbddextended_MyVector_add(&hi_vec, 0);
-    sbddextended_MyVector_add(&hi_vec, 1);
+    sbddextended_MyVector_add(&lo_vec, 0ll);
+    sbddextended_MyVector_add(&lo_vec, 1ll);
+    sbddextended_MyVector_add(&hi_vec, 0ll);
+    sbddextended_MyVector_add(&hi_vec, 1ll);
 
     while (sbddextended_readLine(buf, fp)) {
         ++line_count;
@@ -5507,15 +5599,15 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
 
     for (i = (llint)lo_vec.count - 1; i >= sbddextended_BDDNODE_START; --i) {
         for (level = 1; level < (llint)level_vec.count; ++level) {
-            if (sbddextended_MyVector_get(&level_vec, level - 1) <= i &&
-                i < sbddextended_MyVector_get(&level_vec, level)) {
+            if (sbddextended_MyVector_get(&level_vec, (llint)level - 1) <= i &&
+                i < sbddextended_MyVector_get(&level_vec, (llint)level)) {
                 break;
             }
         }
         assert(level < (llint)level_vec.count);
         assert((1 <= root_level - level + 1) && ((root_level - level + 1) <= (int)bddvarused()));
         var = bddvaroflev((bddvar)(root_level - level + 1));
-        if (is_zbdd == 0) { // BDD
+        if (is_zbdd == 0) { /* BDD */
             pf = bddprime(var);
             pfn = bddnot(pf);
             p0 = bddand(bddnode_buf[sbddextended_MyVector_get(&lo_vec, i)], pfn);
@@ -5525,7 +5617,7 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
             bddfree(pfn);
             bddfree(p0);
             bddfree(p1);
-        } else { // ZDD
+        } else { /* ZDD */
             p0 = bddnode_buf[sbddextended_MyVector_get(&lo_vec, i)];
             p1 = bddchange(bddnode_buf[sbddextended_MyVector_get(&hi_vec, i)],
                             var);
@@ -5622,12 +5714,12 @@ bddp bddimportzbddasknuth(FILE* fp, int is_hex, int root_level)
 #endif
 
 
-// *************** export functions
+/* *************** export functions */
 
 
 sbddextended_INLINE_FUNC
 void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
-                                bddNodeIndex* index,
+                                bddNodeIndex* node_index,
                                 int is_zbdd
 #ifdef __cplusplus
                                     , const WriteObject& sbddextended_writeLine
@@ -5637,7 +5729,7 @@ void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
     int clevel, i, is_making_index = 0;
     bddp node, n0, n1;
     llint id0, id1, k;
-    char ss[sbddextended_TEMP_BUFSIZE];
+    char ss[sbddextended_BUFSIZE];
 
     if (f == bddnull) {
         return;
@@ -5659,27 +5751,27 @@ void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
         }
     }
 
-    if (index != NULL) {
-        if (index->is_raw != 0) {
-            fprintf(stderr, "The index must be constructed in the raw mode ");
+    if (node_index != NULL) {
+        if (node_index->is_raw != 0) {
+            fprintf(stderr, "The node index must be constructed in the raw mode ");
             return;
         }
     }
 
-    if (index == NULL && !(f == bddempty || f == bddsingle)) {
+    if (node_index == NULL && !(f == bddempty || f == bddsingle)) {
         is_making_index = 1;
         if (is_zbdd != 0) {
-            index = bddNodeIndex_makeIndexZWithoutCount(f);
+            node_index = bddNodeIndex_makeIndexZWithoutCount(f);
         } else {
-            index = bddNodeIndex_makeIndexBWithoutCount(f);
+            node_index = bddNodeIndex_makeIndexBWithoutCount(f);
         }
     }
 
-    for (i = index->height; i >= 1; --i) {
-        sprintf(ss, "#%d", index->height - i + 1);
+    for (i = node_index->height; i >= 1; --i) {
+        sbddextended_snprintf1(ss, sbddextended_BUFSIZE, "#%d", node_index->height - i + 1);
         sbddextended_writeLine(ss, fp);
-        for (k = 0; k < (llint)index->level_vec_arr[i].count; ++k) {
-            node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i], k);
+        for (k = 0; k < (llint)node_index->level_vec_arr[i].count; ++k) {
+            node = (bddp)sbddextended_MyVector_get(&node_index->level_vec_arr[i], k);
             n0 = bddgetchild0g(node, is_zbdd, 0);
             if (n0 == bddempty) {
                 id0 = 0;
@@ -5687,12 +5779,12 @@ void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
                 id0 = 1;
             } else {
                 clevel = (int)bddgetlev(n0);
-                if (sbddextended_MyDict_find(&index->node_dict_arr[clevel],
+                if (sbddextended_MyDict_find(&node_index->node_dict_arr[clevel],
                                                 (llint)n0, &id0) == 0) {
                     fprintf(stderr, "node not found!\n");
                     exit(1);
                 }
-                id0 += index->offset_arr[clevel];
+                id0 += node_index->offset_arr[clevel];
             }
             n1 = bddgetchild1g(node, is_zbdd, 0);
             if (n1 == bddempty) {
@@ -5701,24 +5793,28 @@ void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
                 id1 = 1;
             } else {
                 clevel = (int)bddgetlev(n1);
-                if (sbddextended_MyDict_find(&index->node_dict_arr[clevel],
+                if (sbddextended_MyDict_find(&node_index->node_dict_arr[clevel],
                                                 (llint)n1, &id1) == 0) {
                     fprintf(stderr, "node not found!\n");
                     exit(1);
                 }
-                id1 += index->offset_arr[clevel];
+                id1 += node_index->offset_arr[clevel];
             }
             if (is_hex) {
-                sprintf(ss, "%llx:%llx,%llx", index->offset_arr[i] + k, id0, id1);
+                sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
+                    "%llx:%llx,%llx", node_index->offset_arr[i] + k,
+                    id0, id1);
             } else {
-                sprintf(ss, "%lld:%lld,%lld", index->offset_arr[i] + k, id0, id1);
+                sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
+                    "%lld:%lld,%lld", node_index->offset_arr[i] + k,
+                    id0, id1);
             }
             sbddextended_writeLine(ss, fp);
         }
     }
     if (is_making_index) {
-        bddNodeIndex_destruct(index);
-        free(index);
+        bddNodeIndex_destruct(node_index);
+        free(node_index);
     }
 }
 
@@ -5726,14 +5822,14 @@ void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsKnuth(FILE* fp, const BDD& bdd, bool is_hex, DDIndex<T>* index)
+void exportBDDAsKnuth(FILE* fp, const BDD& bdd, bool is_hex, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddexportbddasknuth_inner(fp, bdd.GetID(), (is_hex ? 1 : 0), bindex, 0, wo);
+    bddexportbddasknuth_inner(fp, bdd.GetID(), (is_hex ? 1 : 0), bnode_index, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -5744,14 +5840,14 @@ void exportBDDAsKnuth(FILE* fp, const BDD& bdd, bool is_hex = false)
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportBDDAsKnuth(std::ostream& ost, const BDD& bdd, bool is_hex, DDIndex<T>* index)
+void exportBDDAsKnuth(std::ostream& ost, const BDD& bdd, bool is_hex, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddexportbddasknuth_inner(NULL, bdd.GetID(), (is_hex ? 1 : 0), bindex, 0, wo);
+    bddexportbddasknuth_inner(NULL, bdd.GetID(), (is_hex ? 1 : 0), bnode_index, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -5762,14 +5858,14 @@ void exportBDDAsKnuth(std::ostream& ost, const BDD& bdd, bool is_hex = false)
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportZBDDAsKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex, DDIndex<T>* index)
+void exportZBDDAsKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddexportbddasknuth_inner(fp, zbdd.GetID(), (is_hex ? 1 : 0), bindex, 1, wo);
+    bddexportbddasknuth_inner(fp, zbdd.GetID(), (is_hex ? 1 : 0), bnode_index, 1, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -5780,14 +5876,14 @@ void exportZBDDAsKnuth(FILE* fp, const ZBDD& zbdd, bool is_hex = false)
 
 template <typename T>
 sbddextended_INLINE_FUNC
-void exportZBDDAsKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex, DDIndex<T>* index)
+void exportZBDDAsKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex, DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddexportbddasknuth_inner(NULL, zbdd.GetID(), (is_hex ? 1 : 0), bindex, 1, wo);
+    bddexportbddasknuth_inner(NULL, zbdd.GetID(), (is_hex ? 1 : 0), bnode_index, 1, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -5797,31 +5893,31 @@ void exportZBDDAsKnuth(std::ostream& ost, const ZBDD& zbdd, bool is_hex = false)
 }
 
 sbddextended_INLINE_FUNC
-void bddexportbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* index)
+void bddexportbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* node_index)
 {
     WriteObject wo(false, true, NULL);
-    bddexportbddasknuth_inner(fp, f, (is_hex ? 1 : 0), index, 0, wo);
+    bddexportbddasknuth_inner(fp, f, (is_hex ? 1 : 0), node_index, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
-void bddexportzbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* index)
+void bddexportzbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* node_index)
 {
     WriteObject wo(false, true, NULL);
-    bddexportbddasknuth_inner(fp, f, (is_hex ? 1 : 0), index, 1, wo);
+    bddexportbddasknuth_inner(fp, f, (is_hex ? 1 : 0), node_index, 1, wo);
 }
 
 #else
 
 sbddextended_INLINE_FUNC
-void bddexportbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* index)
+void bddexportbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* node_index)
 {
-    bddexportbddasknuth_inner(fp, f, is_hex, index, 0);
+    bddexportbddasknuth_inner(fp, f, is_hex, node_index, 0);
 }
 
 sbddextended_INLINE_FUNC
-void bddexportzbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* index)
+void bddexportzbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* node_index)
 {
-    bddexportbddasknuth_inner(fp, f, is_hex, index, 1);
+    bddexportbddasknuth_inner(fp, f, is_hex, node_index, 1);
 }
 
 #endif
@@ -5829,7 +5925,7 @@ void bddexportzbddasknuth(FILE* fp, bddp f, int is_hex, bddNodeIndex* index)
 
 sbddextended_INLINE_FUNC
 void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
-                                    bddNodeIndex* index, int is_zbdd
+                                    bddNodeIndex* node_index, int is_zbdd
 #ifdef __cplusplus
                         , const WriteObject& sbddextended_writeLine
 #endif
@@ -5840,7 +5936,7 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
     size_t j;
     bddp node, child;
     int is_making_index = 0;
-    char ss[sbddextended_TEMP_BUFSIZE];
+    char ss[sbddextended_BUFSIZE];
 
     if (f == bddnull) {
         return;
@@ -5854,50 +5950,70 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
         }
     }
 
-    if (index == NULL && !(f == bddempty || f == bddsingle)) {
+    if (node_index == NULL && !(f == bddempty || f == bddsingle)) {
         is_making_index = 1;
         if (is_zbdd != 0) {
-            index = bddNodeIndex_makeIndexZWithoutCount(f);
+            node_index = bddNodeIndex_makeIndexZWithoutCount(f);
         } else {
-            index = bddNodeIndex_makeIndexBWithoutCount(f);
+            node_index = bddNodeIndex_makeIndexBWithoutCount(f);
         }
     }
 
     sbddextended_writeLine("digraph {", fp);
-    // print terminals
+    /* print terminals */
     if (f != bddsingle) {
-        sbddextended_writeLine("\tt0 [label = \"0\", shape = box, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, width = 0.4, height = 0.6, fontsize = 24];", fp);
+        sbddextended_writeLine("\tt0 [label = \"0\", shape = box, "
+            "style = filled, color = \"#81B65D\", "
+            "fillcolor = \"#F6FAF4\", penwidth = 2.5, "
+            "width = 0.4, height = 0.6, fontsize = 24];", fp);
     }
     if (f != bddempty) {
-        sbddextended_writeLine("\tt1 [label = \"1\", shape = box, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, width = 0.4, height = 0.6, fontsize = 24];", fp);
+        sbddextended_writeLine("\tt1 [label = \"1\", shape = box, "
+            "style = filled, color = \"#81B65D\", "
+            "fillcolor = \"#F6FAF4\", penwidth = 2.5, width = 0.4, "
+            "height = 0.6, fontsize = 24];", fp);
     }
     if (f == bddempty || f == bddsingle) {
         sbddextended_writeLine("}", fp);
         return;
     }
 
-    // print vars and levels
-    sprintf(ss, "\tr%d [shape = plaintext, label = \"var level\"]", index->height + 1);
+    /* print vars and levels */
+    sbddextended_snprintf1(ss, sbddextended_BUFSIZE, 
+        "\tr%d [shape = plaintext, label = \"var level\"]",
+        node_index->height + 1);
     sbddextended_writeLine(ss, fp);
-    sprintf(ss, "\tr%d [shape = plaintext, label = \"%4d%7d\"]", index->height, bddvaroflev((bddvar)index->height), index->height);
+    sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
+        "\tr%d [shape = plaintext, label = \"%4d%7d\"]",
+        node_index->height, bddvaroflev((bddvar)node_index->height),
+        node_index->height);
     sbddextended_writeLine(ss, fp);
-    sprintf(ss, "\tr%d -> r%d [style = invis];", index->height + 1, index->height);
+    sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
+        "\tr%d -> r%d [style = invis];", node_index->height + 1,
+        node_index->height);
     sbddextended_writeLine(ss, fp);
-    for (i = index->height; i >= 1; --i) {
+    for (i = node_index->height; i >= 1; --i) {
         if (i > 1) {
-            sprintf(ss, "\tr%d [shape = plaintext, label = \"%4d%7d\"];", i - 1, bddvaroflev((bddvar)(i - 1)), i - 1);
+            sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
+                "\tr%d [shape = plaintext, label = \"%4d%7d\"];",
+                i - 1, bddvaroflev((bddvar)(i - 1)), i - 1);
             sbddextended_writeLine(ss, fp);
         } else {
             sbddextended_writeLine("\tr0 [style = invis];", fp);
         }
-        sprintf(ss, "\tr%d -> r%d [style = invis];", i, i - 1);
+        sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
+            "\tr%d -> r%d [style = invis];", i, i - 1);
         sbddextended_writeLine(ss, fp);
     }
 
-    for (i = index->height; i >= 1; --i) {
-        for (j = 0; j < index->level_vec_arr[i].count; ++j) {
-            node = (bddp)sbddextended_MyVector_get(&index->level_vec_arr[i], (llint)j);
-            sprintf(ss, "\tv%d_%lld [shape = circle, style = filled, color = \"#81B65D\", fillcolor = \"#F6FAF4\", penwidth = 2.5, label = \"\"];", i, (llint)j);
+    for (i = node_index->height; i >= 1; --i) {
+        for (j = 0; j < node_index->level_vec_arr[i].count; ++j) {
+            node = (bddp)sbddextended_MyVector_get(
+                &node_index->level_vec_arr[i], (llint)j);
+            sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
+                "\tv%d_%lld [shape = circle, style = filled, "
+                "color = \"#81B65D\", fillcolor = \"#F6FAF4\", "
+                "penwidth = 2.5, label = \"\"];", i, (llint)j);
             sbddextended_writeLine(ss, fp);
             for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
                 if (is_zbdd != 0) {
@@ -5907,39 +6023,49 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
                 }
                 if (!bddisterminal(child)) {
                     clevel = (int)bddgetlev(child);
-                    c = sbddextended_MyDict_find(&index->node_dict_arr[clevel],
+                    c = sbddextended_MyDict_find(&node_index->node_dict_arr[clevel],
                                                     (llint)child, &cvalue);
                     assert(c != 0);
 
-                    n = sprintf(ss, "\tv%d_%lld -> v%d_%lld", i, (llint)j,
-                                clevel, cvalue);
-                    n += sprintf(ss + n, " [color = \"#81B65D\", penwidth = 2.5");
+                    n = sbddextended_snprintf4(ss, sbddextended_BUFSIZE,
+                        "\tv%d_%lld -> v%d_%lld", i, (llint)j,
+                        clevel, cvalue);
+                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
+                    " [color = \"#81B65D\", penwidth = 2.5");
                     if (k == 0) {
-                        n += sprintf(ss + n, ", style = dotted");
+                        n += sbddextended_snprintf0(ss + n,
+                            sbddextended_BUFSIZE, ", style = dotted");
                     }
-                    sprintf(ss + n, "];");
+                    sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
+                        "];");
                     sbddextended_writeLine(ss, fp);
                 } else {
-                    n = sprintf(ss, "\tv%d_%lld -> t%d", i, (llint)j,
-                            (child == bddfalse ? 0 : 1));
-                    n += sprintf(ss + n, " [color = \"#81B65D\", penwidth = 2.5");
+                    n = sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
+                        "\tv%d_%lld -> t%d", i, (llint)j,
+                        (child == bddfalse ? 0 : 1));
+                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
+                        " [color = \"#81B65D\", penwidth = 2.5");
                     if (k == 0) {
-                        n += sprintf(ss + n, ", style = dotted");
+                        n += sbddextended_snprintf0(ss + n,
+                            sbddextended_BUFSIZE, ", style = dotted");
                     }
-                    sprintf(ss + n, "];");
+                    sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
+                        "];");
                     sbddextended_writeLine(ss, fp);
                 }
             }
         }
-        n = sprintf(ss, "\t{rank = same; r%d; ", i);
-        for (j = 0; j < index->level_vec_arr[i].count; ++j) {
-            n += sprintf(ss + n, "v%d_%lld; ", i, (llint)j);
-            if (j % 10 == 9 && j < index->level_vec_arr[i].count - 1) {
+        n = sbddextended_snprintf1(ss, sbddextended_BUFSIZE,
+            "\t{rank = same; r%d; ", i);
+        for (j = 0; j < node_index->level_vec_arr[i].count; ++j) {
+            n += sbddextended_snprintf2(ss + n, sbddextended_BUFSIZE,
+                "v%d_%lld; ", i, (llint)j);
+            if (j % 10 == 9 && j < node_index->level_vec_arr[i].count - 1) {
                 sbddextended_writeLine(ss, fp);
-                n = sprintf(ss, "\t\t");
+                n = sbddextended_snprintf0(ss, sbddextended_BUFSIZE, "\t\t");
             }
         }
-        n += sprintf(ss + n, "}");
+        n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, "}");
         sbddextended_writeLine(ss, fp);
     }
 
@@ -5947,7 +6073,7 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
     sbddextended_writeLine("}", fp);
 
     if (is_making_index) {
-        bddNodeIndex_destruct(index);
+        bddNodeIndex_destruct(node_index);
     }
 }
 
@@ -5957,14 +6083,14 @@ template <typename T>
 sbddextended_INLINE_FUNC
 void exportBDDAsGraphviz(FILE* fp, const BDD& bdd,
                             std::map<std::string, std::string>* /*option*/,
-                            DDIndex<T>* index)
+                            DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddexportbddasgraphviz_inner(fp, bdd.GetID(), bindex, 0, wo);
+    bddexportbddasgraphviz_inner(fp, bdd.GetID(), bnode_index, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -5978,14 +6104,14 @@ template <typename T>
 sbddextended_INLINE_FUNC
 void exportBDDAsGraphviz(std::ostream& ost, const BDD& bdd,
                             std::map<std::string, std::string>* /*option*/,
-                            DDIndex<T>* index)
+                            DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddexportbddasgraphviz_inner(NULL, bdd.GetID(), bindex, 0, wo);
+    bddexportbddasgraphviz_inner(NULL, bdd.GetID(), bnode_index, 0, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -5999,14 +6125,14 @@ template <typename T>
 sbddextended_INLINE_FUNC
 void exportZBDDAsGraphviz(FILE* fp, const ZBDD& zbdd,
                             std::map<std::string, std::string>* /*option*/,
-                            DDIndex<T>* index)
+                            DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(false, true, NULL);
-    bddexportbddasgraphviz_inner(fp, zbdd.GetID(), bindex, 1, wo);
+    bddexportbddasgraphviz_inner(fp, zbdd.GetID(), bnode_index, 1, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -6020,14 +6146,14 @@ template <typename T>
 sbddextended_INLINE_FUNC
 void exportZBDDAsGraphviz(std::ostream& ost, const ZBDD& zbdd,
                             std::map<std::string, std::string>* /*option*/,
-                            DDIndex<T>* index)
+                            DDIndex<T>* node_index)
 {
-    bddNodeIndex* bindex = NULL;
-    if (index != NULL) {
-        bindex = index->getRawPointer();
+    bddNodeIndex* bnode_index = NULL;
+    if (node_index != NULL) {
+        bnode_index = node_index->getRawPointer();
     }
     WriteObject wo(true, true, &ost);
-    bddexportbddasgraphviz_inner(NULL, zbdd.GetID(), bindex, 1, wo);
+    bddexportbddasgraphviz_inner(NULL, zbdd.GetID(), bnode_index, 1, wo);
 }
 
 sbddextended_INLINE_FUNC
@@ -6039,49 +6165,49 @@ void exportZBDDAsGraphviz(std::ostream& ost, const ZBDD& zbdd,
 
 sbddextended_INLINE_FUNC
 void bddexportbddasgraphviz(FILE* fp, bddp f,
-                            bddNodeIndex* index)
+                            bddNodeIndex* node_index)
 {
     WriteObject wo(false, true, NULL);
-    // can be used for BDD/ZBDD
-    bddexportbddasgraphviz_inner(fp, f, index, -1, wo);
+    /* can be used for BDD/ZBDD */
+    bddexportbddasgraphviz_inner(fp, f, node_index, -1, wo);
 }
 
 sbddextended_INLINE_FUNC
 void bddexportzbddasgraphviz(FILE* fp, bddp f,
-                                bddNodeIndex* index)
+                                bddNodeIndex* node_index)
 {
     WriteObject wo(false, true, NULL);
-    // only for ZBDD
-    bddexportbddasgraphviz_inner(fp, f, index, 1, wo);
+    /* only for ZBDD */
+    bddexportbddasgraphviz_inner(fp, f, node_index, 1, wo);
 }
 
 #else
 
 sbddextended_INLINE_FUNC
 void bddexportbddasgraphviz(FILE* fp, bddp f,
-                            bddNodeIndex* index)
+                            bddNodeIndex* node_index)
 {
-    // can be used for BDD/ZBDD
-    bddexportbddasgraphviz_inner(fp, f, index, -1);
+    /* can be used for BDD/ZBDD */
+    bddexportbddasgraphviz_inner(fp, f, node_index, -1);
 }
 
 sbddextended_INLINE_FUNC
 void bddexportzbddasgraphviz(FILE* fp, bddp f,
-                            bddNodeIndex* index)
+                            bddNodeIndex* node_index)
 {
-    // only for ZBDD
-    bddexportbddasgraphviz_inner(fp, f, index, 1);
+    /* only for ZBDD */
+    bddexportbddasgraphviz_inner(fp, f, node_index, 1);
 }
 
 #endif
 
 
-#ifdef __cplusplus // currently svg is supported only in C++ version
+#ifdef __cplusplus /* currently svg is supported only in C++ version */
 
 struct ExportAsSvg_arcinfo {
 public:
     bddp f;
-    int arc; // 0 or 1-arc
+    int arc; /* 0 or 1-arc */
     int fposx;
     int fposy;
 
@@ -6109,12 +6235,12 @@ template<typename T>
 sbddextended_INLINE_FUNC
 void bddexportassvg_inner(FILE* fp, bddp f,
                             DDIndex<T>* index, int is_zbdd
-//#ifdef __cplusplus
+/*#ifdef __cplusplus */
                             , const WriteObject& sbddextended_writeLine
-//#endif
+/*#endif */
                         )
 {
-    char ss[sbddextended_TEMP_BUFSIZE];
+    char ss[sbddextended_BUFSIZE];
     const int node_radius = 20;
     const int node_interval_x = 30;
     const int node_interval_y = 40;
@@ -6204,54 +6330,93 @@ void bddexportassvg_inner(FILE* fp, bddp f,
         ++itor;
     }
 
-    // draw svg
-    sprintf(ss, "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%d\" height=\"%d\">", max_x, max_y);
+    /* draw svg */
+    sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" "
+        "width=\"%d\" height=\"%d\">", max_x, max_y);
     sbddextended_writeLine(ss, fp);
 
-    sbddextended_writeLine("<marker id=\"arrow\" viewBox=\"-10 -4 20 8\" markerWidth=\"10\" markerHeight=\"10\" orient=\"auto\">", fp);
-    sbddextended_writeLine("    <polygon points=\"-10,-4 0,0 -10,4\" fill=\"#1b3966\" stroke=\"none\" />", fp);
+    sbddextended_writeLine("<marker id=\"arrow\" viewBox=\"-10 -4 20 8\" "
+        "markerWidth=\"10\" markerHeight=\"10\" orient=\"auto\">", fp);
+    sbddextended_writeLine("    <polygon points=\"-10,-4 0,0 -10,4\" "
+        "fill=\"#1b3966\" stroke=\"none\" />", fp);
     sbddextended_writeLine("</marker>", fp);
 
-    // draw nodes
+    /* draw nodes */
     for (int level = index->height(); level >= 1; --level) {
         for (llint j = 0; j < index->size(level); ++j) {
             bddp g = index->getNode(level, j).getBddp();
-            sprintf(ss, "<circle cx=\"%d\" cy=\"%d\" r=\"%d\" fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />", pos_map[g].first, pos_map[g].second, node_radius, arc_width);
+            sbddextended_snprintf4(ss, sbddextended_BUFSIZE,
+                "<circle cx=\"%d\" cy=\"%d\" r=\"%d\" fill=\"#deebf7\" "
+                "stroke=\"#1b3966\" stroke-width=\"%d\" />",
+                pos_map[g].first, pos_map[g].second, node_radius, arc_width);
             sbddextended_writeLine(ss, fp);
-            sprintf(ss, "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" font-size=\"24\">%d</text>", pos_map[g].first, pos_map[g].second + label_y, level);
+            sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
+                "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" "
+                "font-size=\"24\">%d</text>", pos_map[g].first,
+                pos_map[g].second + label_y, level);
             sbddextended_writeLine(ss, fp);
         }
     }
 
-    // draw arcs
+    /* draw arcs */
     for (int level = index->height(); level >= 1; --level) {
         for (llint j = 0; j < index->size(level); ++j) {
             bddp g = index->getNode(level, j).getBddp();
-            int posx1 = ExportAsSvg_getCirclePosX(pos_map[g].first, node_radius, 4.0 / 3.0 * M_PI);
-            int posy1 = ExportAsSvg_getCirclePosY(pos_map[g].second, node_radius, 4.0 / 3.0 * M_PI);
+            int posx1 = ExportAsSvg_getCirclePosX(pos_map[g].first,
+                node_radius, 4.0 / 3.0 * M_PI);
+            int posy1 = ExportAsSvg_getCirclePosY(pos_map[g].second,
+                node_radius, 4.0 / 3.0 * M_PI);
             int posx2 = dest0_pos[g].first;
             int posy2 = dest0_pos[g].second;
-            sprintf(ss, "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke=\"#1b3966\" stroke-width=\"%d\" stroke-dasharray=\"10,5\"  marker-end=\"url(#arrow)\" />", posx1, posy1, posx2, posy2, arc_width);
+            sbddextended_snprintf5(ss, sbddextended_BUFSIZE,
+                "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" "
+                "stroke=\"#1b3966\" stroke-width=\"%d\" "
+                "stroke-dasharray=\"10,5\" "
+                "marker-end=\"url(#arrow)\" />",
+                posx1, posy1, posx2, posy2, arc_width);
             sbddextended_writeLine(ss, fp);
-            posx1 = ExportAsSvg_getCirclePosX(pos_map[g].first, node_radius, 5.0 / 3.0 * M_PI);
-            posy1 = ExportAsSvg_getCirclePosY(pos_map[g].second, node_radius, 5.0 / 3.0 * M_PI);
+            posx1 = ExportAsSvg_getCirclePosX(pos_map[g].first,
+                node_radius, 5.0 / 3.0 * M_PI);
+            posy1 = ExportAsSvg_getCirclePosY(pos_map[g].second,
+                node_radius, 5.0 / 3.0 * M_PI);
             posx2 = dest1_pos[g].first;
             posy2 = dest1_pos[g].second;
-            sprintf(ss, "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke=\"#1b3966\" stroke-width=\"%d\" marker-end=\"url(#arrow)\" />", posx1, posy1, posx2, posy2, arc_width);
+            sbddextended_snprintf5(ss, sbddextended_BUFSIZE,
+                "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" "
+                "stroke=\"#1b3966\" stroke-width=\"%d\" "
+                "marker-end=\"url(#arrow)\" />",
+                posx1, posy1, posx2, posy2, arc_width);
             sbddextended_writeLine(ss, fp);
         }
     }
 
-    //draw terminals
-    sprintf(ss, "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />", pos_map[bddempty].first - terminal_x / 2, pos_map[bddempty].second - terminal_y / 2, terminal_x, terminal_y, arc_width);
+    /*draw terminals */
+    sbddextended_snprintf5(ss, sbddextended_BUFSIZE,
+        "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" "
+        "fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />",
+        pos_map[bddempty].first - terminal_x / 2,
+        pos_map[bddempty].second - terminal_y / 2,
+        terminal_x, terminal_y, arc_width);
     sbddextended_writeLine(ss, fp);
-    sprintf(ss, "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />", pos_map[bddsingle].first - terminal_x / 2, pos_map[bddsingle].second - terminal_y / 2, terminal_x, terminal_y, arc_width);
+    sbddextended_snprintf5(ss, sbddextended_BUFSIZE,
+        "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" "
+        "fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />",
+        pos_map[bddsingle].first - terminal_x / 2,
+        pos_map[bddsingle].second - terminal_y / 2,
+        terminal_x, terminal_y, arc_width);
     sbddextended_writeLine(ss, fp);
 
-    sprintf(ss, "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" font-size=\"24\">0</text>", pos_map[bddempty].first, pos_map[bddempty].second + label_y);
+    sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
+        "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" "
+        "font-size=\"24\">0</text>", pos_map[bddempty].first,
+        pos_map[bddempty].second + label_y);
     sbddextended_writeLine(ss, fp);
 
-    sprintf(ss, "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" font-size=\"24\">1</text>", pos_map[bddsingle].first, pos_map[bddsingle].second + label_y);
+    sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
+        "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" "
+        "font-size=\"24\">1</text>", pos_map[bddsingle].first,
+        pos_map[bddsingle].second + label_y);
     sbddextended_writeLine(ss, fp);
 
     sbddextended_writeLine("</svg>", fp);
@@ -6334,7 +6499,7 @@ void exportZBDDAsSvg(std::ostream& ost, const ZBDD& zbdd,
 
 
 #ifdef __cplusplus
-} // end of namespace sbddh
+} /* end of namespace sbddh */
 #endif
 
-#endif // SBDD_HELPER_H
+#endif /* SBDD_HELPER_H */

@@ -695,7 +695,8 @@ void exportBDDAsGraphillion(FILE* fp, const BDD& bdd, int root_level, DDIndex<T>
 void exportBDDAsGraphillion(FILE* fp, const BDD& bdd, int root_level = -1)
 void exportBDDAsGraphillion(std::ostream& ost, const BDD& bdd, int root_level, DDIndex<T>* index)
 void exportBDDAsGraphillion(std::ostream& ost, const BDD& bdd, int root_level = -1)
-void exportZBDDAsGraphillion(FILE* fp, const ZBDD& zbdd, int root_level, DDIndex<T>* index)void exportZBDDAsGraphillion(FILE* fp, const ZBDD& zbdd, int root_level = -1)
+void exportZBDDAsGraphillion(FILE* fp, const ZBDD& zbdd, int root_level, DDIndex<T>* index)
+void exportZBDDAsGraphillion(FILE* fp, const ZBDD& zbdd, int root_level = -1)
 void exportZBDDAsGraphillion(std::ostream& ost, const ZBDD& zbdd, int root_level, DDIndex<T>* index)
 void exportZBDDAsGraphillion(std::ostream& ost, const ZBDD& zbdd, int root_level = -1)
 ```
@@ -805,7 +806,7 @@ Graphviz の dot を以下のコマンドで呼び出すことで、ZBDD が描�
 dot -Tpng -o zbdd.png < zbdd_for_graphviz.dat
 ```
 
-## exportZBDDAsSvg
+## exportBDDAsSvg
 
 ```
 template<typename T>
