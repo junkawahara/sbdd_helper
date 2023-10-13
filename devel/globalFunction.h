@@ -8,6 +8,11 @@ sbddextended_INLINE_FUNC int bddisconstant(bddp f)
     return (f & B_CST_MASK) ? 1 : 0;
 }
 
+sbddextended_INLINE_FUNC int bddisterminal(bddp f)
+{
+    return (f == bddempty || f == bddsingle || f == bddfalse || f == bddtrue) ? 1 : 0;
+}
+
 sbddextended_INLINE_FUNC bddp bddtakenot(bddp f)
 {
     return f ^ B_INV_MASK;
@@ -37,11 +42,6 @@ sbddextended_INLINE_FUNC int bddisvalid(bddp f)
     unused(f);
     fprintf(stderr, "not supported in the one header library\n");
     exit(1);
-}
-
-sbddextended_INLINE_FUNC int bddisterminal(bddp f)
-{
-    return (f == bddempty || f == bddsingle || f == bddfalse || f == bddtrue) ? 1 : 0;
 }
 
 sbddextended_INLINE_FUNC bddp bddgetterminal(int terminal, int is_zbdd)
@@ -592,34 +592,44 @@ sbddextended_INLINE_FUNC bool isConstant(const ZBDD& f)
     return bddisconstant(f.GetID()) != 0;
 }
 
+sbddextended_INLINE_FUNC bool isTerminal(const BDD& f)
+{
+    return bddisterminal(f.GetID()) != 0;
+}
+
+sbddextended_INLINE_FUNC bool isTerminal(const ZBDD& f)
+{
+    return bddisterminal(f.GetID()) != 0;
+}
+
 sbddextended_INLINE_FUNC BDD takeNot(const BDD& f)
 {
-    return BDD_ID(bddtakenot(f.GetID()));
+    return BDD_ID(bddcopy(bddtakenot(f.GetID())));
 }
 
 sbddextended_INLINE_FUNC ZBDD takeNot(const ZBDD& f)
 {
-    return ZBDD_ID(bddtakenot(f.GetID()));
+    return ZBDD_ID(bddcopy(bddtakenot(f.GetID())));
 }
 
 sbddextended_INLINE_FUNC BDD addNot(const BDD& f)
 {
-    return BDD_ID(bddaddnot(f.GetID()));
+    return BDD_ID(bddcopy(bddaddnot(f.GetID())));
 }
 
 sbddextended_INLINE_FUNC ZBDD addNot(const ZBDD& f)
 {
-    return ZBDD_ID(bddaddnot(f.GetID()));
+    return ZBDD_ID(bddcopy(bddaddnot(f.GetID())));
 }
 
 sbddextended_INLINE_FUNC BDD eraseNot(const BDD& f)
 {
-    return BDD_ID(bdderasenot(f.GetID()));
+    return BDD_ID(bddcopy(bdderasenot(f.GetID())));
 }
 
 sbddextended_INLINE_FUNC ZBDD eraseNot(const ZBDD& f)
 {
-    return ZBDD_ID(bdderasenot(f.GetID()));
+    return ZBDD_ID(bddcopy(bdderasenot(f.GetID())));
 }
 
 sbddextended_INLINE_FUNC bool is64BitVersion()
@@ -635,16 +645,6 @@ sbddextended_INLINE_FUNC bool isValid(const BDD& f)
 sbddextended_INLINE_FUNC bool isValid(const ZBDD& f)
 {
     return bddisvalid(f.GetID()) != 0;
-}
-
-sbddextended_INLINE_FUNC bool isTerminal(const BDD& f)
-{
-    return bddisterminal(f.GetID()) != 0;
-}
-
-sbddextended_INLINE_FUNC bool isTerminal(const ZBDD& f)
-{
-    return bddisterminal(f.GetID()) != 0;
 }
 
 sbddextended_INLINE_FUNC bool isEmptyMember(const ZBDD& f)
@@ -688,20 +688,22 @@ sbddextended_INLINE_FUNC ZBDD getChild0(const ZBDD& f)
 
 sbddextended_INLINE_FUNC BDD getChild0Raw(const BDD& f)
 {
+    bddp g;
+    g = bddat0(f.GetID(), f.Top());
     if (isNegative(f)) {
-        return ~getChild0(f);
-    } else {
-        return getChild0(f);
+        g = bddtakenot(g);
     }
+    return BDD_ID(g);
 }
 
 sbddextended_INLINE_FUNC ZBDD getChild0Raw(const ZBDD& f)
 {
+    bddp g;
+    g = bddoffset(f.GetID(), f.Top());
     if (isNegative(f)) {
-        return getChild0(f) + ZBDD(1);
-    } else {
-        return getChild0(f);
+        g = bddtakenot(g);
     }
+    return ZBDD_ID(g);
 }
 
 sbddextended_INLINE_FUNC BDD getChild1(const BDD& f)
@@ -720,11 +722,12 @@ sbddextended_INLINE_FUNC ZBDD getChild1(const ZBDD& f)
 
 sbddextended_INLINE_FUNC BDD getChild1Raw(const BDD& f)
 {
+    bddp g;
+    g = bddat1(f.GetID(), f.Top());
     if (isNegative(f)) {
-        return ~getChild1(f);
-    } else {
-        return getChild1(f);
+        g = bddtakenot(g);
     }
+    return BDD_ID(g);
 }
 
 sbddextended_INLINE_FUNC ZBDD getChild1Raw(const ZBDD& f)
@@ -753,18 +756,18 @@ sbddextended_INLINE_FUNC ZBDD getChild(const ZBDD& f, int child)
 sbddextended_INLINE_FUNC BDD getChildRaw(const BDD& f, int child)
 {
     if (child == 1) {
-        return getChild1(f);
+        return getChild1Raw(f);
     } else {
-        return getChild0(f);
+        return getChild0Raw(f);
     }
 }
 
 sbddextended_INLINE_FUNC ZBDD getChildRaw(const ZBDD& f, int child)
 {
     if (child == 1) {
-        return getChild1(f);
+        return getChild1Raw(f);
     } else {
-        return getChild0(f);
+        return getChild0Raw(f);
     }
 }
 

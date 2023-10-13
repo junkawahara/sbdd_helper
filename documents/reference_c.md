@@ -19,13 +19,16 @@ if (bddisnegative(f)) {
 }
 ```
 
-## bddisconstant
+## bddisconstant / bddisterminal
 
 ```
 int bddisconstant(bddp f)
+int bddisterminal(bddp f)
 ```
 
 f が定数関数（bddfalse, bddtrue, bddempty, bddsingle のいずれか）、すなわちBDD/ZBDDの終端ノードであるかを返す。f が定数関数であるなら 1 を、定数関数でないなら 0 を返す。
+SAPPOROBDD は多値終端に対応できるように準備されているが、完全には対応していない。本関数は現在のところ、bddfalse, bddtrue, bddempty, bddsingle に対してのみ 1 を返す。
+bddisconstant と bddisterminal は現在の実装では同じである。
 
 ### 使用例
 
@@ -71,14 +74,6 @@ int bddis64bitversion()
 ```
 
 SAPPOROBDD の64ビット版でコンパイルが行われているかどうか判定する。正確には、B_64 マクロが定義されている場合、1 を返し、されていない場合、0 を返す。
-
-## bddisterminal
-
-```
-int bddisterminal(bddp f)
-```
-
-f が定数関数（bddfalse, bddtrue, bddempty, bddsingle のいずれか）、すなわちBDD/ZBDDの終端ノードであるかを返す。f が定数関数であるなら 1 を、定数関数でないなら 0 を返す。SAPPOROBDD は多値終端に対応できるように準備されているが、完全には対応していない。本関数は現在のところ、bddfalse, bddtrue, bddempty, bddsingle に対してのみ 1 を返す。
 
 ## bddgetterminal
 

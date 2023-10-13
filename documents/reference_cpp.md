@@ -2,8 +2,9 @@
 
 # 提供しているクラス
 
-* [DDNodeIndex](reference_cpp_DDNodeIndex.md)
-* [ElementIterator と ElementIteratorHolder](reference_cpp_ElementIterator.md)
+* [DDIndex](reference_cpp_DDIndex.md)
+
+[DDNodeIndex](reference_cpp_DDNodeIndex.md) と [ElementIterator と ElementIteratorHolder](reference_cpp_ElementIterator.md) クラスは非推奨になりました。
 
 # 提供している関数
 
@@ -13,35 +14,56 @@
 bool isNegative(const BDD& f)
 bool isNegative(const ZBDD& f)
 ```
-f が否定表現であるかを返す。f が否定表現であるなら true を、否定表現でないなら false を返す。
+f が否定表現であるかを返す。f が否定表現であるなら true を、否定表現でないなら false を返す。f が 0-終端（bddfalse / bddempty）であるなら false を、f が 1-終端（bddtrue / bddsingle）であるなら true を返す。
 
 ### 使用例
 
 ```
-ZBDD f = ...;  // 何らかの方法で f を作成
+ZBDD f = exampleZbdd();
+// f は否定表現であるか調べる。
+// この例では f は否定表現ではないので、
+// "f is not negative." を出力する。
 if (isNegative(f)) {
-   // f は否定表現である
-   // ... 処理
+    std::cout << "f is negative." << std::endl;
+} else {
+    std::cout << "f is not negative." << std::endl;
 }
+
+ZBDD g = getPowerSet(2);
+ZBDD t0 = ZBDD(0); // 0-終端
+ZBDD t1 = ZBDD(1); // 1-終端
+// 1 0 1 を出力（true, false, true）
+std::cout << isNegative(g) << " " << isNegative(t0) << " " << isNegative(t1) << std::endl;
 ```
 
-## isConstant
+## isConstant / isTerminal
 
 ```
 bool isConstant(const BDD& f)
 bool isConstant(const ZBDD& f)
+bool isTerminal(const BDD& f)
+bool isTerminal(const ZBDD& f)
 ```
 
-f が定数関数（bddfalse, bddtrue, bddempty, bddsingle のいずれか）、すなわちBDD/ZBDDの終端ノードであるかを返す。f が定数関数であるなら true を、定数関数でないなら false を返す。
+f が定数関数（bddfalse, bddtrue, bddempty, bddsingle のいずれか）、すなわちBDD/ZBDDの終端ノードであるかを返す。f が定数関数であるなら true を、定数関数でないなら false を返す。SAPPOROBDD は多値終端に対応できるように準備されているが、完全には対応していない。本関数は現在のところ、bddfalse, bddtrue, bddempty, bddsingle に対してのみ true を返す。
 
 ### 使用例
 
 ```
-ZBDD f = ...;  // 何らかの方法で f を作成
+ZBDD f = exampleZbdd();
+// f は定数関数であるか調べる。
+// この例では f は定数関数ではないので、
+// "f is not constant." を出力する。
 if (isConstant(f)) {
-   // f は定数関数である
-   // ... 処理
+    std::cout << "f is constant." << std::endl;
+} else {
+    std::cout << "f is not constant." << std::endl;
 }
+
+ZBDD t0 = ZBDD(0); // 0-終端（定数関数）
+ZBDD t1 = ZBDD(1); // 1-終端（定数関数）
+// 1 1 を出力（どちらも true）
+std::cout << isConstant(t0) << " " << isConstant(t1) << std::endl;
 ```
 
 ## takeNot
@@ -84,16 +106,6 @@ bool is64BitVersion()
 ```
 
 SAPPOROBDD の64ビット版でコンパイルが行われているかどうか判定する。正確には、B_64 マクロが定義されている場合、true を返し、されていない場合、false を返す。
-
-
-## isTerminal
-
-```
-bool isTerminal(const BDD& f)
-bool isTerminal(const ZBDD& f)
-```
-
-f が定数関数（bddfalse, bddtrue, bddempty, bddsingle のいずれか）、すなわちBDD/ZBDDの終端ノードであるかを返す。f が定数関数であるなら true を、定数関数でないなら false を返す。SAPPOROBDD は多値終端に対応できるように準備されているが、完全には対応していない。本関数は現在のところ、bddfalse, bddtrue, bddempty, bddsingle に対してのみ true を返す。
 
 ## isEmptyMember
 
@@ -139,6 +151,8 @@ ZBDD getChild0Raw(const ZBDD& f)
 
 f が BDD/ZBDDノードであるとき、f の 0-枝の子を返す。SAPPOROBDD ではBDD/ZBDDは否定枝表現が用いられているが、本関数は否定枝表現における f の 0-枝の子を返す。
 
+const ZBDD& を引数に取る getChild0Raw は Ver 1.0.2 以前では正しく動作しない。
+
 ## getChild1
 
 ```
@@ -176,6 +190,8 @@ ZBDD getChildRaw(const ZBDD& f, int child)
 ```
 
 f が BDD/ZBDDノードであるとき、f の child 引数で指定した枝の子を返す。SAPPOROBDD ではBDD/ZBDDは否定枝表現が用いられているが、本関数は否定枝表現における f の child-枝の子を返す。
+
+この関数は Ver 1.0.2 以前では正しく動作しない。
 
 ## makeNode
 

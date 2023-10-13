@@ -49,16 +49,173 @@ std::vector<bddvar> ullint_to_varvec(ullint v)
 
 void test_BDD_functions()
 {
-    ZBDD f = getSingleSet(2, 1, 2);
-    f += getSingleSet(2, 1, 3);
-    f += getSingleSet(2, 2, 3);
+    BDD b1 = BDDvar(1) | BDDvar(2);
+    BDD b2 = ~b1;
+    ZBDD z1 = ZBDD_ID(make_test_zbdd());
+    ZBDD z2 = getPowerSet(2);
+    ZBDD z3 = z1 + ZBDD(1);
+
+    test(!isNegative(BDD(0)));
+    test(isNegative(BDD(1)));
+    test(!isNegative(ZBDD(0)));
+    test(isNegative(ZBDD(1)));
+    test(!isNegative(b1));
+    test(isNegative(b2));
+    test(!isNegative(z1));
+    test(isNegative(z2));
+    test(isNegative(z3));
+
+    test(isConstant(BDD(0)));
+    test(isConstant(BDD(1)));
+    test(isConstant(ZBDD(0)));
+    test(isConstant(ZBDD(1)));
+    test(!isConstant(b1));
+    test(!isConstant(b1));
+    test(!isConstant(z1));
+    test(!isConstant(z2));
+    test(!isConstant(z3));
+
+    test(isTerminal(BDD(0)));
+    test(isTerminal(BDD(1)));
+    test(isTerminal(ZBDD(0)));
+    test(isTerminal(ZBDD(1)));
+    test(!isTerminal(b1));
+    test(!isTerminal(b1));
+    test(!isTerminal(z1));
+    test(!isTerminal(z2));
+    test(!isTerminal(z3));
+
+    test(takeNot(b1) == b2);
+    test(takeNot(b2) == b1);
+    test(takeNot(z1) == z3);
+    test(takeNot(z3) == z1);
+
+    test(addNot(b1) == b2);
+    test(addNot(b2) == b2);
+    test(addNot(b2) != b1);
+    test(addNot(z1) == z3);
+    test(addNot(z3) == z3);
+    test(addNot(z3) != z1);
+
+    test(eraseNot(b2) == b1);
+    test(eraseNot(b1) == b1);
+    test(eraseNot(b1) != b2);
+    test(eraseNot(z3) == z1);
+    test(eraseNot(z1) == z1);
+    test(eraseNot(z1) != z3);
+
+#ifdef B_64
+    test(is64BitVersion());
+#else
+    test(!is64BitVersion());
+#endif
+
+    test(!isEmptyMember(ZBDD(0)));
+    test(isEmptyMember(ZBDD(1)));
+    test(!isEmptyMember(z1));
+    test(isEmptyMember(z2));
+    test(isEmptyMember(z3));
+
+    test_eq(getVar(BDD(0)), 0);
+    test_eq(getVar(BDD(1)), 0);
+    test_eq(getVar(b1), 2);
+    test_eq(getVar(b2), 2);
+    test_eq(getVar(z1), 3);
+    test_eq(getVar(z2), 2);
+    test_eq(getVar(z3), 3);
+
+    test_eq(getLev(BDD(0)), 0);
+    test_eq(getLev(BDD(1)), 0);
+    test_eq(getLev(b1), bddlevofvar(2));
+    test_eq(getLev(b2), bddlevofvar(2));
+    test_eq(getLev(z1), bddlevofvar(3));
+    test_eq(getLev(z2), bddlevofvar(2));
+    test_eq(getLev(z3), bddlevofvar(3));
+
+    BDD bs[6];
+    bs[0] = makeNode(1, BDD(0), BDD(1));
+    bs[1] = makeNode(1, BDD(1), BDD(0));
+    bs[2] = makeNode(2, bs[0], bs[1]);
+    bs[3] = addNot(bs[2]);
+    bs[4] = makeNode(3, bs[2], bs[1]);
+    bs[5] = addNot(bs[4]);
+    test(getChild0(bs[4]) == bs[2]);
+    test(getChild(bs[4], 0) == bs[2]);
+    test(getChild1(bs[4]) == bs[1]);
+    test(getChild(bs[4], 1) == bs[1]);
+    test(getChild0Raw(bs[4]) == bs[2]);
+    test(getChildRaw(bs[4], 0) == bs[2]);
+    test(getChild1Raw(bs[4]) == bs[1]);
+    test(getChildRaw(bs[4], 1) == bs[1]);
+    test(getChild0(bs[5]) == bs[3]);
+    test(getChild(bs[5], 0) == bs[3]);
+    test(getChild1(bs[5]) == bs[0]);
+    test(getChild(bs[5], 1) == bs[0]);
+    test(getChild0Raw(bs[5]) == bs[2]);
+    test(getChildRaw(bs[5], 0) == bs[2]);
+    test(getChild1Raw(bs[5]) == bs[1]);
+    test(getChildRaw(bs[5], 1) == bs[1]);
+
+    ZBDD zs[6];
+    zs[0] = makeNode(1, ZBDD(0), ZBDD(1));
+    zs[1] = makeNode(1, ZBDD(1), ZBDD(1));
+    zs[2] = makeNode(2, zs[0], zs[1]);
+    zs[3] = addNot(zs[2]);
+    zs[4] = makeNode(3, zs[2], zs[1]);
+    zs[5] = addNot(zs[4]);
+    test(getChild0(zs[4]) == zs[2]);
+    test(getChild(zs[4], 0) == zs[2]);
+    test(getChild1(zs[4]) == zs[1]);
+    test(getChild(zs[4], 1) == zs[1]);
+    test(getChild0Raw(zs[4]) == zs[2]);
+    test(getChildRaw(zs[4], 0) == zs[2]);
+    test(getChild1Raw(zs[4]) == zs[1]);
+    test(getChildRaw(zs[4], 1) == zs[1]);
+    test(getChild0(zs[5]) == zs[3]);
+    test(getChild(zs[5], 0) == zs[3]);
+    test(getChild1(zs[5]) == zs[1]);
+    test(getChild(zs[5], 1) == zs[1]);
+    test(getChild0Raw(zs[5]) == zs[2]);
+    test(getChildRaw(zs[5], 0) == zs[2]);
+    test(getChild1Raw(zs[5]) == zs[1]);
+    test(getChildRaw(zs[5], 1) == zs[1]);
+
+    BDD p5 = getPrimeNot(5);
+    test(getChild0(p5) == BDD(1));
+    test(getChild1(p5) == BDD(0));
+
+    ZBDD s5 = getSingleton(5);
+    test(getChild0(s5) == ZBDD(0));
+    test(getChild1(s5) == ZBDD(1));
+    test_eq(getVar(s5), 5);
+    test_eq(getLev(s5), bddlevofvar(5));
+    test_eq(s5.Card(), 1);
+
+    ZBDD f1 = getSingleSet(2, 1, 2);
+    test_eq(f1.Card(), 1);
+    test(getChild1(f1) == getSingleton(1));
+    test_eq(getVar(f1), 2);
+
+    std::set<bddvar> se1;
+    se1.insert(1);
+    se1.insert(2);
+    test(getSingleSet(se1) == f1);
+    std::vector<bddvar> v1;
+    v1.push_back(1);
+    v1.push_back(2);
+    test(getSingleSet(v1) == f1);
+
+    f1 += getSingleSet(2, 1, 3);
+    f1 += getSingleSet(2, 2, 3);
+
+    test_eq(f1.Card(), 3);
 
     ZBDD g1 = makeNode(1, ZBDD(0), ZBDD(1));
     ZBDD g2 = makeNode(2, ZBDD(0), g1);
     ZBDD g3 = makeNode(2, g1, ZBDD(1));
     ZBDD g4 = makeNode(3, g2, g3);
 
-    test(f == g4);
+    test(f1 == g4);
 
     ZBDD fs[10];
     fs[8] = makeNode(1, ZBDD(0), ZBDD(1));
@@ -284,11 +441,20 @@ void test_at_random_cpp()
     test(f.Card() == 3);
     f = getPowerSetWithCard(basev, 2);
     test(f.Card() == 3);
+    test(f == getSingleSet(2, 2, 4) +
+            getSingleSet(2, 2, 6) +
+            getSingleSet(2, 4, 6));
+
     f = getPowerSetWithCard(basev, 3);
     test(f.Card() == 1);
 
     f = getPowerSetWithCard(5, 2);
     test(f.Card() == 10);
+
+    f = getPowerSetWithCard(3, 2);
+    test(f == getSingleSet(2, 1, 2) +
+            getSingleSet(2, 1, 3) +
+            getSingleSet(2, 2, 3));
 
     std::vector<bddvar> sv;
     sv.push_back(1);
