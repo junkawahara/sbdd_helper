@@ -1,6 +1,6 @@
 /*
 One header library for SAPPOROBDD C/C++ version
-version 1.0.2
+version 1.0.3
 
 Copyright (c) 2017 -- 2023 Jun Kawahara
 
