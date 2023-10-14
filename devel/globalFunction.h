@@ -246,11 +246,19 @@ bddp bddmakenodeb(bddvar v, bddp f0, bddp f1)
     bddp p, pn, g0, g1, g;
 
     if (v > bddvarused()) {
-        fprintf(stderr, "bddprimenot: Invalid VarID %d", v);
+        fprintf(stderr, "bddmakenodeb: Invalid VarID %d", v);
         exit(1);
     }
-    assert(bddlevofvar(v) > bddgetlev(f0));
-    assert(bddlevofvar(v) > bddgetlev(f1));
+    if (bddlevofvar(v) <= bddgetlev(f0)) {
+        fprintf(stderr, "bddmakenodeb: The level of VarID %d "
+            "must be larger than the level of f0\n", v);
+        exit(1);
+    }
+    if (bddlevofvar(v) <= bddgetlev(f1)) {
+        fprintf(stderr, "bddmakenodeb: The level of VarID %d "
+            "must be larger than the level of f1\n", v);
+        exit(1);
+    }
     p = bddprime(v);
     pn = bddnot(p);
     g0 = bddand(f0, pn);
@@ -269,11 +277,20 @@ bddp bddmakenodez(bddvar v, bddp f0, bddp f1)
     bddp g1, g;
 
     if (v > bddvarused()) {
-        fprintf(stderr, "bddprimenot: Invalid VarID %d", v);
+        fprintf(stderr, "bddmakenodez: Invalid VarID %d", v);
         exit(1);
     }
-    assert(bddlevofvar(v) > bddgetlev(f0));
-    assert(bddlevofvar(v) > bddgetlev(f1));
+    if (bddlevofvar(v) <= bddgetlev(f0)) {
+        fprintf(stderr, "bddmakenodez: The level of VarID %d "
+            "must be larger than the level of f0\n", v);
+        exit(1);
+    }
+    if (bddlevofvar(v) <= bddgetlev(f1)) {
+        fprintf(stderr, "bddmakenodez: The level of VarID %d "
+            "must be larger than the level of f1\n", v);
+        exit(1);
+    }
+
     g1 = bddchange(f1, v);
     g = bddunion(f0, g1);
     bddfree(g1);
@@ -1370,5 +1387,86 @@ ZBDD exampleZbdd(ullint kind = 0ull)
     }
     return DDUtility::getUniformlyRandomZBDDX(size, &rand_state);
 }
+
+#ifndef NO_USE_BDDCT
+
+sbddextended_INLINE_FUNC
+ZBDD weightRange(const ZBDD& f, llint lower_bound, llint upper_bound, const std::vector<llint>& weights)
+{
+    if (lower_bound >= (1ll << 32)) {
+        std::cerr << "lower_bound should be less than 2^32" << std::endl;
+        return ZBDD(-1);
+    }
+    if (upper_bound >= (1ll << 32)) {
+        std::cerr << "upper_bound should be less than 2^32" << std::endl;
+        return ZBDD(-1);
+    }
+    for (size_t i = 0; i < weights.size(); ++i) {
+        if (weights[i] >= (1ll << 32)) {
+            std::cerr << "Each weight should be less than 2^32" << std::endl;
+            return ZBDD(-1);
+        }
+    }
+    const int lev = getLev(f);
+
+    BDDCT bddct;
+    bddct.Alloc(lev);
+    for (int i = 1; i <= lev; ++i) {
+        const int var = bddvaroflev(i);
+        if (static_cast<int>(weights.size()) <= var) {
+            std::cerr << "The size of weights should be larger than "
+                "the maximum variable number in f." << std::endl;
+            return ZBDD(-1);
+        }
+        bddct.SetCostOfLev(i, static_cast<int>(weights[var]));
+    }
+    ZBDD z = bddct.ZBDD_CostLE(f, static_cast<int>(upper_bound));
+    if (lower_bound > LLONG_MIN) {
+        z -= bddct.ZBDD_CostLE(f, static_cast<int>(lower_bound - 1));
+    }
+    return z;
+}
+
+sbddextended_INLINE_FUNC
+ZBDD weightLE(const ZBDD& f, llint bound, const std::vector<llint>& weights)
+{
+    return weightRange(f, LLONG_MIN, bound, weights);
+}
+
+sbddextended_INLINE_FUNC
+ZBDD weightLT(const ZBDD& f, llint bound, const std::vector<llint>& weights)
+{
+    return weightLE(f, bound - 1, weights);
+}
+
+sbddextended_INLINE_FUNC
+ZBDD weightGE(const ZBDD& f, llint bound, const std::vector<llint>& weights)
+{
+    std::vector<llint> negative_weights(weights);
+    for (size_t i = 0; i < weights.size(); ++i) {
+        negative_weights[i] = -negative_weights[i];
+    }
+    return weightLE(f, -bound, negative_weights);
+}
+
+sbddextended_INLINE_FUNC
+ZBDD weightGT(const ZBDD& f, llint bound, const std::vector<llint>& weights)
+{
+    return weightGE(f, bound + 1, weights);
+}
+
+sbddextended_INLINE_FUNC
+ZBDD weightEQ(const ZBDD& f, llint bound, const std::vector<llint>& weights)
+{
+    return weightRange(f, bound, bound, weights);
+}
+
+sbddextended_INLINE_FUNC
+ZBDD weightNE(const ZBDD& f, llint bound, const std::vector<llint>& weights)
+{
+    return f - weightEQ(f, bound, weights);
+}
+
+#endif /* NO_USE_BDDCT */
 
 #endif

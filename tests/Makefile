@@ -48,38 +48,38 @@ testclang: SBDD_helper_testc_cpp.h SBDD_helper_testc.c \
 
 testcpp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
         SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h \
-		bddc.o BDD.o ZBDD.o
-	g++ $(OPT) $(WOPT4) bddc.o BDD.o ZBDD.o SBDD_helper_testcpp.cpp -o testcpp
+		bddc.o BDD.o ZBDD.o BDDCT.o
+	g++ $(OPT) $(WOPT4) bddc.o BDD.o ZBDD.o BDDCT.o SBDD_helper_testcpp.cpp -o testcpp
 
 testoldgpp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
         SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h \
-		bddc-oldgcc.o BDD-oldgpp.o ZBDD-oldgpp.o
+		bddc-oldgcc.o BDD-oldgpp.o ZBDD-oldgpp.o BDDCT-oldgpp.o
 	$(OLDGPP) $(OPT) $(WOPT2) -Wno-long-long bddc-oldgcc.o BDD-oldgpp.o \
-	ZBDD-oldgpp.o SBDD_helper_testcpp.cpp -o testoldgpp
+	ZBDD-oldgpp.o BDDCT-oldgpp.o SBDD_helper_testcpp.cpp -o testoldgpp
 
 testcppg: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
         SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h \
-		bddc.o BDD.o ZBDD.o
-	g++ -g -DB_64 $(WOPT4) bddc.o BDD.o ZBDD.o SBDD_helper_testcpp.cpp \
+		bddc.o BDD.o ZBDD.o BDDCT.o
+	g++ -g -DB_64 $(WOPT4) bddc.o BDD.o ZBDD.o BDDCT.o SBDD_helper_testcpp.cpp \
 	-o testcppg
 
 testcpp-gmp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
         SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h \
-		bddc.o BDD.o ZBDD.o
-	g++ $(OPT) $(WOPT4) -DUSE_GMP bddc.o BDD.o ZBDD.o \
+		bddc.o BDD.o ZBDD.o BDDCT.o
+	g++ $(OPT) $(WOPT4) -DUSE_GMP bddc.o BDD.o ZBDD.o BDDCT.o \
 	SBDD_helper_testcpp.cpp -lgmp -lgmpxx -o testcpp-gmp
 
 testcpp98: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
         SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h \
-		bddc.o BDD.o ZBDD.o
+		bddc.o BDD.o ZBDD.o BDDCT.o
 	g++ -std=c++98 -Wno-long-long $(OPT) $(WOPT4) \
-	bddc.o BDD.o ZBDD.o SBDD_helper_testcpp.cpp -o testcpp98
+	bddc.o BDD.o ZBDD.o BDDCT.o SBDD_helper_testcpp.cpp -o testcpp98
 
 testcppclang: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
         SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h \
-		bddc-clang.o BDD-clang.o ZBDD-clang.o
+		bddc-clang.o BDD-clang.o ZBDD-clang.o BDDCT-clang.o
 	$(CLANGPP) $(OPT) $(WOPT2) bddc-clang.o BDD-clang.o ZBDD-clang.o \
-	SBDD_helper_testcpp.cpp -o testcppclang
+	BDDCT-clang.o SBDD_helper_testcpp.cpp -o testcppclang
 
 testnewc: SBDD_helper_testc_cpp.h SBDD_helper_testc.c \
         ../devel/SBDD_helper.h ../devel/*.h bddc.o
@@ -118,6 +118,15 @@ ZBDD-oldgpp.o: $(SBDDSRCDIR)/BDD+/ZBDD.cc $(SBDDINCLUDEDIR)/ZBDD.h
 
 ZBDD-clang.o: $(SBDDSRCDIR)/BDD+/ZBDD.cc $(SBDDINCLUDEDIR)/ZBDD.h
 	$(CLANGPP) $(OPT) $(SBDDSRCDIR)/BDD+/ZBDD.cc -c -o ZBDD-clang.o
+
+BDDCT.o: $(SBDDSRCDIR)/BDD+/BDDCT.cc $(SBDDINCLUDEDIR)/BDDCT.h
+	g++ $(OPT) $(SBDDSRCDIR)/BDD+/BDDCT.cc -c -o BDDCT.o
+
+BDDCT-oldgpp.o: $(SBDDSRCDIR)/BDD+/BDDCT.cc $(SBDDINCLUDEDIR)/BDDCT.h
+	$(OLDGPP) $(OPT) $(SBDDSRCDIR)/BDD+/BDDCT.cc -c -o BDDCT-oldgpp.o
+
+BDDCT-clang.o: $(SBDDSRCDIR)/BDD+/BDDCT.cc $(SBDDINCLUDEDIR)/BDDCT.h
+	$(CLANGPP) $(OPT) $(SBDDSRCDIR)/BDD+/BDDCT.cc -c -o BDDCT-clang.o
 
 clean:
 	rm -f *.o *.stackdump testc.exe testc testcpp.exe testcpp \

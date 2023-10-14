@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <cstdio>
 #include <cstdlib>
 #include <cctype>
+#include <climits>
 #include <cmath>
 #include <cassert>
 #include <cstdarg>
@@ -54,6 +55,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <limits.h>
 #include <math.h>
 #include <string.h>
 #include <assert.h>

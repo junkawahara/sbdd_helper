@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "bddc.h"
 #include "BDD.h"
 #include "ZBDD.h"
+#include "BDDCT.h"
 
 #include "SBDD_helper_testc_cpp.h"
 
@@ -849,6 +850,8 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
     for (int v = 1; v <= f.Top(); ++v) {
         weights.push_back(v_to_w(v));
     }
+    const int bound = 100, lower_bound = 50, upper_bound = 110;
+    ZBDD f_le(0), f_lt(0), f_ge(0), f_gt(0), f_eq(0), f_ne(0), f_range(0);
     for (llint i = 0; i < n; ++i) {
         std::set<bddvar> se = s.getSet(i);
         llint weight = 0;
@@ -863,6 +866,26 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
             min_s = weight;
         }
         sum_s += weight;
+        if (weight <= bound) {
+            f_le += getSingleSet(se);
+        }
+        if (weight < bound) {
+            f_lt += getSingleSet(se);
+        }
+        if (weight >= bound) {
+            f_ge += getSingleSet(se);
+        }
+        if (weight > bound) {
+            f_gt += getSingleSet(se);
+        }
+        if (weight == bound) {
+            f_eq += getSingleSet(se);
+        } else {
+            f_ne += getSingleSet(se);
+        }
+        if (lower_bound <= weight && weight <= upper_bound) {
+            f_range += getSingleSet(se);
+        }
     }
     std::set<bddvar> ss;
     test_eq(s.getMaximum(weights, ss), max_s);
@@ -888,6 +911,32 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
 #ifdef USE_GMP
     test_eq(sum_s, s.getSumMP(weights).get_si());
 #endif
+
+    /* std::cerr << f_le.Card() << ": " << f_lt.Card() << ": "
+        << f_ge.Card() << ": "
+        << f_gt.Card() << ": "
+        << f_eq.Card() << ": "
+        << f_ne.Card() << ": "
+        << f_range.Card() << ": "
+        << f.Card() << std::endl; */
+    test(weightLE(f, bound, weights) == f_le);
+    test(weightLT(f, bound, weights) == f_lt);
+    test(weightGE(f, bound, weights) == f_ge);
+    test(weightGT(f, bound, weights) == f_gt);
+    test(weightEQ(f, bound, weights) == f_eq);
+    test(weightNE(f, bound, weights) == f_ne);
+    test(weightRange(f, lower_bound, upper_bound, weights) == f_range);
+
+    for (llint i = -1; i <= s.count() + 1; ++i) {
+        llint expected_card = i;
+        if (i == -1) {
+            expected_card = 0;
+        } else if (i == s.count() + 1) {
+            expected_card = s.count();
+        }
+        ZBDD ksets = s.getKSetsZBDD(i);
+        test_eq(ksets.Card(), expected_card);
+    }
 
 #ifdef USE_GMP /* use GMP random */
     gmp_randclass random(gmp_randinit_default);
