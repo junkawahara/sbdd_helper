@@ -927,15 +927,18 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
     test(weightNE(f, bound, weights) == f_ne);
     test(weightRange(f, lower_bound, upper_bound, weights) == f_range);
 
+    ZBDD f_ks(0);
     for (llint i = -1; i <= s.count() + 1; ++i) {
-        llint expected_card = i;
-        if (i == -1) {
-            expected_card = 0;
-        } else if (i == s.count() + 1) {
-            expected_card = s.count();
+        if (i >= 1 && i <= s.count()) {
+            f_ks += getSingleSet(s.getSet(i - 1));
         }
         ZBDD ksets = s.getKSetsZBDD(i);
-        test_eq(ksets.Card(), expected_card);
+        test(f_ks == ksets);
+        test(ksets - f == ZBDD(0)); /* ksets is included in f */
+#ifdef USE_GMP
+        ZBDD ksets_mpz = s.getKSetsZBDD(mpz_class(static_cast<int>(i)));
+        test(ksets_mpz == ksets);
+#endif
     }
 
 #ifdef USE_GMP /* use GMP random */
@@ -977,12 +980,12 @@ void test_ddindex()
     DDIndex<int> s3(f3);
     check_ddindex(f3, s3);
 
-    /*std::mt19937 mt(0); */
-    /*for (int i = 0; i < 1000; ++i) { */
-    /*    ZBDD f4 = getUniformlyRandomZBDD(8, mt); */
-    /*    DDIndex<int> s4(f4); */
-    /*    check_ddindex(f4, s4); */
-    /*} */
+    /*std::mt19937 mt(0);
+    for (int i = 0; i < 1000; ++i) {
+        ZBDD f4 = getUniformlyRandomZBDD(8, mt);
+        DDIndex<int> s4(f4);
+        check_ddindex(f4, s4);
+    }*/
 
 #ifdef USE_GMP
     ZBDD fp = getPowerSetIncluding(100, 2);

@@ -32,6 +32,47 @@ ullint sbddextended_getXRand(ullint* state)
     return v;
 }
 
+#ifdef __cplusplus
+
+template<typename value_t>
+value_t sbddh_getZero()
+{
+    return value_t(0);
+}
+
+template<typename value_t>
+value_t sbddh_getOne()
+{
+    return value_t(1);
+}
+
+#ifdef USE_GMP
+template<typename value_t>
+value_t sbddh_getValueFromMpz(const mpz_class& v);
+
+template<>
+mpz_class sbddh_getValueFromMpz<mpz_class>(const mpz_class& v)
+{
+    return v;
+}
+
+template<>
+llint sbddh_getValueFromMpz<llint>(const mpz_class& v)
+{
+    return v.get_ui();
+}
+#else
+template<typename value_t>
+value_t sbddh_getValueFromMpz(llint v);
+
+template<>
+llint sbddh_getValueFromMpz<llint>(llint v)
+{
+    return v;
+}
+#endif
+
+#endif /* __cplusplus */
 
 
 #ifdef __cplusplus /* C++ */

@@ -561,10 +561,11 @@ private:
     bool is_count_made;
 
 #ifdef USE_GMP
-    std::map<bddp, mpz_class> count_storage_;
+    typedef std::map<bddp, mpz_class> map_t;
 #else
-    std::map<bddp, llint> count_storage_;
+    typedef std::map<bddp, llint> map_t;
 #endif
+    map_t count_storage_;
 
     void initialize(bddp f, bool /*is_raw*/, int is_zbdd)
     {
@@ -634,14 +635,56 @@ private:
 #ifdef USE_GMP
     llint getStorageValue(bddp f) const
     {
-        return static_cast<llint>(count_storage_.at(f).get_ui());
+        if (count_storage_.count(f) > 0) {
+            return static_cast<llint>(count_storage_.at(f).get_ui());
+        } else {
+            bddp fn = bddtakenot(f);
+            std::map<bddp, mpz_class>::const_iterator itor = count_storage_.find(fn);
+            if (itor == count_storage_.end()) {
+                std::cerr << "key f not found" << std::endl;
+                exit(1);
+            } else {
+                return static_cast<llint>(itor->second.get_ui()) + (bddisnegative(f) ? 1 : -1);
+            }
+        }
     }
+
 #else
+
     llint getStorageValue(bddp f) const
     {
-        return count_storage_.at(f);
+        if (count_storage_.count(f) > 0) {
+            return count_storage_.at(f);
+        } else {
+            bddp fn = bddtakenot(f);
+            std::map<bddp, llint>::const_iterator itor = count_storage_.find(fn);
+            if (itor == count_storage_.end()) {
+                std::cerr << "key f not found" << std::endl;
+                exit(1);
+            } else {
+                return itor->second + (bddisnegative(f) ? 1 : -1);
+            }
+        }
     }
+
 #endif
+
+    template<typename value_t>
+    value_t getStorageValue2(bddp f) const
+    {
+        if (count_storage_.count(f) > 0) {
+            return sbddh_getValueFromMpz<value_t>(count_storage_.at(f));
+        } else {
+            bddp fn = bddtakenot(f);
+            map_t::const_iterator itor = count_storage_.find(fn);
+            if (itor == count_storage_.end()) {
+                std::cerr << "key f not found" << std::endl;
+                exit(1);
+            } else {
+                return sbddh_getValueFromMpz<value_t>(itor->second) + (bddisnegative(f) ? sbddh_getOne<value_t>() : -sbddh_getOne<value_t>());
+            }
+        }
+    }
 
     llint getOrderNumber(bddp f, std::set<bddvar>& s) const
     {
@@ -800,6 +843,60 @@ private:
         }
     }
 #endif
+
+    template<typename value_t>
+    bddp getKSetsZBDD(bddp f, value_t k)
+    {
+        if (k <= sbddh_getZero<value_t>() || f == bddempty) {
+            return bddempty;
+        } else if (f == bddsingle) {
+            return bddsingle;
+        } else if (k >= getStorageValue2<value_t>(f)) {
+            return bddcopy(f);
+        } else {
+            bddp fn = f;
+            bddp f1 = bddgetchild1z(f);
+            bddp g;
+            value_t card1 = getStorageValue2<value_t>(f1);
+            if (bddisemptymember(f)) {
+                if (k == sbddh_getOne<value_t>()) {
+                    return bddsingle;
+                }
+                card1 += sbddh_getOne<value_t>();
+                fn = bdderasenot(f);
+            }
+            if (k > card1) {
+                bddp f0 = bddgetchild0z(fn);
+                bddp g0 = getKSetsZBDD<value_t>(f0, k - card1);
+                if (bddisemptymember(f)) {
+                    assert(!bddisnegative(g0));
+                    g0 = bddtakenot(g0);
+                }
+                g = bddmakenodez(bddgetvar(f), g0, f1);
+                bddfree(g0);
+            } else {
+                bddp g1;
+                if (bddisemptymember(f)) {
+                    g1 = getKSetsZBDD<value_t>(f1, k - sbddh_getOne<value_t>());
+                } else {
+                    g1 = getKSetsZBDD<value_t>(f1, k);
+                }
+
+                if (bddisemptymember(f)) {
+                    g = bddmakenodez(bddgetvar(f), bddsingle, g1);
+                } else {
+                    g = bddmakenodez(bddgetvar(f), bddempty, g1);
+                }
+                bddfree(g1);
+            }
+#ifdef USE_GMP
+            assert(value_t(static_cast<int>(bddcard(g))) == k);
+#else
+            assert(static_cast<llint>(bddcard(g)) == k);
+#endif
+            return g;
+        }
+    }
 
     bddp getBddp(int level, llint pos) const
     {
@@ -1005,6 +1102,26 @@ public:
         std::set<bddvar> s;
         getSetMP(node_index_->f, order, s);
         return s;
+    }
+#endif
+
+    ZBDD getKSetsZBDD(llint k)
+    {
+        if (k <= 0) {
+            return ZBDD(0);
+        }
+        makeCountIndex();
+        return ZBDD_ID(getKSetsZBDD<llint>(node_index_->f, k));
+    }
+
+#ifdef USE_GMP
+    ZBDD getKSetsZBDD(mpz_class k)
+    {
+        if (k <= 0) {
+            return ZBDD(0);
+        }
+        makeCountIndex();
+        return ZBDD_ID(getKSetsZBDD<mpz_class>(node_index_->f, k));
     }
 #endif
 
