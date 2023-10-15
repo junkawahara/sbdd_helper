@@ -63,7 +63,7 @@ index.terminal(1).value = 1;
 // ZBDD の各レベルについて
 for (int level = 1; level <= index.height(); ++level) {
     // レベル level の各ノードについて
-    for (llint j = 0; j < index.size(level); ++j) {
+    for (ullint j = 0; j < index.size(level); ++j) {
         // レベル level の j 番目のノードを取得
         DDNode<int> n = index.getNode(level, j);
         // 子ノードの値から親ノードの値を計算
@@ -140,14 +140,16 @@ int height() const
 ## size
 
 ```
-llint size() const
-llint size(int level) const
+ullint size() const
+ullint size(int level) const
 ```
 
 引数を指定しない場合、インデックス元の BDD/ZBDD のノード数を取得する。
 引数 level を指定した場合、インデックス元の BDD/ZBDD のレベルが level のノード数を取得する。
 否定枝表現を用いずにインデックスを構築した場合は、
 否定枝表現を用いない BDD/ZBDD のノード数を取得する。
+
+Ver 1.1.0 から返り値の型を llint から ullint に変更。
 
 ## sizeEachLevel
 
@@ -164,11 +166,16 @@ BDD/ZDD の高さ（根ノードのレベル）+ 1 となる。
 ## count
 
 ```
-llint count()
+ullint count()
 ```
 
 インデックス元の BDD/ZDD が表す集合族の要素の個数（64ビット値）を取得する。
+要素の個数が64ビット値を超える場合、2^64 で割った余りを返す。
+要素の個数が64ビット値を超える場合は countMP 関数を用いれば、
+正確な値が取得できる。
 本メンバ関数は内部にカウント用の情報を記憶させる。
+
+Ver 1.1.0 から返り値の型を llint から ullint に変更。
 
 ## countMP
 
@@ -305,6 +312,25 @@ GMP の乱数エンジン gmp_randclass を引数に指定する。
 この関数は要素数が 2^64 を超える場合でも、GMP が提供する乱数が一様であると仮定すれば、
 集合族から近似ではなく厳密に一様に1つの集合を選んで返す。
 
+## sampleRandomlyA
+
+```
+std::set<bddvar> sampleRandomlyA(ullint* rand_state)
+```
+
+BDD/ZBDD が表す集合族から集合を1つ一様ランダムに選んで返す。
+乱数の種として、ullint 型の変数へのポインタを引数に指定する。
+乱数として、XORShift を用いている。
+本メンバ関数は内部にカウント用の情報を記憶させる。
+
+この関数は内部で近似計算を行うため、サンプリング結果は完全な一様ランダムではなく、
+わずかに偏りが生じる。
+この関数は要素数が 2^64 を超える場合でも利用できる。
+この関数は乱数の種が同じなら環境に依存せず同じ結果を返す。
+GMP を用いた（USE_GMP マクロを定義した）場合でもこの関数は提供される。
+
+Ver 1.1.0 で追加。
+
 ## root
 
 ```
@@ -324,10 +350,12 @@ DDNode<T> terminal(int t)
 ## getNode
 
 ```
-DDNode<T> getNode(int level, llint pos)
+DDNode<T> getNode(int level, ullint pos)
 ```
 
 レベルが level の pos 番目（0 始まり）の [DDNode<T>](reference_cpp_DDNode.md) を返す。
+
+Ver 1.1.0 より第2引数 pos の型を llint から ullint に変更
 
 ## makeCountIndex
 

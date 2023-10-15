@@ -1010,6 +1010,12 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
     }
 #endif
 
+    ullint state = 1;
+    for (llint i = 0; i < 100; ++i) {
+        std::set<bddvar> varset = s.sampleRandomlyA(&state);
+        test(isMember(f, varset));
+    }
+
 #endif
 
 }

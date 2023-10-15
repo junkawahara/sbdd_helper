@@ -13,6 +13,12 @@ C++ 版では、C 版の全ての関数も使用可能である。
 
 以下では C 版、C++ 版の両方の変更点について記述する。
 
+### Version 1.1.0
+
+* 以下の関数を追加
+    * 環境に依存しないランダムサンプリング関数 DDIndex::sampleRandomlyA
+* bddNodeIndex や DDIndex の size、count 関数の返り値を llint から ullint に変更
+
 ### Version 1.0.3 (2023/10/13)
 
 * getChild0Raw、getChildRaw、takeNot、addNot、eraseNot（いずれも C++ 版のみ）の不具合を修正。

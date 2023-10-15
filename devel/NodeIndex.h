@@ -918,7 +918,29 @@ private:
         }
     }
 
-    bddp getBddp(int level, llint pos) const
+    template<typename value_t>
+    void sampleRandomlyA(ullint* rand_state, std::set<bddvar>& s)
+    {
+        bddp f = node_index_->f;
+        while (!bddisconstant(f)) {
+            bddp f0 = bddgetchild0(f);
+            bddp f1 = bddgetchild1(f);
+            value_t card0 = getStorageValue2<value_t>(f0);
+            value_t card1 = getStorageValue2<value_t>(f1);
+            double r = static_cast<double>(sbddextended_getXRand(rand_state) - 1)
+                    /* / 0xffffffffffffffffull; */
+                    / 1.8446744073709552e+19; /* avoid warning */
+            if (r < sbddh_divide<value_t>(card0, card0 + card1)) {
+                f = f0;
+            } else {
+                s.insert(bddgetvar(f));
+                f = f1;
+            }
+        }
+        assert(f == bddsingle);
+    }
+
+    bddp getBddp(int level, ullint pos) const
     {
         return static_cast<bddp>(sbddextended_MyVector_get(&node_index_->
                                                     level_vec_arr[level],
@@ -1165,6 +1187,25 @@ public:
 #endif /* __cplusplus >= 201103L */
 
 #endif /* USE_GMP */
+
+    std::set<bddvar> sampleRandomlyA(ullint* rand_state)
+    {
+        makeCountIndex();
+        if (count() >= 1) {
+            std::set<bddvar> s;
+#ifdef USE_GMP
+            /* card is larger than or equal to 2^64 */
+            if (countMP() >= mpz_class("18446744073709551616")) {
+                sampleRandomlyA<mpz_class>(rand_state, s);
+                return s;
+            }
+#endif
+            sampleRandomlyA<ullint>(rand_state, s);
+            return s;
+        } else {
+            return std::set<bddvar>();
+        }
+    }
 
     DDNode<T> root()
     {

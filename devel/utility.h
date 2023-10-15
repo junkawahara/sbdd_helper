@@ -34,7 +34,23 @@ ullint sbddextended_getXRand(ullint* state)
 
 #ifdef __cplusplus
 
+template<typename value_t>
+double sbddh_divide(const value_t& op1, const value_t& op2)
+{
+    return static_cast<double>(op1) / static_cast<double>(op2);
+}
+
 #ifdef USE_GMP
+
+template<>
+double sbddh_divide(const mpz_class& op1, const mpz_class& op2)
+{
+    mpf_class f1(op1.get_str());
+    mpf_class f2(op2.get_str());
+    mpf_class result;
+    mpf_div(result.get_mpf_t(), f1.get_mpf_t(), f2.get_mpf_t());
+    return result.get_d();
+}
 
 /* assume that v is non-negative */
 sbddextended_INLINE_FUNC
