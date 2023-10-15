@@ -34,6 +34,63 @@ ullint sbddextended_getXRand(ullint* state)
 
 #ifdef __cplusplus
 
+#ifdef USE_GMP
+
+/* assume that v is non-negative */
+sbddextended_INLINE_FUNC
+ullint sbddh_mpz_to_ullint(const mpz_class& v)
+{
+    static mpz_class two32("4294967296"); /* 2^32 */
+    static mpz_class two64("18446744073709551616"); /* 2^64 */
+    assert(v >= 0);
+    if (v < two32) {
+        return static_cast<ullint>(v.get_ui());
+    } else {
+        mpz_class vv = v;
+        if (v >= two64) { /* return remainder */
+            mpz_class qq = v / two64;
+            mpz_class rr = v - qq * two64;
+            vv = rr;
+        }
+        assert(vv < two64);
+        mpz_class q = vv / two32;
+        mpz_class r = vv - q * two32;
+        assert(q < two32);
+        assert(r < two32);
+        return static_cast<ullint>(q.get_ui()) * 4294967296ull
+            + r.get_ui();
+    }
+}
+
+sbddextended_INLINE_FUNC
+mpz_class sbddh_llint_to_mpz(llint v)
+{
+    if (static_cast<llint>(INT_MIN) <= v &&
+            v <= static_cast<llint>(INT_MAX)) { 
+        return mpz_class(static_cast<int>(v));
+    } else { /* mpz_class does not support the conversion
+                from llint to mpz_class */
+        std::stringstream ss;
+        ss << v;
+        return mpz_class(ss.str());
+    }
+}
+
+sbddextended_INLINE_FUNC
+mpz_class sbddh_ullint_to_mpz(ullint v)
+{
+    if (v <= static_cast<ullint>(UINT_MAX)) { 
+        return mpz_class(static_cast<unsigned int>(v));
+    } else { /* mpz_class does not support the conversion
+                from ullint to mpz_class */
+        std::stringstream ss;
+        ss << v;
+        return mpz_class(ss.str());
+    }
+}
+
+#endif /* USE_GMP */
+
 template<typename value_t>
 value_t sbddh_getZero()
 {
@@ -46,6 +103,9 @@ value_t sbddh_getOne()
     return value_t(1);
 }
 
+template<typename value_t>
+value_t sbddh_getCard(const ZBDD& f);
+
 #ifdef USE_GMP
 template<typename value_t>
 value_t sbddh_getValueFromMpz(const mpz_class& v);
@@ -57,19 +117,21 @@ mpz_class sbddh_getValueFromMpz<mpz_class>(const mpz_class& v)
 }
 
 template<>
-llint sbddh_getValueFromMpz<llint>(const mpz_class& v)
+ullint sbddh_getValueFromMpz<ullint>(const mpz_class& v)
 {
-    return v.get_ui();
+    return sbddh_mpz_to_ullint(v);
 }
+
 #else
 template<typename value_t>
-value_t sbddh_getValueFromMpz(llint v);
+value_t sbddh_getValueFromMpz(value_t v);
 
 template<>
-llint sbddh_getValueFromMpz<llint>(llint v)
+ullint sbddh_getValueFromMpz<ullint>(ullint v)
 {
     return v;
 }
+
 #endif
 
 #endif /* __cplusplus */

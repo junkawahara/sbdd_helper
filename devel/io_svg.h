@@ -60,7 +60,7 @@ void bddexportassvg_inner(FILE* fp, bddp f,
     std::map<bddp, std::pair<int, int> > dest0_pos;
     std::map<bddp, std::pair<int, int> > dest1_pos;
     int y = margin_y + node_radius;
-    llint max_nodes = 0;
+    ullint max_nodes = 0;
     for (int level = index->height(); level >= 1; --level) {
         if (max_nodes < index->size(level)) {
             max_nodes = index->size(level);
@@ -141,7 +141,7 @@ void bddexportassvg_inner(FILE* fp, bddp f,
 
     /* draw nodes */
     for (int level = index->height(); level >= 1; --level) {
-        for (llint j = 0; j < index->size(level); ++j) {
+        for (ullint j = 0; j < index->size(level); ++j) {
             bddp g = index->getNode(level, j).getBddp();
             sbddextended_snprintf4(ss, sbddextended_BUFSIZE,
                 "<circle cx=\"%d\" cy=\"%d\" r=\"%d\" fill=\"#deebf7\" "
@@ -158,7 +158,7 @@ void bddexportassvg_inner(FILE* fp, bddp f,
 
     /* draw arcs */
     for (int level = index->height(); level >= 1; --level) {
-        for (llint j = 0; j < index->size(level); ++j) {
+        for (ullint j = 0; j < index->size(level); ++j) {
             bddp g = index->getNode(level, j).getBddp();
             int posx1 = ExportAsSvg_getCirclePosX(pos_map[g].first,
                 node_radius, 4.0 / 3.0 * M_PI);

@@ -5,7 +5,7 @@ typedef struct tagbddNodeIndex {
     sbddextended_MyDict* node_dict_arr;
     sbddextended_MyVector* level_vec_arr; /* stores all nodes at level i */
     llint* offset_arr;
-    llint* count_arr; /* array representing the number of solutions for node i */
+    ullint* count_arr; /* array representing the number of solutions for node i */
     int height;
     bddp f;
 } bddNodeIndex;
@@ -161,7 +161,7 @@ bddNodeIndex* bddNodeIndex_makeIndex_inner(bddp f, int is_raw, int is_zbdd)
     }
 
     if (is_zbdd) {
-        node_index->count_arr = (llint*)malloc((size_t)node_index->offset_arr[0] * sizeof(llint));
+        node_index->count_arr = (ullint*)malloc((size_t)node_index->offset_arr[0] * sizeof(ullint));
         if (node_index->count_arr == NULL) {
             fprintf(stderr, "out of memory\n");
             exit(1);
@@ -214,6 +214,7 @@ bddNodeIndex* bddNodeIndex_makeIndex_inner(bddp f, int is_raw, int is_zbdd)
                     }
                     id1 += node_index->offset_arr[clevel];
                 }
+                /* We do not check the overflow. */
                 node_index->count_arr[j] = node_index->count_arr[id0] + node_index->count_arr[id1];
                 if (is_raw && raw_flag) {
                     node_index->count_arr[j] += 1;
@@ -263,43 +264,48 @@ bddNodeIndex* bddNodeIndex_makeRawIndex(bddp f)
 }
 
 sbddextended_INLINE_FUNC
-llint bddNodeIndex_size(const bddNodeIndex* node_index)
+ullint bddNodeIndex_size(const bddNodeIndex* node_index)
 {
     if (node_index->f == bddnull || node_index->f == bddfalse || node_index->f == bddtrue) {
-        return 0ll;
+        return 0ull;
     }
-    return (llint)node_index->offset_arr[0] - sbddextended_BDDNODE_START;
+    return (ullint)node_index->offset_arr[0] - sbddextended_BDDNODE_START;
 }
 
 sbddextended_INLINE_FUNC
-llint bddNodeIndex_sizeAtLevel(const bddNodeIndex* node_index, int level)
+ullint bddNodeIndex_sizeAtLevel(const bddNodeIndex* node_index, int level)
 {
     if (node_index->f == bddnull || node_index->f == bddfalse || node_index->f == bddtrue) {
-        return 0ll;
+        return 0ull;
     } else if (level <= 0 || node_index->height < level) {
-        return 0ll;
+        return 0ull;
     }
-    return (llint)(node_index->offset_arr[level - 1] - node_index->offset_arr[level]);
+    assert(node_index->offset_arr[level - 1] >= node_index->offset_arr[level]);
+    return (ullint)(node_index->offset_arr[level - 1] - node_index->offset_arr[level]);
 }
 
 sbddextended_INLINE_FUNC
 void bddNodeIndex_sizeEachLevel(const bddNodeIndex* node_index, bddvar* arr)
 {
     int i;
-    if (!(node_index->f == bddnull || node_index->f == bddfalse || node_index->f == bddtrue)) {
+    if (!(node_index->f == bddnull || bddisterminal(node_index->f))) {
         for (i = 1; i <= node_index->height; ++i) {
+            assert(node_index->offset_arr[i - 1] >= node_index->offset_arr[i]);
             arr[i] = (bddvar)(node_index->offset_arr[i - 1] - node_index->offset_arr[i]);
         }
     }
 }
 
 sbddextended_INLINE_FUNC
-llint bddNodeIndex_count(const bddNodeIndex* node_index)
+ullint bddNodeIndex_count(const bddNodeIndex* node_index)
 {
-    if (node_index->f == bddnull || node_index->f == bddfalse) {
-        return 0ll;
+    /* We assume that the two values are the same. */
+    assert(bddtrue == bddsingle);
+    if (node_index->f == bddnull || node_index->f == bddfalse
+            || node_index->f == bddempty) {
+        return 0ull;
     } else if (node_index->f == bddtrue) {
-        return 1ll;
+        return 1ull;
     }
     if (node_index->is_raw) {
         if (bddisnegative(node_index->f)) {
@@ -394,12 +400,12 @@ public:
         return node_index_;
     }
 
-    llint size()
+    ullint size()
     {
         return bddNodeIndex_size(node_index_);
     }
 
-    llint sizeAtLevel(int level)
+    ullint sizeAtLevel(int level)
     {
         return bddNodeIndex_sizeAtLevel(node_index_, level);
     }
@@ -414,7 +420,7 @@ public:
         }
     }
 
-    llint count()
+    ullint count()
     {
         return bddNodeIndex_count(node_index_);
     }
@@ -561,10 +567,11 @@ private:
     bool is_count_made;
 
 #ifdef USE_GMP
-    typedef std::map<bddp, mpz_class> map_t;
+    typedef mpz_class count_t;
 #else
-    typedef std::map<bddp, llint> map_t;
+    typedef ullint count_t;
 #endif
+    typedef std::map<bddp, count_t> map_t;
     map_t count_storage_;
 
     void initialize(bddp f, bool /*is_raw*/, int is_zbdd)
@@ -593,7 +600,7 @@ private:
         sto[bddsingle].first = 0;
 
         for (int level = 1; level <= height(); ++level) {
-            for (llint pos = 0; pos < size(level); ++pos) {
+            for (ullint pos = 0; pos < size(level); ++pos) {
                 int var = bddvaroflev(level);
                 bddp f = getBddp(level, pos);
                 bddp child0 = bddgetchild0z(f);
@@ -633,10 +640,10 @@ private:
     }
 
 #ifdef USE_GMP
-    llint getStorageValue(bddp f) const
+    ullint getStorageValue(bddp f) const
     {
         if (count_storage_.count(f) > 0) {
-            return static_cast<llint>(count_storage_.at(f).get_ui());
+            return sbddh_mpz_to_ullint(count_storage_.at(f));
         } else {
             bddp fn = bddtakenot(f);
             std::map<bddp, mpz_class>::const_iterator itor = count_storage_.find(fn);
@@ -644,25 +651,30 @@ private:
                 std::cerr << "key f not found" << std::endl;
                 exit(1);
             } else {
-                return static_cast<llint>(itor->second.get_ui()) + (bddisnegative(f) ? 1 : -1);
+                return sbddh_mpz_to_ullint(itor->second) + (bddisnegative(f) ? 1 : -1);
             }
         }
     }
 
 #else
 
-    llint getStorageValue(bddp f) const
+    ullint getStorageValue(bddp f) const
     {
         if (count_storage_.count(f) > 0) {
             return count_storage_.at(f);
         } else {
             bddp fn = bddtakenot(f);
-            std::map<bddp, llint>::const_iterator itor = count_storage_.find(fn);
+            std::map<bddp, ullint>::const_iterator itor = count_storage_.find(fn);
             if (itor == count_storage_.end()) {
                 std::cerr << "key f not found" << std::endl;
                 exit(1);
             } else {
-                return itor->second + (bddisnegative(f) ? 1 : -1);
+                if (bddisnegative(f)) {
+                    return itor->second + 1;
+                } else {
+                    assert(itor->second > 0);
+                    return itor->second - 1;
+                }
             }
         }
     }
@@ -681,7 +693,14 @@ private:
                 std::cerr << "key f not found" << std::endl;
                 exit(1);
             } else {
-                return sbddh_getValueFromMpz<value_t>(itor->second) + (bddisnegative(f) ? sbddh_getOne<value_t>() : -sbddh_getOne<value_t>());
+                if (bddisnegative(f)) {
+                    return sbddh_getValueFromMpz<value_t>(itor->second)
+                        + sbddh_getOne<value_t>();
+                } else {
+                    assert(itor->second > 0);
+                    return sbddh_getValueFromMpz<value_t>(itor->second)
+                        - sbddh_getOne<value_t>();
+                }
             }
         }
     }
@@ -807,7 +826,7 @@ private:
             }
         }
 
-        llint card1 = getStorageValue(bddgetchild1z(f));
+        llint card1 = static_cast<llint>(getStorageValue(bddgetchild1z(f)));
         if (order < card1) {
             s.insert(bddgetvar(f));
             getSet(bddgetchild1z(f), order, s);
@@ -890,9 +909,10 @@ private:
                 bddfree(g1);
             }
 #ifdef USE_GMP
-            assert(value_t(static_cast<int>(bddcard(g))) == k);
+            assert(sbddh_getValueFromMpz<value_t>(
+                sbddh_ullint_to_mpz(static_cast<ullint>(bddcard(g)))) == k);
 #else
-            assert(static_cast<llint>(bddcard(g)) == k);
+            assert(static_cast<ullint>(bddcard(g)) == k);
 #endif
             return g;
         }
@@ -902,7 +922,7 @@ private:
     {
         return static_cast<bddp>(sbddextended_MyVector_get(&node_index_->
                                                     level_vec_arr[level],
-                                                    pos));
+                                                    static_cast<llint>(pos)));
     }
 
 public:
@@ -942,12 +962,12 @@ public:
         return bddgetlev(node_index_->f);
     }
 
-    llint size() const
+    ullint size() const
     {
         return bddNodeIndex_size(node_index_);
     }
 
-    llint size(int level) const
+    ullint size(int level) const
     {
         return bddNodeIndex_sizeAtLevel(node_index_, level);
     }
@@ -962,22 +982,17 @@ public:
         }
     }
 
-    llint count()
+    ullint count()
     {
         makeCountIndex();
-#ifdef USE_GMP
-        /* only support 32 bit because GMP does not have get_sll */
-        return static_cast<llint>(count_storage_[node_index_->f].get_ui());
-#else
-        return count_storage_[node_index_->f];
-#endif
+        return getStorageValue2<ullint>(node_index_->f);
     }
 
 #ifdef USE_GMP
     mpz_class countMP()
     {
         makeCountIndex();
-        return count_storage_[node_index_->f];
+        return getStorageValue2<mpz_class>(node_index_->f);
     }
 #endif
 
@@ -1018,7 +1033,7 @@ public:
         sto[bddsingle] = 0;
 
         for (int level = 1; level <= height(); ++level) {
-            for (llint pos = 0; pos < size(level); ++pos) {
+            for (ullint pos = 0; pos < size(level); ++pos) {
                 int var = bddvaroflev(level);
                 bddp f = getBddp(level, pos);
                 bddp child0 = bddgetchild0z(f);
@@ -1045,19 +1060,12 @@ public:
         sto[bddsingle] = mpz_class(0);
 
         for (int level = 1; level <= height(); ++level) {
-            for (llint pos = 0; pos < size(level); ++pos) {
+            for (ullint pos = 0; pos < size(level); ++pos) {
                 int var = bddvaroflev(level);
                 bddp f = getBddp(level, pos);
                 bddp child0 = bddgetchild0z(f);
                 bddp child1 = bddgetchild1z(f);
-                mpz_class w_mp;
-                if (weights[var] < (1 << 30)) {
-                    w_mp = mpz_class(static_cast<int>(weights[var]));
-                } else {
-                    std::stringstream ss;
-                    ss << weights[var];
-                    w_mp = mpz_class(ss.str());
-                }
+                mpz_class w_mp = sbddh_llint_to_mpz(weights[var]);
                 sto[f] = sto[child0] + sto[child1] + w_mp * count_storage_.at(child1);
             }
         }
@@ -1084,7 +1092,7 @@ public:
     std::set<bddvar> getSet(llint order)
     {
         makeCountIndex();
-        if (order < 0 || order >= count()) { /* out of range */
+        if (order < 0 || order >= static_cast<llint>(count())) { /* out of range */
             return std::set<bddvar>();
         }
         std::set<bddvar> s;
@@ -1105,17 +1113,17 @@ public:
     }
 #endif
 
-    ZBDD getKSetsZBDD(llint k)
+    ZBDD getKSetsZBDD(ullint k)
     {
         if (k <= 0) {
             return ZBDD(0);
         }
         makeCountIndex();
-        return ZBDD_ID(getKSetsZBDD<llint>(node_index_->f, k));
+        return ZBDD_ID(getKSetsZBDD<ullint>(node_index_->f, k));
     }
 
 #ifdef USE_GMP
-    ZBDD getKSetsZBDD(mpz_class k)
+    ZBDD getKSetsZBDD(const mpz_class& k)
     {
         if (k <= 0) {
             return ZBDD(0);
@@ -1185,10 +1193,11 @@ public:
             count_storage_[bddempty] = sbddextended_VALUE_ZERO;
             count_storage_[bddsingle] = sbddextended_VALUE_ONE;
             for (int level = 1; level <= height(); ++level) {
-                for (llint pos = 0; pos < size(level); ++pos) {
+                for (ullint pos = 0; pos < size(level); ++pos) {
                     bddp f = getBddp(level, pos);
                     bddp child0 = bddgetchild0z(f);
                     bddp child1 = bddgetchild1z(f);
+                    /* We do not check the overflow when count_t is ullint */
                     count_storage_[f] = count_storage_[child0] + count_storage_[child1];
                 }
             }
@@ -1261,5 +1270,22 @@ public:
     }
 
 };
+
+#ifdef USE_GMP
+
+template<>
+mpz_class sbddh_getCard<mpz_class>(const ZBDD& f)
+{
+    DDIndex<int> dd_index(f);
+    return dd_index.countMP();
+}
+
+#endif /* USE_GMP */
+
+template<>
+ullint sbddh_getCard<ullint>(const ZBDD& f)
+{
+    return static_cast<ullint>(f.Card());
+}
 
 #endif /* __cplusplus */

@@ -48,6 +48,53 @@ std::vector<bddvar> ullint_to_varvec(ullint v)
     return vec;
 }
 
+#ifdef USE_GMP
+
+void test_gmp_conversion()
+{
+    mpz_class z[17];
+    z[0] = mpz_class(0);
+    z[1] = mpz_class(1);
+    z[2] = mpz_class(123);
+    z[3] = mpz_class("2147483647"); // 2^31 - 1
+    z[4] = mpz_class("2147483648"); // 2^31
+    z[5] = mpz_class("2147483649"); // 2^31 + 1
+    z[6] = mpz_class("4294967295"); // 2^32 - 1
+    z[7] = mpz_class("4294967296"); // 2^32
+    z[8] = mpz_class("4294967297"); // 2^32 + 1
+    z[9] = mpz_class("9223372036854775807"); // 2^63 - 1
+    z[10] = mpz_class("9223372036854775808"); // 2^63
+    z[11] = mpz_class("9223372036854775809"); // 2^63 + 1
+    z[12] = mpz_class("18446744073709551615"); // 2^64 - 1
+    z[13] = mpz_class("18446744073709551616"); // 2^64
+    z[14] = mpz_class("18446744073709551617"); // 2^64 + 1
+    // rand number: 738869 * 2^64 + 15614076732533780317
+    z[15] = mpz_class("13629742961074435226742621");
+    z[16] = mpz_class("340282366920938463463374607431768211455"); // 2^128 - 1
+
+    ullint z_ullint[17] = {
+        0, 1, 123, 2147483647, 2147483648, 2147483649,
+        4294967295, 4294967296, 4294967297, 9223372036854775807ull,
+        9223372036854775808ull, 9223372036854775809ull,
+        18446744073709551615ull, 0, 1, 15614076732533780317ull,
+        18446744073709551615ull
+    };
+
+    for (int i = 0; i < 17; ++i) {
+        test(sbddh_mpz_to_ullint(z[i]) == z_ullint[i]);
+    }
+
+    for (int i = 0; i < 13; ++i) { /* check only for i < 13 */
+        test(z[i] == sbddh_ullint_to_mpz(z_ullint[i]));
+    }
+
+    for (int i = 0; i < 10; ++i) { /* check only for i < 10 */
+        test(z[i] == sbddh_llint_to_mpz(static_cast<llint>(z_ullint[i])));
+    }
+}
+
+#endif
+
 void test_BDD_functions()
 {
     BDD b1 = BDDvar(1) | BDDvar(2);
@@ -834,14 +881,14 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
     s.terminal(0).value = 0;
     s.terminal(1).value = 1;
     for (int level = 1; level <= s.height(); ++level) {
-        for (llint j = 0; j < s.size(level); ++j) {
+        for (ullint j = 0; j < s.size(level); ++j) {
             DDNode<int> n = s.getNode(level, j);
             n.value = n.child(0).value + n.child(1).value;
         }
     }
     test(card == s.root().value);
 
-    llint n = s.count();
+    ullint n = s.count();
     llint max_s = -99999999;
     llint min_s = 99999999;
     llint sum_s = 0;
@@ -852,8 +899,8 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
     }
     const int bound = 100, lower_bound = 50, upper_bound = 110;
     ZBDD f_le(0), f_lt(0), f_ge(0), f_gt(0), f_eq(0), f_ne(0), f_range(0);
-    for (llint i = 0; i < n; ++i) {
-        std::set<bddvar> se = s.getSet(i);
+    for (ullint i = 0; i < n; ++i) {
+        std::set<bddvar> se = s.getSet(static_cast<llint>(i));
         llint weight = 0;
         std::set<bddvar>::const_iterator itor = se.begin();
         for ( ; itor != se.end(); ++itor) {
@@ -928,15 +975,15 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
     test(weightRange(f, lower_bound, upper_bound, weights) == f_range);
 
     ZBDD f_ks(0);
-    for (llint i = -1; i <= s.count() + 1; ++i) {
-        if (i >= 1 && i <= s.count()) {
+    for (llint i = -1; i <= static_cast<llint>(s.count()) + 1; ++i) {
+        if (i >= 1 && i <= static_cast<llint>(s.count())) {
             f_ks += getSingleSet(s.getSet(i - 1));
         }
-        ZBDD ksets = s.getKSetsZBDD(i);
+        ZBDD ksets = s.getKSetsZBDD((i >= 0 ? i : 0));
         test(f_ks == ksets);
         test(ksets - f == ZBDD(0)); /* ksets is included in f */
 #ifdef USE_GMP
-        ZBDD ksets_mpz = s.getKSetsZBDD(mpz_class(static_cast<int>(i)));
+        ZBDD ksets_mpz = s.getKSetsZBDD(sbddh_llint_to_mpz(i));
         test(ksets_mpz == ksets);
 #endif
     }
@@ -1029,6 +1076,9 @@ void test_ddindex()
 
 void start_test_cpp()
 {
+#ifdef USE_GMP
+    test_gmp_conversion();
+#endif
     test_BDD_functions();
     test_at_random_cpp();
     test_io_cpp();
