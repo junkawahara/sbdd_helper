@@ -1016,26 +1016,48 @@ public:
         makeCountIndex();
         return getStorageValue2<mpz_class>(node_index_->f);
     }
+
+    mpz_class count_v()
+    {
+        return countMP();
+    }
+#else
+    ullint count_v()
+    {
+        return count();
+    }
 #endif
 
     llint getMaximum(const std::vector<llint>& weights, std::set<bddvar>& s) const
     {
+        if (node_index_->f == bddempty) {
+            return 0ll;
+        }
         return optimize(weights, true, s);
     }
 
     llint getMaximum(const std::vector<llint>& weights) const
     {
+        if (node_index_->f == bddempty) {
+            return 0ll;
+        }
         std::set<bddvar> dummy;
         return optimize(weights, true, dummy);
     }
 
     llint getMinimum(const std::vector<llint>& weights, std::set<bddvar>& s) const
     {
+        if (node_index_->f == bddempty) {
+            return 0ll;
+        }
         return optimize(weights, false, s);
     }
 
     llint getMinimum(const std::vector<llint>& weights) const
     {
+        if (node_index_->f == bddempty) {
+            return 0ll;
+        }
         std::set<bddvar> dummy;
         return optimize(weights, false, dummy);
     }
@@ -1300,16 +1322,220 @@ public:
         }
     };
 
-    DDNodeIterator begin()
+    class WeightIterator : public std::iterator<std::input_iterator_tag, std::set<bddvar> >
+    {
+    private:
+        ZBDD f_;
+        std::set<bddvar> current_;
+        const std::vector<llint> weights_;
+        const bool is_min_;
+
+        void setCurrent()
+        {
+            current_.clear();
+            DDIndex<int> current_index(f_);
+            if (is_min_) {
+                current_index.getMinimum(weights_, current_);
+            } else {
+                current_index.getMaximum(weights_, current_);
+            }
+        }
+
+    public:
+        WeightIterator() : f_(ZBDD(0)), is_min_(false) { }
+
+        WeightIterator(const ZBDD& f,
+                const std::vector<llint>& weights,
+                bool is_min) :
+                    f_(f), weights_(weights), is_min_(is_min)
+        {
+            setCurrent();
+        }
+
+        std::set<bddvar> operator*() const
+        {
+            return current_;
+        }
+
+        WeightIterator& operator++()
+        {
+            f_ -= getSingleSet(current_);
+            setCurrent();
+            return *this;
+        }
+
+        bool operator==(const WeightIterator& it) const
+        {
+            return f_ == it.f_;
+        }
+
+        bool operator!=(const WeightIterator& it) const
+        {
+            return !(operator==(it));
+        }
+    };
+
+    class RandomIterator : public std::iterator<std::input_iterator_tag, std::set<bddvar> >
+    {
+    private:
+        ZBDD f_;
+        std::set<bddvar> current_;
+        ullint rand_seed_;
+
+        void setCurrent()
+        {
+            DDIndex<int> current_index(f_);
+            current_ = current_index.sampleRandomlyA(&rand_seed_);
+        }
+
+    public:
+        RandomIterator() : f_(ZBDD(0)),
+                rand_seed_(0) { }
+
+        RandomIterator(const ZBDD& f,
+                ullint rand_seed) : f_(f),
+                rand_seed_(rand_seed)
+        {
+            setCurrent();
+        }
+
+        std::set<bddvar> operator*() const
+        {
+            return current_;
+        }
+
+        RandomIterator& operator++()
+        {
+            f_ -= getSingleSet(current_);
+            setCurrent();
+            return *this;
+        }
+
+        bool operator==(const RandomIterator& it) const
+        {
+            return f_ == it.f_;
+        }
+
+        bool operator!=(const RandomIterator& it) const
+        {
+            return !(operator==(it));
+        }
+    };
+
+    class DictIterator : public std::iterator<std::input_iterator_tag, std::set<bddvar> >
+    {
+    private:
+        DDIndex<T>* dd_index_;
+        const count_t card_;
+        const bool reverse_;
+        count_t current_;
+
+    public:
+        DictIterator(count_t current) :
+            dd_index_(NULL),
+            card_(0),
+            reverse_(false),
+            current_(current)
+        { }
+
+        DictIterator(DDIndex<T>* dd_index, bool reverse) :
+            dd_index_(dd_index),
+            card_(dd_index->count_v()),
+            reverse_(reverse),
+            current_(reverse ? card_ : 0)
+        { }
+
+        std::set<bddvar> operator*() const
+        {
+            if (reverse_) {
+                return dd_index_->getSet(current_ - 1);
+            } else {
+                return dd_index_->getSet(current_);
+            }
+        }
+
+        DictIterator& operator++()
+        {
+            if (reverse_) {
+                --current_;
+            } else {
+                ++current_;
+            }
+            return *this;
+        }
+
+        bool operator==(const DictIterator& it) const
+        {
+            return current_ == it.current_;
+        }
+
+        bool operator!=(const DictIterator& it) const
+        {
+            return !(operator==(it));
+        }
+    };
+
+    DDNodeIterator begin() const
     {
         return DDNodeIterator(*this, false);
     }
 
-    DDNodeIterator end()
+    DDNodeIterator end() const
     {
         return DDNodeIterator(*this, true);
     }
 
+    WeightIterator weight_min_begin(const std::vector<llint>& weights) const
+    {
+        return WeightIterator(ZBDD_ID(bddcopy(node_index_->f)),
+            weights, true);
+    }
+
+    WeightIterator weight_min_end() const
+    {
+        return WeightIterator();
+    }
+
+    WeightIterator weight_max_begin(const std::vector<llint>& weights) const
+    {
+        return WeightIterator(ZBDD_ID(bddcopy(node_index_->f)),
+            weights, false);
+    }
+
+    WeightIterator weight_max_end() const
+    {
+        return WeightIterator();
+    }
+
+    RandomIterator random_begin(ullint rand_seed = 1) const
+    {
+        return RandomIterator(ZBDD_ID(bddcopy(node_index_->f)), rand_seed);
+    }
+
+    RandomIterator random_end() const
+    {
+        return RandomIterator();
+    }
+
+    DictIterator dict_begin()
+    {
+        return DictIterator(this, false);
+    }
+
+    DictIterator dict_end()
+    {
+        return DictIterator(count_v());
+    }
+
+    DictIterator dict_rbegin()
+    {
+        return DictIterator(this, true);
+    }
+
+    DictIterator dict_rend()
+    {
+        return DictIterator(0);
+    }
 };
 
 #ifdef USE_GMP
