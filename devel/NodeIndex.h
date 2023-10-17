@@ -1253,6 +1253,22 @@ public:
     }
 #endif /* USE_GMP */
 
+    ZBDD getKHeaviestZBDD(ullint k,
+        const std::vector<llint>& weights, int strict)
+    {
+        ZBDD f = ZBDD_ID(bddcopy(node_index_->f));
+        return f - getKLightestZBDD(count() - k, weights, -strict);
+    }
+
+#ifdef USE_GMP
+    ZBDD getKHeaviestZBDD(const mpz_class& k,
+        const std::vector<llint>& weights, int strict)
+    {
+        ZBDD f = ZBDD_ID(bddcopy(node_index_->f));
+        return f - getKLightestZBDD(countMP() - k, weights, -strict);
+    }
+#endif /* USE_GMP */
+
 #endif /* NO_BDDCT */
 
 #ifdef USE_GMP /* use GMP random */

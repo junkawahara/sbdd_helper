@@ -1253,6 +1253,21 @@ void check_k_lightest(const ZBDD& f, DDIndex<int>& dd_index,
                     test(dd_index_k.getMaximum(weights)
                         <= dd_index_r.getMinimum(weights));
                 }
+                ZBDD f_h = dd_index.getKHeaviestZBDD(k, weights, strict);
+                if (strict == -1) {
+                    test(f_h.Card() <= k);
+                } else if (strict == 0) {
+                    test(f_h.Card() == k);
+                } else {
+                    test(f_h.Card() >= k);
+                }
+                ZBDD f_r2 = f - f_h;
+                if (f_h != ZBDD(0) && f_r2 != ZBDD(0)) {
+                    DDIndex<int> dd_index_h(f_h);
+                    DDIndex<int> dd_index_r2(f_r2);
+                    test(dd_index_h.getMinimum(weights)
+                        >= dd_index_r2.getMaximum(weights));
+                }
             }
         }
     }

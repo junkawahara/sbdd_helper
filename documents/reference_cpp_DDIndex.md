@@ -319,6 +319,39 @@ k が 0 の場合は空集合を返す。
 
 辞書順の定義は getOrderNumber 関数の説明を参照。
 
+## getKLightestZBDD / getKHeaviestZBDD
+
+```
+ZBDD getKLightestZBDD(ullint k, const std::vector<llint>& weights, int strict)
+ZBDD getKHeaviestZBDD(ullint k, const std::vector<llint>& weights, int strict)
+```
+
+getKLightestZBDD は重みが小さい順に k 個の集合を ZBDD として返す。
+getKHeaviestZBDD は重みが大きい順に k 個の集合を ZBDD として返す。
+strict が 0 なら、返り値の ZBDD は必ず k 個の集合を含む。
+strict が -1 なら、返り値の ZBDD は k 個以下の、
+strict が 1 なら、k 個以上の集合を含む。
+これらは strict が 0 の場合よりも計算は速い。
+重み weights については getMaximum 関数の説明を参照。
+辞書順の定義は getOrderNumber 関数の説明を参照。
+
+## getKLightestZBDD / getKHeaviestZBDD（GMP版）
+
+```
+ZBDD getKLightestZBDD(const mpz_class& k, const std::vector<llint>& weights, int strict)
+ZBDD getKHeaviestZBDD(const mpz_class& k, const std::vector<llint>& weights, int strict)
+```
+
+getKLightestZBDD は重みが小さい順に k 個の集合を ZBDD として返す。
+getKHeaviestZBDD は重みが大きい順に k 個の集合を ZBDD として返す。
+strict が 0 なら、返り値の ZBDD は必ず k 個の集合を含む。
+strict が -1 なら、返り値の ZBDD は k 個以下の、
+strict が 1 なら、k 個以上の集合を含む。
+これらは strict が 0 の場合よりも計算は速い。
+重み weights については getMaximum 関数の説明を参照。
+辞書順の定義は getOrderNumber 関数の説明を参照。
+この関数を利用する際は、USE_GMP マクロを冒頭で定義する。
+
 ## sampleRandomly
 
 ```
