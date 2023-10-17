@@ -68,7 +68,7 @@ llint getWeight(const std::set<bddvar>& s,
     return weight;
 }
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
 
 void test_gmp_conversion()
 {
@@ -1284,7 +1284,7 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& dd_index)
     ZBDD g(0);
     test(f == dd_index.getZBDD());
     ullint card = dd_index.count();
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     test_eq(card, dd_index.countMP().get_si());
 #endif
     for (ullint i = 0; i < card; ++i) {
@@ -1297,7 +1297,7 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& dd_index)
         test(isMember(f, varset));
         llint order = dd_index.getOrderNumber(varset);
         test_eq(static_cast<llint>(i), order);
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
         mpz_class i_mp((int)i);
         test(varset == dd_index.getSet(i_mp));
         test_eq(order, (llint)dd_index.getOrderNumberMP(varset).get_si());
@@ -1377,7 +1377,7 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& dd_index)
     test_eq(w, min_s);
     test_eq(sum_s, dd_index.getSum(weights));
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     test_eq(sum_s, dd_index.getSumMP(weights).get_si());
 #endif
 
@@ -1404,7 +1404,7 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& dd_index)
         ZBDD ksets = dd_index.getKSetsZBDD((i >= 0 ? i : 0));
         test(f_ks == ksets);
         test(ksets - f == ZBDD(0)); /* ksets is included in f */
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
         ZBDD ksets_mpz = dd_index.getKSetsZBDD(sbddh_llint_to_mpz(i));
         test(ksets_mpz == ksets);
 #endif
@@ -1464,7 +1464,7 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& dd_index)
 
 #endif
 
-#ifdef USE_GMP /* use GMP random */
+#ifdef SBDDH_GMP /* use GMP random */
     gmp_randclass random(gmp_randinit_default);
     random.seed(1);
     for (llint i = 0; i < 100; ++i) {
@@ -1518,7 +1518,7 @@ void test_ddindex(bool exhaustive)
         }
     }
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     ZBDD fp = getPowerSetIncluding(100, 2);
     DDIndex<int> sp(fp);
     /* expect 2^99 */
@@ -1560,7 +1560,7 @@ void test_ddindex(bool exhaustive)
 
 void start_test_cpp(bool exhaustive)
 {
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     test_gmp_conversion();
 #endif
     test_BDD_functions();

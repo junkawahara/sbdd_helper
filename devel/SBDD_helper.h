@@ -45,7 +45,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <random>
 #endif
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
 #include <gmp.h>
 #include <gmpxx.h>
 #endif
@@ -85,7 +85,7 @@ typedef unsigned long long int ullint;
 #define M_PI 3.14159265358979323846
 #endif
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     const mpz_class sbddextended_VALUE_ZERO(0);
     const mpz_class sbddextended_VALUE_ONE(1);
 #else

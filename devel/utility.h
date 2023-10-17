@@ -40,7 +40,7 @@ double sbddh_divide(const value_t& op1, const value_t& op2)
     return static_cast<double>(op1) / static_cast<double>(op2);
 }
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
 
 template<>
 double sbddh_divide(const mpz_class& op1, const mpz_class& op2)
@@ -105,7 +105,7 @@ mpz_class sbddh_ullint_to_mpz(ullint v)
     }
 }
 
-#endif /* USE_GMP */
+#endif /* SBDDH_GMP */
 
 template<typename value_t>
 value_t sbddh_getZero()
@@ -122,7 +122,7 @@ value_t sbddh_getOne()
 template<typename value_t>
 value_t sbddh_getCard(const ZBDD& f);
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
 template<typename value_t>
 value_t sbddh_getValueFromMpz(const mpz_class& v);
 

@@ -85,17 +85,17 @@ TdZdd も使用する場合、TdZdd と `SBDD_helper.h` のインクルードの
 ## GMP について
 
 ソースコードの一部で、任意桁精度の整数を扱うためのライブラリ [GMP (GNU Multiple Precision Arithmetic Library)](https://gmplib.org/) を用いています。
-GMP を利用した機能を用いる場合、USE_GMP マクロを定義します。例えば、ソースコードで `SBDD_helper.h` をインクルードする前に、以下のようにマクロを定義してください。
+GMP を利用した機能を用いる場合、SBDDH_GMP マクロを定義します（Version 1.0.3 以前は USE_GMP）。例えば、ソースコードで `SBDD_helper.h` をインクルードする前に、以下のようにマクロを定義してください。
 
 ```
-#define USE_GMP
+#define SBDDH_GMP
 #include "SBDD_helper.h"
 ```
 
 または、g++ でコンパイルしている場合、コンパイルオプション -D を用いて定義することもできます。
 
 ```
-g++ -DUSE_GMP program.cpp
+g++ -DSBDDH_GMP program.cpp
 ```
 
 # C++ 言語版簡易チュートリアル

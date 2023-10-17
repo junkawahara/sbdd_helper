@@ -66,7 +66,7 @@ testcppg: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
 testcpp-gmp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
         SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h \
 		bddc.o BDD.o ZBDD.o BDDCT.o
-	g++ $(OPT) $(WOPT4) -DUSE_GMP bddc.o BDD.o ZBDD.o BDDCT.o \
+	g++ $(OPT) $(WOPT4) -DSBDDH_GMP bddc.o BDD.o ZBDD.o BDDCT.o \
 	SBDD_helper_testcpp.cpp -lgmp -lgmpxx -o testcpp-gmp
 
 testcpp98: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \

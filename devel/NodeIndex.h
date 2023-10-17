@@ -565,7 +565,7 @@ private:
     std::map<bddp, T> storage_;
     bool is_count_made;
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     typedef mpz_class count_t;
 #else
     typedef ullint count_t;
@@ -638,7 +638,7 @@ private:
         return sto[node_index_->f].first;
     }
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     ullint getStorageValue(bddp f) const
     {
         if (count_storage_.count(f) > 0) {
@@ -755,7 +755,7 @@ private:
         return value;
     }
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     mpz_class getOrderNumberMP(bddp f, std::set<bddvar>& s) const
     {
         bddp f0;
@@ -834,7 +834,7 @@ private:
         }
     }
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     void getSetMP(bddp f, mpz_class order, std::set<bddvar>& s)
     {
         bddp f0 = f;
@@ -907,7 +907,7 @@ private:
                 }
                 bddfree(g1);
             }
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
             assert(sbddh_getValueFromMpz<value_t>(
                 sbddh_ullint_to_mpz(static_cast<ullint>(bddcard(g)))) == k);
 #else
@@ -1074,7 +1074,7 @@ public:
         return getStorageValue2<ullint>(node_index_->f);
     }
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     mpz_class countMP()
     {
         makeCountIndex();
@@ -1152,7 +1152,7 @@ public:
         return sto[node_index_->f];
     }
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     mpz_class getSumMP(const std::vector<llint>& weights)
     {
         if (node_index_->is_raw) {
@@ -1188,7 +1188,7 @@ public:
         return getOrderNumber(node_index_->f, ss);
     }
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     mpz_class getOrderNumberMP(const std::set<bddvar>& s)
     {
         makeCountIndex();
@@ -1208,7 +1208,7 @@ public:
         return s;
     }
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     std::set<bddvar> getSet(mpz_class order)
     {
         makeCountIndex();
@@ -1230,7 +1230,7 @@ public:
         return ZBDD_ID(getKSetsZBDD<ullint>(node_index_->f, k));
     }
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     ZBDD getKSetsZBDD(const mpz_class& k)
     {
         if (k <= 0) {
@@ -1249,14 +1249,14 @@ public:
         return getKLightestZBDD<ullint>(f, k, weights, strict);
     }
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     ZBDD getKLightestZBDD(const mpz_class& k,
         const std::vector<llint>& weights, int strict)
     {
         ZBDD f = ZBDD_ID(bddcopy(node_index_->f));
         return getKLightestZBDD<mpz_class>(f, k, weights, strict);
     }
-#endif /* USE_GMP */
+#endif /* SBDDH_GMP */
 
     ZBDD getKHeaviestZBDD(ullint k,
         const std::vector<llint>& weights, int strict)
@@ -1265,24 +1265,24 @@ public:
         return f - getKLightestZBDD(count() - k, weights, -strict);
     }
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
     ZBDD getKHeaviestZBDD(const mpz_class& k,
         const std::vector<llint>& weights, int strict)
     {
         ZBDD f = ZBDD_ID(bddcopy(node_index_->f));
         return f - getKLightestZBDD(countMP() - k, weights, -strict);
     }
-#endif /* USE_GMP */
+#endif /* SBDDH_GMP */
 
 #endif /* NO_BDDCT */
 
-#ifdef USE_GMP /* use GMP random */
+#ifdef SBDDH_GMP /* use GMP random */
     std::set<bddvar> sampleRandomly(gmp_randclass& random)
     {
         makeCountIndex();
         return getSet(random.get_z_range(countMP()));
     }
-#else /* USE_GMP */
+#else /* SBDDH_GMP */
 
 #if __cplusplus >= 201103L /* use C++ random class */
 
@@ -1307,14 +1307,14 @@ public:
 
 #endif /* __cplusplus >= 201103L */
 
-#endif /* USE_GMP */
+#endif /* SBDDH_GMP */
 
     std::set<bddvar> sampleRandomlyA(ullint* rand_state)
     {
         makeCountIndex();
         if (count() >= 1) {
             std::set<bddvar> s;
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
             /* card is larger than or equal to 2^64 */
             if (countMP() >= mpz_class("18446744073709551616")) {
                 sampleRandomlyA<mpz_class>(rand_state, s);
@@ -1637,7 +1637,7 @@ public:
     }
 };
 
-#ifdef USE_GMP
+#ifdef SBDDH_GMP
 
 template<>
 mpz_class sbddh_getCard<mpz_class>(const ZBDD& f)
@@ -1646,7 +1646,7 @@ mpz_class sbddh_getCard<mpz_class>(const ZBDD& f)
     return dd_index.countMP();
 }
 
-#endif /* USE_GMP */
+#endif /* SBDDH_GMP */
 
 template<>
 ullint sbddh_getCard<ullint>(const ZBDD& f)
