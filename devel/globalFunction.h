@@ -1393,6 +1393,30 @@ ZBDD exampleZbdd(ullint kind = 0ull)
 #ifndef NO_USE_BDDCT
 
 sbddextended_INLINE_FUNC
+bool weightRange_initialize(BDDCT* bddct, bddvar lev,
+    const std::vector<llint>& weights)
+{
+    for (size_t i = 0; i < weights.size(); ++i) {
+        if (weights[i] >= (1ll << 32)) {
+            std::cerr << "Each weight should be less than 2^32" << std::endl;
+            return false;
+        }
+    }
+
+    bddct->Alloc(lev);
+    for (bddvar le = 1; le <= lev; ++le) {
+        const int var = bddvaroflev(le);
+        if (static_cast<int>(weights.size()) <= var) {
+            std::cerr << "The size of weights should be larger than "
+                "the maximum variable number in f." << std::endl;
+            return false;
+        }
+        bddct->SetCostOfLev(le, static_cast<int>(weights[var]));
+    }
+    return true;
+}
+
+sbddextended_INLINE_FUNC
 ZBDD weightRange(const ZBDD& f, llint lower_bound, llint upper_bound, const std::vector<llint>& weights)
 {
     if (lower_bound >= (1ll << 32)) {
@@ -1403,25 +1427,12 @@ ZBDD weightRange(const ZBDD& f, llint lower_bound, llint upper_bound, const std:
         std::cerr << "upper_bound should be less than 2^32" << std::endl;
         return ZBDD(-1);
     }
-    for (size_t i = 0; i < weights.size(); ++i) {
-        if (weights[i] >= (1ll << 32)) {
-            std::cerr << "Each weight should be less than 2^32" << std::endl;
-            return ZBDD(-1);
-        }
-    }
-    const int lev = getLev(f);
-
     BDDCT bddct;
-    bddct.Alloc(lev);
-    for (int i = 1; i <= lev; ++i) {
-        const int var = bddvaroflev(i);
-        if (static_cast<int>(weights.size()) <= var) {
-            std::cerr << "The size of weights should be larger than "
-                "the maximum variable number in f." << std::endl;
-            return ZBDD(-1);
-        }
-        bddct.SetCostOfLev(i, static_cast<int>(weights[var]));
+    const int lev = getLev(f);
+    if (!weightRange_initialize(&bddct, lev, weights)) {
+        return ZBDD(-1);
     }
+
     ZBDD z = bddct.ZBDD_CostLE(f, static_cast<int>(upper_bound));
     if (lower_bound > LLONG_MIN) {
         z -= bddct.ZBDD_CostLE(f, static_cast<int>(lower_bound - 1));

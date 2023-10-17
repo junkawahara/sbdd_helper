@@ -543,6 +543,39 @@ ZBDD exampleZbdd(ullint kind = 0ull)
 この関数は使用している変数が足りない場合、自動的に `BDD_NewVar()` 関数を呼び出す。
 本関数はマニュアルや学習用としての使用を想定している。
 
+## weightRange
+
+```
+ZBDD weightRange(const ZBDD& f, llint lower_bound, llint upper_bound, const std::vector<llint>& weights)
+```
+
+ZBDD f に含まれる集合のうち、重みが lower_bound 以上、upper_bound 以下である集合のみからなる ZBDD を返す。
+weights は要素の重みであり、BDD/ZBDD の変数番号を添え字とし、値が重みである vector である。
+（BDD/ZBDD の変数番号は 1 から n である。weights[i] が変数番号 i の重みを表す。
+weights[0] は用いられないので任意の値を格納しておく。）
+
+この関数の内部では SAPPOROBDD の BDDCT クラスを用いており、intersection 演算を用いた方法より高速である。
+同じ f に対して複数回関数を呼び出す場合、直接 BDDCT クラスを用いる方が効率が良い。
+
+## weightLE / weightLT / weightGE / weightGT / weightEQ / weightNE
+
+```
+ZBDD weightLE(const ZBDD& f, llint bound, const std::vector<llint>& weights)
+ZBDD weightLT(const ZBDD& f, llint bound, const std::vector<llint>& weights)
+ZBDD weightGE(const ZBDD& f, llint bound, const std::vector<llint>& weights)
+ZBDD weightGT(const ZBDD& f, llint bound, const std::vector<llint>& weights)
+ZBDD weightEQ(const ZBDD& f, llint bound, const std::vector<llint>& weights)
+ZBDD weightNE(const ZBDD& f, llint bound, const std::vector<llint>& weights)
+```
+
+ZBDD f に含まれる集合のうち、重みが bound 以下 (LE)、未満 (LT)、以上 (GE)、より大きい (GT)、と等しい (EQ)、と等しくない (NE) 集合のみからなる ZBDD を返す。
+weights は要素の重みであり、BDD/ZBDD の変数番号を添え字とし、値が重みである vector である。
+（BDD/ZBDD の変数番号は 1 から n である。weights[i] が変数番号 i の重みを表す。
+weights[0] は用いられないので任意の値を格納しておく。）
+
+この関数の内部では SAPPOROBDD の BDDCT クラスを用いており、intersection 演算を用いた方法より高速である。
+同じ f に対して複数回関数を呼び出す場合、直接 BDDCT クラスを用いる方が効率が良い。
+
 ## constructZBDDFromElements
 
 ```

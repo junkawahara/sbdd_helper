@@ -778,10 +778,10 @@ void check_iterator_all(const ZBDD& f, DDIndex<int>& dd_index,
     }
     std::set<bddvar> prev;
     bool is_first_time = true;
-    const int check_th = 10000;
+    const ullint check_th = 10000;
     bool is_check_elements = (dd_index.count() < check_th);
     ZBDD check_z(0);
-    int count = 0;
+    ullint count = 0;
     for (InputIterator itor = first;
             itor != last && count < check_th;
             ++itor, ++count) {
@@ -793,19 +793,19 @@ void check_iterator_all(const ZBDD& f, DDIndex<int>& dd_index,
             is_first_time = false;
         } else {
             switch (kind) {
-            case CheckIteratorAllKind::KIND_MIN:
+            case KIND_MIN:
                 test(getWeight(prev, weights) <= getWeight(*itor, weights));
                 break;
-            case CheckIteratorAllKind::KIND_MAX:
+            case KIND_MAX:
                 test(getWeight(prev, weights) >= getWeight(*itor, weights));
                 break;
-            case CheckIteratorAllKind::KIND_RANDOM:
+            case KIND_RANDOM:
                 /* nothing */
                 break;
-            case CheckIteratorAllKind::KIND_DICT:
+            case KIND_DICT:
                 test(dd_index.getOrderNumber(prev) + 1 == dd_index.getOrderNumber(*itor));
                 break;
-            case CheckIteratorAllKind::KIND_RDICT:
+            case KIND_RDICT:
                 test(dd_index.getOrderNumber(prev) == dd_index.getOrderNumber(*itor) + 1);
                 break;
             }
@@ -1230,6 +1230,35 @@ int compare_dict_order(const std::set<bddvar>& s1,
     }
 }
 
+void check_k_lightest(const ZBDD& f, DDIndex<int>& dd_index,
+    const std::vector<llint>& weights)
+{
+    if (f != ZBDD(0)) {
+        ullint card = dd_index.count();
+        ullint step = card / 16 + 1;
+        for (ullint k = 1; k <= card; k += step) {
+            for (int strict = -1; strict <= 1; ++strict) {
+                ZBDD f_k = dd_index.getKLightestZBDD(k, weights, strict);
+                if (strict == -1) {
+                    test(f_k.Card() <= k);
+                } else if (strict == 0) {
+                    test(f_k.Card() == k);
+                } else {
+                    test(f_k.Card() >= k);
+                }
+                ZBDD f_r = f - f_k;
+                if (f_k != ZBDD(0) && f_r != ZBDD(0)) {
+                    DDIndex<int> dd_index_k(f_k);
+                    DDIndex<int> dd_index_r(f_r);
+                    test(dd_index_k.getMaximum(weights)
+                        <= dd_index_r.getMinimum(weights));
+                }
+            }
+        }
+    }
+}
+
+
 llint v_to_w(bddvar v)
 {
     return (llint)(v * v + 3 * v + 8);
@@ -1238,20 +1267,20 @@ llint v_to_w(bddvar v)
 void check_ddindex(const ZBDD& f, DDIndex<int>& dd_index)
 {
     ZBDD g(0);
-    llint card = dd_index.count();
+    ullint card = dd_index.count();
 #ifdef USE_GMP
     test_eq(card, dd_index.countMP().get_si());
 #endif
-    for (llint i = 0; i < card; ++i) {
+    for (ullint i = 0; i < card; ++i) {
         std::set<bddvar> varset = dd_index.getSet(i);
-        if (i < card - 1) {
+        if (i + 1 < card) {
             /* check dict order */
             test(compare_dict_order(varset, dd_index.getSet(i + 1)) < 0);
         }
         g += getSingleSet(varset);
         test(isMember(f, varset));
         llint order = dd_index.getOrderNumber(varset);
-        test_eq(i, order);
+        test_eq(static_cast<llint>(i), order);
 #ifdef USE_GMP
         mpz_class i_mp((int)i);
         test(varset == dd_index.getSet(i_mp));
@@ -1268,9 +1297,8 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& dd_index)
             n.value = n.child(0).value + n.child(1).value;
         }
     }
-    test(card == dd_index.root().value);
+    test_eq(static_cast<int>(card), dd_index.root().value);
 
-    ullint n = dd_index.count();
     llint max_s = -99999999;
     llint min_s = 99999999;
     llint sum_s = 0;
@@ -1281,13 +1309,9 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& dd_index)
     }
     const int bound = 100, lower_bound = 50, upper_bound = 110;
     ZBDD f_le(0), f_lt(0), f_ge(0), f_gt(0), f_eq(0), f_ne(0), f_range(0);
-    for (ullint i = 0; i < n; ++i) {
+    for (ullint i = 0; i < card; ++i) {
         std::set<bddvar> se = dd_index.getSet(static_cast<llint>(i));
-        llint weight = 0;
-        std::set<bddvar>::const_iterator itor = se.begin();
-        for ( ; itor != se.end(); ++itor) {
-            weight += v_to_w(*itor);
-        }
+        llint weight = getWeight(se, weights);
         if (weight > max_s) {
             max_s = weight;
         }
@@ -1370,33 +1394,35 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& dd_index)
 #endif
     }
 
+    check_k_lightest(f, dd_index, weights);
+
     /* check iterators */
     check_iterator_all(f, dd_index,
         dd_index.weight_min_begin(weights),
         dd_index.weight_min_end(),
-        CheckIteratorAllKind::KIND_MIN,
+        KIND_MIN,
         weights);
 
     check_iterator_all(f, dd_index,
         dd_index.weight_max_begin(weights),
         dd_index.weight_max_end(),
-        CheckIteratorAllKind::KIND_MAX,
+        KIND_MAX,
         weights);
 
     check_iterator_all(f, dd_index,
         dd_index.random_begin(),
         dd_index.random_end(),
-        CheckIteratorAllKind::KIND_RANDOM);
+        KIND_RANDOM);
 
     check_iterator_all(f, dd_index,
         dd_index.dict_begin(),
         dd_index.dict_end(),
-        CheckIteratorAllKind::KIND_DICT);
+        KIND_DICT);
 
     check_iterator_all(f, dd_index,
         dd_index.dict_rbegin(),
         dd_index.dict_rend(),
-        CheckIteratorAllKind::KIND_RDICT);
+        KIND_RDICT);
 
 #if __cplusplus >= 201103L
 
@@ -1468,9 +1494,9 @@ void test_ddindex(bool exhaustive)
     check_ddindex(f3, s3);
 
     if (exhaustive) {
-        std::mt19937 mt(0);
+        ullint seed = 1;
         for (int i = 0; i < 1000; ++i) {
-            ZBDD f4 = getUniformlyRandomZBDD(8, mt);
+            ZBDD f4 = getUniformlyRandomZBDDX(8, &seed);
             DDIndex<int> s4(f4);
             check_ddindex(f4, s4);
         }

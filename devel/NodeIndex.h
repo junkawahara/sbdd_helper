@@ -917,6 +917,66 @@ private:
         }
     }
 
+#ifndef NO_BDDCT
+    template<typename value_t>
+    ZBDD getKLightestZBDD(const ZBDD& f, const value_t& k,
+        const std::vector<llint>& weights, int strict)
+    {
+        if (k <= sbddh_getZero<value_t>() || f == ZBDD(0)) {
+            return ZBDD(0);
+        }
+        makeCountIndex();
+        /* k is more than or equal to the card of f */
+        if (k >= getStorageValue2<value_t>(f.GetID())) {
+            return f;
+        }
+        BDDCT bddct;
+        const int lev = getLev(f);
+        if (!weightRange_initialize(&bddct, lev, weights)) {
+            return ZBDD(-1);
+        }
+
+        /* binary search: k is in (left_bound, right_bound) */
+        int left_bound = bddct.MinCost(f) - 1;
+        int right_bound = bddct.MaxCost(f);
+        assert(left_bound < right_bound);
+        ZBDD c_zbdd;
+        ZBDD left_zbdd(0);
+        ZBDD right_zbdd = f;
+        value_t c_card;
+        value_t left_card = 0;
+        while (right_bound - left_bound > 1) {
+            int c_bound = left_bound + (right_bound - left_bound) / 2;
+            assert(c_bound >= left_bound + 1);
+            c_zbdd = bddct.ZBDD_CostLE(f, c_bound);
+            c_card = sbddh_getCard<value_t>(c_zbdd);
+            if (c_card == k) {
+                return c_zbdd;
+            } else if (c_card < k) {
+                left_bound = c_bound;
+                left_zbdd = c_zbdd;
+                left_card = c_card;
+            } else {
+                right_bound = c_bound;
+                right_zbdd = c_zbdd;
+            }
+            assert(left_bound < right_bound);
+        }
+        assert(left_bound + 1 == right_bound);
+        /* assert(bddct.ZBDD_CostLE(f, left_bound) == left_zbdd); */
+        /* assert(bddct.ZBDD_CostLE(f, right_bound) == right_zbdd); */
+        if (strict < 0) {
+            return left_zbdd;
+        } else if (strict > 0) {
+            return right_zbdd;
+        } else {
+            ZBDD delta = right_zbdd - left_zbdd;
+            DDIndex<int> delta_index(delta);
+            return left_zbdd + delta_index.getKSetsZBDD(k - left_card);
+        }
+    }
+#endif /* NO_BDDCT */
+
     template<typename value_t>
     void sampleRandomlyA(ullint* rand_state, std::set<bddvar>& s)
     {
@@ -1175,6 +1235,25 @@ public:
         return ZBDD_ID(getKSetsZBDD<mpz_class>(node_index_->f, k));
     }
 #endif
+
+#ifndef NO_BDDCT
+    ZBDD getKLightestZBDD(ullint k,
+        const std::vector<llint>& weights, int strict)
+    {
+        ZBDD f = ZBDD_ID(bddcopy(node_index_->f));
+        return getKLightestZBDD<ullint>(f, k, weights, strict);
+    }
+
+#ifdef USE_GMP
+    ZBDD getKLightestZBDD(const mpz_class& k,
+        const std::vector<llint>& weights, int strict)
+    {
+        ZBDD f = ZBDD_ID(bddcopy(node_index_->f));
+        return getKLightestZBDD<mpz_class>(f, k, weights, strict);
+    }
+#endif /* USE_GMP */
+
+#endif /* NO_BDDCT */
 
 #ifdef USE_GMP /* use GMP random */
     std::set<bddvar> sampleRandomly(gmp_randclass& random)
