@@ -35,6 +35,7 @@ C/C++ 言語の両方に対応しています。
 
 [SAPPOROBDD](https://github.com/Shin-ichi-Minato/SAPPOROBDD) Ver 1.85 (v.20171126) 以降が必要です。
 2023/10/6 時点の最新版（Ver 1.94、[v.20230102](https://github.com/Shin-ichi-Minato/SAPPOROBDD/tree/v.20230102)）で動作を確認しています。
+古いバージョンの SAPPOROBDD を用いる場合、SBDDH_NO_BDDCT を定義してください（最新版を用いる場合は定義しないでください）。
 
 C++98, C++11, C++14, C++17 でコンパイルできることを確認しています。
 ただし、long long int を用いているため、（long long int が規格にない）C++98 では warning が出ます。
