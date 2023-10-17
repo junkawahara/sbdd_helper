@@ -129,6 +129,14 @@ T& getStorageRef(bddp f)
 
 ノード f に関連付けられた T 型のデータへの参照を取得する。
 
+## getZBDD()
+
+```
+ZBDD getZBDD() const
+```
+
+インデックス対象の ZBDD を取得する。
+
 ## height
 
 ```

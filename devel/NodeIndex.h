@@ -1038,6 +1038,11 @@ public:
         return storage_[f];
     }
 
+    ZBDD getZBDD() const
+    {
+        return ZBDD_ID(bddcopy(node_index_->f));
+    }
+
     int height() const
     {
         return bddgetlev(node_index_->f);

@@ -1282,6 +1282,7 @@ llint v_to_w(bddvar v)
 void check_ddindex(const ZBDD& f, DDIndex<int>& dd_index)
 {
     ZBDD g(0);
+    test(f == dd_index.getZBDD());
     ullint card = dd_index.count();
 #ifdef USE_GMP
     test_eq(card, dd_index.countMP().get_si());
