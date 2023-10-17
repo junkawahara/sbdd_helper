@@ -105,13 +105,9 @@ int is_expected_str(FILE* fp, const char* str)
 
 void initialize(void)
 {
-    int i;
-
     bddinit(1000ll, 10000000ll);
 
-    for (i = 0; i < 100; ++i) {
-        bddnewvar();
-    }
+    bddnewvarn(100);
 }
 
 bddp make_test_zbdd(void)

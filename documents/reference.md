@@ -1,6 +1,6 @@
 # SBDD_helper リファレンス
 
-Version 1.0.3
+Version 1.1.0
 
 本プログラムで提供している関数は開発中であるため、予告なく仕様を変更することがある。
 
@@ -21,6 +21,7 @@ C++ 版では、C 版の全ての関数も使用可能である。
     * 指定した重み以下からなる集合のみを抽出する weightRange 関数など。
     * 重みが小さい、または、大きい順に k 個の集合のみを抽出する getKLightestZBDD、getKHeaviestZBDD 関数。
     * インデックス対象の ZBDD を取得する DDIndex::getZBDD 関数。
+    * BDD 変数を宣言する SBDDH_NewVar、SBDDH_NewVarRev 関数。
 * USE_GMP マクロの名称を SBDDH_GMP に変更。
 * 重み最小順、最大順、辞書順、辞書逆順、ランダムサンプリング用のイテレータを追加。
 * bddNodeIndex や DDIndex の size、count 関数の返り値を llint から ullint に変更。getBddp の第2引数の型を llint から ullint に変更。

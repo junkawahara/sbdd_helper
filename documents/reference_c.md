@@ -75,6 +75,29 @@ int bddis64bitversion()
 
 SAPPOROBDD の64ビット版でコンパイルが行われているかどうか判定する。正確には、B_64 マクロが定義されている場合、1 を返し、されていない場合、0 を返す。
 
+## bddnewvarn
+
+```
+void bddnewvarn(unsigned int n)
+```
+
+bddnewvar() 関数を n 回呼び出す。
+最初から BDD の変数の数が n であると判明している場合、
+この関数を引数を n にして最初に1回呼べばよい。
+この関数を呼び出した場合、ノードの変数番号とノードのレベルは等しくなる。
+
+## bddnewvarrev
+
+```
+void bddnewvarrev(unsigned int n)
+```
+
+bddnewvaroflev() 関数を n 回呼び出す。
+最初から BDD の変数の数が n であると判明している場合、
+この関数を引数を n にして最初に1回呼べばよい。
+この関数を呼び出した場合、ノードのレベルは、変数の数 - ノードの変数番号 + 1 となる。
+すなわち、根から終端に向かって変数番号は増える方向である。
+
 ## bddgetterminal
 
 ```

@@ -37,6 +37,32 @@ sbddextended_INLINE_FUNC int bddis64bitversion(void)
 #endif
 }
 
+sbddextended_INLINE_FUNC void bddnewvarn(unsigned int n)
+{
+    unsigned int i;
+
+    if (bddvarused() + n > bddvarmax) {
+        fprintf(stderr, "The number of variables cannot exceed bddvarmax.\n");
+        exit(1);
+    }
+    for (i = 0; i < n; ++i) {
+        bddnewvar();
+    }
+}
+
+sbddextended_INLINE_FUNC void bddnewvarrev(unsigned int n)
+{
+    unsigned int i;
+
+    if (bddvarused() + n > bddvarmax) {
+        fprintf(stderr, "The number of variables cannot exceed bddvarmax.\n");
+        exit(1);
+    }
+    for (i = 0; i < n; ++i) {
+        bddnewvaroflev(1);
+    }
+}
+
 sbddextended_INLINE_FUNC int bddisvalid(bddp f)
 {
     unused(f);
@@ -653,6 +679,16 @@ sbddextended_INLINE_FUNC ZBDD eraseNot(const ZBDD& f)
 sbddextended_INLINE_FUNC bool is64BitVersion()
 {
     return bddis64bitversion() != 0;
+}
+
+sbddextended_INLINE_FUNC void SBDDH_NewVar(unsigned int n)
+{
+    bddnewvarn(n);
+}
+
+sbddextended_INLINE_FUNC void SBDDH_NewVarRev(unsigned int n)
+{
+    bddnewvarrev(n);
 }
 
 sbddextended_INLINE_FUNC bool isValid(const BDD& f)
