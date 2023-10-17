@@ -165,6 +165,12 @@ ullint sbddh_getValueFromMpz<ullint>(ullint v)
     #endif
 #endif
 
+#ifdef __clang_major__
+    #if __clang_major__ >= 13 /* clang version 13 */
+        #define SBDDH_SNPRINTF_EXISTS
+    #endif
+#endif
+
 #ifdef SBDDH_SNPRINTF_EXISTS
 
 /* We use the following macros instead of vsnprintf because passing */
