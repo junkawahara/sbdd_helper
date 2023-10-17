@@ -246,8 +246,14 @@ weights[0] は用いられないので任意の値を格納しておく。）
 llint getOrderNumber(const std::set<bddvar>& s)
 ```
 
-引数で指定した集合 s が、辞書順で何番目かを返す。s が含まれていない場合、-1 を返す。
+引数で指定した集合 s が、辞書順で何番目か（0始まり）を返す。s が含まれていない場合、-1 を返す。
 本メンバ関数は内部にカウント用の情報を記憶させる。
+
+辞書順の定義は以下の通りである。ZBDD 変数 a と b について、それぞれのレベルを L(a) と L(b) とすると、
+L(a) &gt; L(b) ならば a &lt; b とする。すなわち、a と b のうち、根ノードに近い方の変数を「小さい」と定義する。
+この順序の下で、辞書順を考える。すなわち、集合 A と B について、
+両者の要素を昇順に並べて、初めて異なる要素を a と b とすると、
+a &gt; b であるとき、A < B であるとする。
 
 ## getOrderNumberMP
 
@@ -260,6 +266,8 @@ mpz_class getOrderNumberMP(const std::set<bddvar>& s)
 この関数を利用する際は、USE_GMP マクロを冒頭で定義する。
 本メンバ関数は内部にカウント用の情報を記憶させる。
 
+辞書順の定義は getOrderNumber 関数の説明を参照。
+
 ## getSet
 
 ```
@@ -269,6 +277,8 @@ std::set<bddvar> getSet(llint order)
 辞書順で order 番目（0 始まり）の集合を返す。
 order が範囲外（マイナスの値か、要素数以上）の場合は空集合を返す。
 本メンバ関数は内部にカウント用の情報を記憶させる。
+
+辞書順の定義は getOrderNumber 関数の説明を参照。
 
 ## getSet（GMP版）
 
@@ -281,6 +291,33 @@ order が範囲外（マイナスの値か、要素数以上）の場合は空�
 返り値は GMP ライブラリの mpz_class であり、任意桁の整数を表現できる。
 この関数を利用する際は、USE_GMP マクロを冒頭で定義する。
 本メンバ関数は内部にカウント用の情報を記憶させる。
+
+辞書順の定義は getOrderNumber 関数の説明を参照。
+
+## getKSetsZBDD
+
+```
+ZBDD getKSetsZBDD(ullint k)
+```
+
+辞書順で先頭から k 個の集合を ZBDD として返す。
+k が 0 の場合は空集合を返す。
+本メンバ関数は内部にカウント用の情報を記憶させる。
+
+辞書順の定義は getOrderNumber 関数の説明を参照。
+
+## getKSetsZBDD（GMP版）
+
+```
+ZBDD getKSetsZBDD(const mpz_class& k)
+```
+
+辞書順で先頭から k 個の集合を ZBDD として返す。
+k が 0 の場合は空集合を返す。
+本メンバ関数は内部にカウント用の情報を記憶させる。
+この関数を利用する際は、USE_GMP マクロを冒頭で定義する。
+
+辞書順の定義は getOrderNumber 関数の説明を参照。
 
 ## sampleRandomly
 
@@ -325,7 +362,7 @@ BDD/ZBDD が表す集合族から集合を1つ一様ランダムに選んで返�
 
 この関数は内部で近似計算を行うため、サンプリング結果は完全な一様ランダムではなく、
 わずかに偏りが生じる。
-この関数は要素数が 2^64 を超える場合でも利用できる。
+この関数は要素数が 2^64 を超える場合でも利用できるが、乱数の周期は 2^64 - 1 であるので、高々 2^64 - 1 種類の要素しかサンプリングされない。
 この関数は乱数の種が同じなら環境に依存せず同じ結果を返す。
 GMP を用いた（USE_GMP マクロを定義した）場合でもこの関数は提供される。
 
@@ -373,7 +410,7 @@ count 関数など内部で必要に応じて自動的に呼び出されるの�
 DDNodeIterator begin()
 ```
 
-DDNodeIterator の開始イテレータを返す。詳細は DDIndex::DDNodeIterator の説明を参照。
+DDNodeIterator の開始イテレータを返す。詳細はイテレータの説明を参照。
 
 ## end
 
@@ -381,21 +418,125 @@ DDNodeIterator の開始イテレータを返す。詳細は DDIndex::DDNodeIter
 DDNodeIterator end()
 ```
 
-DDNodeIterator の終了イテレータを返す。詳細は DDIndex::DDNodeIterator の説明を参照。
+DDNodeIterator の終了イテレータを返す。詳細はイテレータの説明を参照。
 
-## DDIndex::DDNodeIterator
+## weight_min_begin
 
-DDNodeIterator は DDIndex のクラス内クラスである。
-各ノードを巡行するイテレータを表す。
-std::iterator<std::input_iterator_tag, bddp> を継承しており、
+```
+WeightIterator weight_min_begin(const std::vector<llint>& weights) const
+```
+
+WeightIterator の重み最小化の開始イテレータを返す。詳細はイテレータの説明を参照。
+
+weights は要素の重みであり、BDD/ZBDD の変数番号を添え字とし、値が重みである vector である。
+（BDD/ZBDD の変数番号は 1 から n である。weights[i] が変数番号 i の重みを表す。
+weights[0] は用いられないので任意の値を格納しておく。）
+
+## weight_min_end
+
+```
+WeightIterator weight_min_end() const
+```
+
+WeightIterator の重み最小化の終了イテレータを返す。詳細はイテレータの説明を参照。
+
+
+## weight_max_begin
+
+```
+WeightIterator weight_max_begin(const std::vector<llint>& weights) const
+```
+
+WeightIterator の重み最大化の開始イテレータを返す。詳細はイテレータの説明を参照。
+
+weights は要素の重みであり、BDD/ZBDD の変数番号を添え字とし、値が重みである vector である。
+（BDD/ZBDD の変数番号は 1 から n である。weights[i] が変数番号 i の重みを表す。
+weights[0] は用いられないので任意の値を格納しておく。）
+
+## weight_max_end
+
+```
+WeightIterator weight_max_end() const
+```
+
+WeightIterator の重み最大化の終了イテレータを返す。詳細はイテレータの説明を参照。
+
+## random_begin
+
+```
+RandomIterator random_begin(ullint rand_seed = 1) const
+```
+
+RandomIterator の開始イテレータを返す。詳細はイテレータの説明を参照。
+
+rand_seed で乱数の種を指定する。
+
+## random_end
+
+```
+RandomIterator random_end() const
+```
+
+RandomIterator の終了イテレータを返す。詳細はイテレータの説明を参照。
+
+## dict_begin
+
+```
+DictIterator dict_begin()
+```
+
+DictIterator 辞書順の開始イテレータを返す。詳細はイテレータの説明を参照。
+
+辞書順の定義は getOrderNumber 関数の説明を参照。
+
+## dict_end
+
+```
+DictIterator dict_end()
+```
+
+DictIterator 辞書順の終了イテレータを返す。詳細はイテレータの説明を参照。
+
+辞書順の定義は getOrderNumber 関数の説明を参照。
+
+## dict_rbegin
+
+```
+DictIterator dict_rbegin()
+```
+
+DictIterator 逆辞書順の開始イテレータを返す。詳細はイテレータの説明を参照。
+
+辞書順の定義は getOrderNumber 関数の説明を参照。
+
+## dict_rend
+
+```
+DictIterator dict_rend()
+```
+
+DictIterator 逆辞書順の終了イテレータを返す。詳細はイテレータの説明を参照。
+
+辞書順の定義は getOrderNumber 関数の説明を参照。
+
+## イテレータ
+
+DDIndex<T> のクラス内クラスとして、各種イテレータが提供されている。
+いずれのイテレータも std::iterator<std::input_iterator_tag, bddp> を継承しており、
 STL ライブラリの入力イテレータとなる。
+
+DDNodeIterator は各ノードを巡行する。
+WeightIterator は重み最小順、または、重み最大順に集合を巡行する。
+RandomIterator は集合をランダムに巡行する。
+DictIterator は要素を辞書順、または、辞書逆順に集合を巡行する。
+辞書順の定義は getOrderNumber 関数の説明を参照。
 
 ### 使用例
 
 ```
-DDIndex index = ... ; DDIndex を何らかの方法で作成
+DDIndex<int> index = ... ; DDIndex を何らかの方法で作成
 
-DDIndex::DDNodeIterator itor = index.begin();
+DDIndex<int>::DDNodeIterator itor = index.begin();
 while (itor != index.end()) {
     bddp f = *itor;
 

@@ -48,6 +48,26 @@ std::vector<bddvar> ullint_to_varvec(ullint v)
     return vec;
 }
 
+void printSet(const std::set<bddvar>& s)
+{
+    std::set<bddvar>::const_iterator itor = s.begin();
+    for ( ; itor != s.end(); ++itor) {
+        std::cerr << *itor << " ";
+    }
+    std::cerr << std::endl;
+}
+
+llint getWeight(const std::set<bddvar>& s,
+    const std::vector<llint>& weights)
+{
+    llint weight = 0;
+    std::set<bddvar>::const_iterator itor = s.begin();
+    for ( ; itor != s.end(); ++itor) {
+        weight += weights[*itor];
+    }
+    return weight;
+}
+
 #ifdef USE_GMP
 
 void test_gmp_conversion()
@@ -710,10 +730,138 @@ void test_for_each(std::set<bddvar> s)
     test_eq(s.size(), 2);
 }
 
+template <typename InputIterator>
+void check_iterator(const InputIterator& first,
+                    const InputIterator& last)
+{
+    std::set<bddvar> s12; /* {1, 2} */
+    s12.insert(1); s12.insert(2);
+    std::set<bddvar> s13; /* {1, 3} */
+    s13.insert(1); s13.insert(3);
+    std::set<bddvar> s23; /* {2, 3} */
+    s23.insert(2); s23.insert(3);
+    std::set<bddvar> s123; /* {1, 2, 3} */
+    s123.insert(1); s123.insert(2); s123.insert(3);
+
+    InputIterator itor = std::find(first, last, s13);
+    test(itor != last); /* found */
+
+    itor = std::find(first, last, s123);
+    test(itor == last); /* not found */
+
+    test_eq(std::count(first, last, s12), 1);
+    test_eq(std::count(first, last, s13), 1);
+    test_eq(std::count(first, last, s23), 1);
+    test_eq(std::count(first, last, s123), 0);
+
+    test_eq(std::count_if(first, last, test_count_if_size1), 0);
+    test_eq(std::count_if(first, last, test_count_if_size2), 3);
+    test_eq(std::count_if(first, last, test_count_if_size3), 0);
+
+    std::for_each(first, last, test_for_each);
+}
+
+enum CheckIteratorAllKind {KIND_MIN, KIND_MAX,
+    KIND_RANDOM, KIND_DICT, KIND_RDICT};
+
+template <typename InputIterator>
+void check_iterator_all(const ZBDD& f, DDIndex<int>& dd_index,
+                        const InputIterator& first,
+                        const InputIterator& last,
+                        CheckIteratorAllKind kind,
+                        const std::vector<llint>& weights =
+                            std::vector<llint>())
+{
+    if (first == last) {
+        test(f == ZBDD(0) || f == ZBDD(-1));
+        return;
+    }
+    std::set<bddvar> prev;
+    bool is_first_time = true;
+    const int check_th = 10000;
+    bool is_check_elements = (dd_index.count() < check_th);
+    ZBDD check_z(0);
+    int count = 0;
+    for (InputIterator itor = first;
+            itor != last && count < check_th;
+            ++itor, ++count) {
+        test(isMember(f, *itor));
+        if (is_check_elements) {
+            check_z += getSingleSet(*itor);
+        }
+        if (is_first_time) {
+            is_first_time = false;
+        } else {
+            switch (kind) {
+            case CheckIteratorAllKind::KIND_MIN:
+                test(getWeight(prev, weights) <= getWeight(*itor, weights));
+                break;
+            case CheckIteratorAllKind::KIND_MAX:
+                test(getWeight(prev, weights) >= getWeight(*itor, weights));
+                break;
+            case CheckIteratorAllKind::KIND_RANDOM:
+                /* nothing */
+                break;
+            case CheckIteratorAllKind::KIND_DICT:
+                test(dd_index.getOrderNumber(prev) + 1 == dd_index.getOrderNumber(*itor));
+                break;
+            case CheckIteratorAllKind::KIND_RDICT:
+                test(dd_index.getOrderNumber(prev) == dd_index.getOrderNumber(*itor) + 1);
+                break;
+            }
+        }
+        prev = *itor;
+    }
+    if (is_check_elements) {
+        test_eq(f.Card(), count);
+        test(f == check_z);
+    }
+}
+
+#if __cplusplus >= 201103L
+
+template <typename InputIterator>
+void check_iterator_std(const ZBDD& f, DDIndex<int>& dd_index,
+                        const InputIterator& first,
+                        const InputIterator& last)
+{
+    if (dd_index.count() < 10000) {
+        ullint seed = 1;
+        std::set<bddvar> s = dd_index.sampleRandomlyA(&seed);
+        InputIterator itor1 = std::find(first, last, s);
+        test(itor1 != last); /* found */
+        test_eq(std::count(first, last, s), 1);
+        s.insert(99999999);
+        InputIterator itor2 = std::find(first, last, s);
+        test(itor2 == last);
+        test_eq(std::count(first, last, s), 0);
+
+        test_eq(std::count_if(first, last,
+            [&f](const std::set<bddvar>& ss) {
+                return isMember(f, ss);
+            }), dd_index.count());
+
+        std::for_each(first, last,
+            [&f](const std::set<bddvar>& ss) {
+                test(isMember(f, ss));
+            });
+    }
+}
+
+#endif
+
 void test_elementIterator_cpp()
 {
     ZBDD f = ZBDD_ID(make_test_zbdd());
     /* f is expected to be {{3, 2}, {3, 1}, {2, 1}} */
+    ZBDD g = f + ZBDD(1);
+    /* g is expected to be {{}, {3, 2}, {3, 1}, {2, 1}} */
+
+    DDIndex<int> ddindex_f(f);
+    DDIndex<int> ddindex_g(g);
+    std::vector<llint> weights;
+    weights.push_back(0); weights.push_back(-3);
+    weights.push_back(2); weights.push_back(4);
 
     std::set<bddvar> s12; /* {1, 2} */
     s12.insert(1); s12.insert(2);
@@ -740,11 +888,94 @@ void test_elementIterator_cpp()
 
         ++itor;
         test(itor == eih.end());
+
+        DDIndex<int>::WeightIterator min_itor =
+            ddindex_f.weight_min_begin(weights);
+        test(min_itor != ddindex_f.weight_min_end());
+        test(*min_itor == s12);
+
+        ++min_itor;
+        test(min_itor != ddindex_f.weight_min_end());
+        test(*min_itor == s13);
+
+        ++min_itor;
+        test(min_itor != ddindex_f.weight_min_end());
+        test(*min_itor == s23);
+
+        ++min_itor;
+        test(min_itor == ddindex_f.weight_min_end());
+
+        DDIndex<int>::WeightIterator max_itor =
+            ddindex_f.weight_max_begin(weights);
+        test(max_itor != ddindex_f.weight_max_end());
+        test(*max_itor == s23);
+
+        ++max_itor;
+        test(max_itor != ddindex_f.weight_max_end());
+        test(*max_itor == s13);
+
+        ++max_itor;
+        test(max_itor != ddindex_f.weight_max_end());
+        test(*max_itor == s12);
+
+        ++max_itor;
+        test(max_itor == ddindex_f.weight_max_end());
+
+        DDIndex<int>::RandomIterator random_itor =
+            ddindex_f.random_begin();
+        ZBDD fa(0);
+        test(random_itor != ddindex_f.random_end());
+        test(isMember(f, *random_itor));
+        fa += getSingleSet(*random_itor);
+
+        ++random_itor;
+        test(random_itor != ddindex_f.random_end());
+        test(isMember(f, *random_itor));
+        fa += getSingleSet(*random_itor);
+
+        ++random_itor;
+        test(random_itor != ddindex_f.random_end());
+        test(isMember(f, *random_itor));
+        fa += getSingleSet(*random_itor);
+
+        ++random_itor;
+        test(random_itor == ddindex_f.random_end());
+        test(f == fa);
+
+        DDIndex<int>::DictIterator dict_itor =
+            ddindex_f.dict_begin();
+        test(dict_itor != ddindex_f.dict_end());
+        test(*dict_itor == s23);
+
+        ++dict_itor;
+        test(dict_itor != ddindex_f.dict_end());
+        test(*dict_itor == s13);
+
+        ++dict_itor;
+        test(dict_itor != ddindex_f.dict_end());
+        test(*dict_itor == s12);
+
+        ++dict_itor;
+        test(dict_itor == ddindex_f.dict_end());
+
+        DDIndex<int>::DictIterator dict_ritor =
+            ddindex_f.dict_rbegin();
+        test(dict_ritor != ddindex_f.dict_rend());
+        test(*dict_ritor == s12);
+
+        ++dict_ritor;
+        test(dict_ritor != ddindex_f.dict_rend());
+        test(*dict_ritor == s13);
+
+        ++dict_ritor;
+        test(dict_ritor != ddindex_f.dict_rend());
+        test(*dict_ritor == s23);
+
+        ++dict_ritor;
+        test(dict_ritor == ddindex_f.dict_rend());
     } /* itor destructed */
 
     {
-        ZBDD g = f + ZBDD(1);
-        /* g is expected to be {{}, {3, 2}, {3, 1}, {2, 1}} */
         ElementIteratorHolder eih(g);
         ElementIterator itor = eih.begin();
         test(itor != eih.end());
@@ -764,44 +995,204 @@ void test_elementIterator_cpp()
 
         ++itor;
         test(itor == eih.end());
+
+        DDIndex<int>::WeightIterator min_itor =
+            ddindex_g.weight_min_begin(weights);
+        test(min_itor != ddindex_g.weight_min_end());
+        test(*min_itor == s12);
+
+        ++min_itor;
+        test(min_itor != ddindex_g.weight_min_end());
+        test_eq((*min_itor).size(), 0);
+
+        ++min_itor;
+        test(min_itor != ddindex_g.weight_min_end());
+        test(*min_itor == s13);
+
+        ++min_itor;
+        test(min_itor != ddindex_g.weight_min_end());
+        test(*min_itor == s23);
+
+        ++min_itor;
+        test(min_itor == ddindex_g.weight_min_end());
+
+        DDIndex<int>::WeightIterator max_itor =
+            ddindex_g.weight_max_begin(weights);
+        test(max_itor != ddindex_g.weight_max_end());
+        test(*max_itor == s23);
+
+        ++max_itor;
+        test(max_itor != ddindex_g.weight_max_end());
+        test(*max_itor == s13);
+
+        ++max_itor;
+        test(max_itor != ddindex_g.weight_max_end());
+        test_eq((*max_itor).size(), 0);
+
+        ++max_itor;
+        test(max_itor != ddindex_g.weight_max_end());
+        test(*max_itor == s12);
+
+        ++max_itor;
+        test(max_itor == ddindex_g.weight_max_end());
+
+        DDIndex<int>::RandomIterator random_itor =
+            ddindex_g.random_begin();
+        ZBDD ga(0);
+        test(random_itor != ddindex_g.random_end());
+        test(isMember(g, *random_itor));
+        ga += getSingleSet(*random_itor);
+
+        ++random_itor;
+        test(random_itor != ddindex_g.random_end());
+        test(isMember(g, *random_itor));
+        ga += getSingleSet(*random_itor);
+
+        ++random_itor;
+        test(random_itor != ddindex_g.random_end());
+        test(isMember(g, *random_itor));
+        ga += getSingleSet(*random_itor);
+
+        ++random_itor;
+        test(random_itor != ddindex_g.random_end());
+        test(isMember(g, *random_itor));
+        ga += getSingleSet(*random_itor);
+
+        ++random_itor;
+        test(random_itor == ddindex_g.random_end());
+        test(g == ga);
+
+        DDIndex<int>::DictIterator dict_itor =
+            ddindex_g.dict_begin();
+        test(dict_itor != ddindex_g.dict_end());
+        test_eq((*dict_itor).size(), 0);
+
+        ++dict_itor;
+        test(dict_itor != ddindex_g.dict_end());
+        test(*dict_itor == s23);
+
+        ++dict_itor;
+        test(dict_itor != ddindex_g.dict_end());
+        test(*dict_itor == s13);
+
+        ++dict_itor;
+        test(dict_itor != ddindex_g.dict_end());
+        test(*dict_itor == s12);
+
+        ++dict_itor;
+        test(dict_itor == ddindex_g.dict_end());
+
+        DDIndex<int>::DictIterator dict_ritor =
+            ddindex_g.dict_rbegin();
+        test(dict_ritor != ddindex_g.dict_rend());
+        test(*dict_ritor == s12);
+
+        ++dict_ritor;
+        test(dict_ritor != ddindex_g.dict_rend());
+        test(*dict_ritor == s13);
+
+        ++dict_ritor;
+        test(dict_ritor != ddindex_g.dict_rend());
+        test(*dict_ritor == s23);
+
+        ++dict_ritor;
+        test(dict_ritor != ddindex_g.dict_rend());
+        test_eq((*dict_ritor).size(), 0);
+
+        ++dict_ritor;
+        test(dict_ritor == ddindex_g.dict_rend());
     } /* itor destructed */
 
     /* bddempty test */
     {
+        DDIndex<int> ddindex_0(ZBDD(0));
+
         ElementIteratorHolder eih(ZBDD(0));
         ElementIterator itor = eih.begin();
         test(itor == eih.end());
+
+        DDIndex<int>::WeightIterator min_itor =
+            ddindex_0.weight_min_begin(weights);
+        test(min_itor == ddindex_0.weight_min_end());
+
+        DDIndex<int>::WeightIterator max_itor =
+            ddindex_0.weight_max_begin(weights);
+        test(max_itor == ddindex_0.weight_max_end());
+
+        DDIndex<int>::RandomIterator random_itor =
+            ddindex_0.random_begin();
+        test(random_itor == ddindex_0.random_end());
+
+        DDIndex<int>::DictIterator dict_itor =
+            ddindex_0.dict_begin();
+        test(dict_itor == ddindex_0.dict_end());
+
+        DDIndex<int>::DictIterator dict_ritor =
+            ddindex_0.dict_rbegin();
+        test(dict_ritor == ddindex_0.dict_rend());
     }
 
     /* bddsingle test */
     {
+        DDIndex<int> ddindex_1(ZBDD(1));
+
         ElementIteratorHolder eih(ZBDD(1));
         ElementIterator itor = eih.begin();
         test(itor != eih.end());
         test_eq(itor->size(), 0);
         ++itor;
         test(itor == eih.end());
+
+        DDIndex<int>::WeightIterator min_itor =
+            ddindex_1.weight_min_begin(weights);
+        test(min_itor != ddindex_1.weight_min_end());
+        test_eq((*min_itor).size(), 0);
+        ++min_itor;
+        test(min_itor == ddindex_1.weight_min_end());
+
+        DDIndex<int>::WeightIterator max_itor =
+            ddindex_1.weight_max_begin(weights);
+        test(max_itor != ddindex_1.weight_max_end());
+        test_eq((*max_itor).size(), 0);
+        ++max_itor;
+        test(max_itor == ddindex_1.weight_max_end());
+
+        DDIndex<int>::RandomIterator random_itor =
+            ddindex_1.random_begin();
+        test(random_itor != ddindex_1.random_end());
+        test_eq((*random_itor).size(), 0);
+        ++random_itor;
+        test(random_itor == ddindex_1.random_end());
+
+        DDIndex<int>::DictIterator dict_itor =
+            ddindex_1.dict_begin();
+        test(dict_itor != ddindex_1.dict_end());
+        test_eq((*dict_itor).size(), 0);
+        ++dict_itor;
+        test(dict_itor == ddindex_1.dict_end());
+
+        DDIndex<int>::DictIterator dict_ritor =
+            ddindex_1.dict_rbegin();
+        test(dict_ritor != ddindex_1.dict_rend());
+        test_eq((*dict_ritor).size(), 0);
+        ++dict_ritor;
+        test(dict_ritor == ddindex_1.dict_rend());
     }
 
     /* algorithm start */
     {
         ElementIteratorHolder eih(f);
-        ElementIterator itor = std::find(eih.begin(), eih.end(), s13);
-        test(itor != eih.end()); /* found */
-
-        itor = std::find(eih.begin(), eih.end(), s123);
-        test(itor == eih.end()); /* not found */
-
-        test_eq(std::count(eih.begin(), eih.end(), s12), 1);
-        test_eq(std::count(eih.begin(), eih.end(), s13), 1);
-        test_eq(std::count(eih.begin(), eih.end(), s23), 1);
-        test_eq(std::count(eih.begin(), eih.end(), s123), 0);
-
-        test_eq(std::count_if(eih.begin(), eih.end(), test_count_if_size1), 0);
-        test_eq(std::count_if(eih.begin(), eih.end(), test_count_if_size2), 3);
-        test_eq(std::count_if(eih.begin(), eih.end(), test_count_if_size3), 0);
-
-        std::for_each(eih.begin(), eih.end(), test_for_each);
+        check_iterator(eih.begin(), eih.end());
+        check_iterator(ddindex_f.weight_min_begin(weights),
+                        ddindex_f.weight_min_end());
+        check_iterator(ddindex_f.weight_max_begin(weights),
+                        ddindex_f.weight_max_end());
+        check_iterator(ddindex_f.random_begin(),
+                        ddindex_f.random_end());
+        check_iterator(ddindex_f.dict_begin(),
+                        ddindex_f.dict_end());
+        check_iterator(ddindex_f.dict_rbegin(),
+                        ddindex_f.dict_rend());
     }
 }
 
@@ -844,51 +1235,42 @@ llint v_to_w(bddvar v)
     return (llint)(v * v + 3 * v + 8);
 }
 
-void printSet(const std::set<bddvar>& s)
-{
-    std::set<bddvar>::const_iterator itor = s.begin();
-    for ( ; itor != s.end(); ++itor) {
-        std::cerr << *itor << " ";
-    }
-    std::cerr << std::endl;
-}
-
-void check_ddindex(const ZBDD& f, DDIndex<int>& s)
+void check_ddindex(const ZBDD& f, DDIndex<int>& dd_index)
 {
     ZBDD g(0);
-    llint card = s.count();
+    llint card = dd_index.count();
 #ifdef USE_GMP
-    test_eq(card, s.countMP().get_si());
+    test_eq(card, dd_index.countMP().get_si());
 #endif
     for (llint i = 0; i < card; ++i) {
-        std::set<bddvar> varset = s.getSet(i);
+        std::set<bddvar> varset = dd_index.getSet(i);
         if (i < card - 1) {
             /* check dict order */
-            test(compare_dict_order(varset, s.getSet(i + 1)) < 0);
+            test(compare_dict_order(varset, dd_index.getSet(i + 1)) < 0);
         }
         g += getSingleSet(varset);
         test(isMember(f, varset));
-        llint order = s.getOrderNumber(varset);
+        llint order = dd_index.getOrderNumber(varset);
         test_eq(i, order);
 #ifdef USE_GMP
         mpz_class i_mp((int)i);
-        test(varset == s.getSet(i_mp));
-        test_eq(order, (llint)s.getOrderNumberMP(varset).get_si());
+        test(varset == dd_index.getSet(i_mp));
+        test_eq(order, (llint)dd_index.getOrderNumberMP(varset).get_si());
 #endif
     }
     test(f == g);
 
-    s.terminal(0).value = 0;
-    s.terminal(1).value = 1;
-    for (int level = 1; level <= s.height(); ++level) {
-        for (ullint j = 0; j < s.size(level); ++j) {
-            DDNode<int> n = s.getNode(level, j);
+    dd_index.terminal(0).value = 0;
+    dd_index.terminal(1).value = 1;
+    for (int level = 1; level <= dd_index.height(); ++level) {
+        for (ullint j = 0; j < dd_index.size(level); ++j) {
+            DDNode<int> n = dd_index.getNode(level, j);
             n.value = n.child(0).value + n.child(1).value;
         }
     }
-    test(card == s.root().value);
+    test(card == dd_index.root().value);
 
-    ullint n = s.count();
+    ullint n = dd_index.count();
     llint max_s = -99999999;
     llint min_s = 99999999;
     llint sum_s = 0;
@@ -900,7 +1282,7 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
     const int bound = 100, lower_bound = 50, upper_bound = 110;
     ZBDD f_le(0), f_lt(0), f_ge(0), f_gt(0), f_eq(0), f_ne(0), f_range(0);
     for (ullint i = 0; i < n; ++i) {
-        std::set<bddvar> se = s.getSet(static_cast<llint>(i));
+        std::set<bddvar> se = dd_index.getSet(static_cast<llint>(i));
         llint weight = 0;
         std::set<bddvar>::const_iterator itor = se.begin();
         for ( ; itor != se.end(); ++itor) {
@@ -935,7 +1317,7 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
         }
     }
     std::set<bddvar> ss;
-    test_eq(s.getMaximum(weights, ss), max_s);
+    test_eq(dd_index.getMaximum(weights, ss), max_s);
     test(isMember(f, ss));
     llint w = 0;
     std::set<bddvar>::const_iterator itor1 = ss.begin();
@@ -945,7 +1327,7 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
     test_eq(w, max_s);
 
     ss.clear();
-    test_eq(s.getMinimum(weights, ss), min_s);
+    test_eq(dd_index.getMinimum(weights, ss), min_s);
     test(isMember(f, ss));
     w = 0;
     itor1 = ss.begin();
@@ -953,10 +1335,10 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
         w += v_to_w(*itor1);
     }
     test_eq(w, min_s);
-    test_eq(sum_s, s.getSum(weights));
+    test_eq(sum_s, dd_index.getSum(weights));
 
 #ifdef USE_GMP
-    test_eq(sum_s, s.getSumMP(weights).get_si());
+    test_eq(sum_s, dd_index.getSumMP(weights).get_si());
 #endif
 
     /* std::cerr << f_le.Card() << ": " << f_lt.Card() << ": "
@@ -975,24 +1357,76 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
     test(weightRange(f, lower_bound, upper_bound, weights) == f_range);
 
     ZBDD f_ks(0);
-    for (llint i = -1; i <= static_cast<llint>(s.count()) + 1; ++i) {
-        if (i >= 1 && i <= static_cast<llint>(s.count())) {
-            f_ks += getSingleSet(s.getSet(i - 1));
+    for (llint i = -1; i <= static_cast<llint>(dd_index.count()) + 1; ++i) {
+        if (i >= 1 && i <= static_cast<llint>(dd_index.count())) {
+            f_ks += getSingleSet(dd_index.getSet(i - 1));
         }
-        ZBDD ksets = s.getKSetsZBDD((i >= 0 ? i : 0));
+        ZBDD ksets = dd_index.getKSetsZBDD((i >= 0 ? i : 0));
         test(f_ks == ksets);
         test(ksets - f == ZBDD(0)); /* ksets is included in f */
 #ifdef USE_GMP
-        ZBDD ksets_mpz = s.getKSetsZBDD(sbddh_llint_to_mpz(i));
+        ZBDD ksets_mpz = dd_index.getKSetsZBDD(sbddh_llint_to_mpz(i));
         test(ksets_mpz == ksets);
 #endif
     }
+
+    /* check iterators */
+    check_iterator_all(f, dd_index,
+        dd_index.weight_min_begin(weights),
+        dd_index.weight_min_end(),
+        CheckIteratorAllKind::KIND_MIN,
+        weights);
+
+    check_iterator_all(f, dd_index,
+        dd_index.weight_max_begin(weights),
+        dd_index.weight_max_end(),
+        CheckIteratorAllKind::KIND_MAX,
+        weights);
+
+    check_iterator_all(f, dd_index,
+        dd_index.random_begin(),
+        dd_index.random_end(),
+        CheckIteratorAllKind::KIND_RANDOM);
+
+    check_iterator_all(f, dd_index,
+        dd_index.dict_begin(),
+        dd_index.dict_end(),
+        CheckIteratorAllKind::KIND_DICT);
+
+    check_iterator_all(f, dd_index,
+        dd_index.dict_rbegin(),
+        dd_index.dict_rend(),
+        CheckIteratorAllKind::KIND_RDICT);
+
+#if __cplusplus >= 201103L
+
+    check_iterator_std(f, dd_index,
+        dd_index.weight_min_begin(weights),
+        dd_index.weight_min_end());
+
+    check_iterator_std(f, dd_index,
+        dd_index.weight_max_begin(weights),
+        dd_index.weight_max_end());
+
+    check_iterator_std(f, dd_index,
+        dd_index.random_begin(),
+        dd_index.random_end());
+
+    check_iterator_std(f, dd_index,
+        dd_index.dict_begin(),
+        dd_index.dict_end());
+
+    check_iterator_std(f, dd_index,
+        dd_index.dict_rbegin(),
+        dd_index.dict_rend());
+
+#endif
 
 #ifdef USE_GMP /* use GMP random */
     gmp_randclass random(gmp_randinit_default);
     random.seed(1);
     for (llint i = 0; i < 100; ++i) {
-        std::set<bddvar> varset = s.sampleRandomly(random);
+        std::set<bddvar> varset = dd_index.sampleRandomly(random);
         test(isMember(f, varset));
     }
 #else
@@ -1000,19 +1434,19 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
 #if __cplusplus >= 201103L /* use C++ random class */
     std::mt19937 mt(1);
     for (llint i = 0; i < 100; ++i) {
-        std::set<bddvar> varset = s.sampleRandomly(mt);
+        std::set<bddvar> varset = dd_index.sampleRandomly(mt);
         test(isMember(f, varset));
     }
 #else
     for (llint i = 0; i < 100; ++i) {
-        std::set<bddvar> varset = s.sampleRandomly();
+        std::set<bddvar> varset = dd_index.sampleRandomly();
         test(isMember(f, varset));
     }
 #endif
 
     ullint state = 1;
     for (llint i = 0; i < 100; ++i) {
-        std::set<bddvar> varset = s.sampleRandomlyA(&state);
+        std::set<bddvar> varset = dd_index.sampleRandomlyA(&state);
         test(isMember(f, varset));
     }
 
@@ -1020,7 +1454,7 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& s)
 
 }
 
-void test_ddindex()
+void test_ddindex(bool exhaustive)
 {
     ZBDD f1 = getPowerSetWithCard(5, 3);
     DDIndex<int> s1(f1);
@@ -1033,12 +1467,14 @@ void test_ddindex()
     DDIndex<int> s3(f3);
     check_ddindex(f3, s3);
 
-    /*std::mt19937 mt(0);
-    for (int i = 0; i < 1000; ++i) {
-        ZBDD f4 = getUniformlyRandomZBDD(8, mt);
-        DDIndex<int> s4(f4);
-        check_ddindex(f4, s4);
-    }*/
+    if (exhaustive) {
+        std::mt19937 mt(0);
+        for (int i = 0; i < 1000; ++i) {
+            ZBDD f4 = getUniformlyRandomZBDD(8, mt);
+            DDIndex<int> s4(f4);
+            check_ddindex(f4, s4);
+        }
+    }
 
 #ifdef USE_GMP
     ZBDD fp = getPowerSetIncluding(100, 2);
@@ -1080,7 +1516,7 @@ void test_ddindex()
 #endif
 }
 
-void start_test_cpp()
+void start_test_cpp(bool exhaustive)
 {
 #ifdef USE_GMP
     test_gmp_conversion();
@@ -1091,13 +1527,17 @@ void start_test_cpp()
     test_io_all_func_cpp();
     test_index_cpp();
     test_elementIterator_cpp();
-    test_ddindex();
+    test_ddindex(exhaustive);
 }
 
-int main()
+int main(int argc, char** argv)
 {
+    bool exhaustive = false;
+    if (argc > 1 && std::string(argv[1]) == std::string("--ex")) {
+        exhaustive = true;
+    }
     start_test();
-    start_test_cpp();
+    start_test_cpp(exhaustive);
 
     printf("test passed!\n");
     return 0;

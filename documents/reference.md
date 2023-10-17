@@ -16,7 +16,9 @@ C++ 版では、C 版の全ての関数も使用可能である。
 ### Version 1.1.0
 
 * 以下の関数を追加
-    * 環境に依存しないランダムサンプリング関数 DDIndex::sampleRandomlyA
+    * 環境に依存しないランダムサンプリング関数 DDIndex::sampleRandomlyA 。
+    * k 個の集合を抽出する getKSetsZBDD 関数。
+    * 指定した重み以下からなる集合のみを抽出する weightRange 関数など。
 * 重み最小順、最大順、辞書順、辞書逆順、ランダムサンプリング用のイテレータを追加。
 * bddNodeIndex や DDIndex の size、count 関数の返り値を llint から ullint に変更。getBddp の第2引数の型を llint から ullint に変更。
 

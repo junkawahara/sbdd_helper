@@ -116,7 +116,8 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
     }
     sbddextended_readUint64(&root_id, fp);
 
-    /*bddnode_buf = (bddp*)malloc((number_of_nodes + 1) * sizeof(bddp)); */
+    assert(number_of_nodes >= number_of_terminals);
+    assert(number_of_nodes >= 2);
     bddnode_buf = (bddp*)malloc((size_t)number_of_nodes * sizeof(bddp));
     if (bddnode_buf == NULL) {
         fprintf(stderr, "out of memory\n");
@@ -135,9 +136,7 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
         if (!sbddextended_readUint64(&v64, fp)) {
             break;
         }
-        /*fprintf(stderr, "%lld\n", v64); */
 
-        /*fprintf(stderr, "0-child: %lld\n", v64); */
         if (v64 <= 1) {
             f0 = bddgetterminal((int)v64, is_zbdd);
         } else {
@@ -175,14 +174,13 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
         for (level = 1; level <= max_level; ++level) {
             /* add the number of nodes at the level */
             node_sum += (ullint)sbddextended_MyVector_get(&level_vec, (llint)level);
-            /*fprintf(stderr, "node_sum: %lld\n", node_sum); */
             if (node_sum > node_count) {
                 break;
             }
         }
         assert(level <= max_level);
         var = bddvaroflev((bddvar)((int)level + root_level - (int)max_level));
-        assert(node_count < number_of_nodes + 1);
+        assert(node_count < number_of_nodes);
         if (is_zbdd != 0) {
             bddnode_buf[node_count] = bddmakenodez(var, f0, f1);
         } else {
@@ -191,14 +189,18 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
     }
     if (use_negative_arcs != 0) {
         if (root_id % 2 == 1) { /* negative arc */
-            f = bddtakenot(bddnode_buf[root_id >> 1]);
+            f = bddtakenot(bddcopy(bddnode_buf[root_id >> 1]));
         } else {
-            f = bddnode_buf[root_id >> 1];
+            f = bddcopy(bddnode_buf[root_id >> 1]);
         }
     } else {
-        f = bddnode_buf[root_id];
+        f = bddcopy(bddnode_buf[root_id]);
     }
     /* FIX ME: need to free of bddnode_buf[*] */
+    for (node_count = number_of_terminals;
+            node_count < number_of_nodes; ++node_count) {
+        bddfree(bddnode_buf[node_count]);
+    }
     return f;
 }
 

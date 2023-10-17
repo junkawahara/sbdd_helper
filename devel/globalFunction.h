@@ -507,7 +507,8 @@ int bddismemberz(bddp f, const bddvar* vararr, int n)
 sbddextended_INLINE_FUNC
 llint bddcountnodes_inner(bddp* dds, int n, int is_zbdd, int is_raw)
 {
-    llint i, count = 0;
+    int i;
+    llint count = 0;
     bddp f, f0, f1;
     sbddextended_MyVector next_p;
     sbddextended_MySet visited;
@@ -1036,7 +1037,7 @@ sbddextended_INLINE_FUNC ZBDD getPowerSetWithCard(const T& variables, int k)
     sbddextended_sort_array(ar, n);
 
     std::vector<ZBDD> current;
-    std::vector<ZBDD> next(k + 1);
+    std::vector<ZBDD> next(static_cast<size_t>(k) + 1);
 
     for (int i = 0; i < k; ++i) {
         current.push_back(ZBDD(0));
@@ -1047,7 +1048,8 @@ sbddextended_INLINE_FUNC ZBDD getPowerSetWithCard(const T& variables, int k)
         int v = bddvaroflev(ar[i]);
         for (int j = 0; j <= std::min(n - i - 1, k); ++j) {
             if (j < k) {
-                next[j] = current[j] + current[j + 1].Change(v);
+                next[j] = current[j]
+                    + current[static_cast<size_t>(j) + 1].Change(v);
             } else {
                 next[j] = current[j];
             }

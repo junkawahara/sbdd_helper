@@ -434,17 +434,17 @@ public:
     class DDNodeIterator : public std::iterator<std::input_iterator_tag, bddp>
     {
     private:
-        const DDNodeIndex& node_index_;
+        DDNodeIndex* node_index_;
         size_t pos_;
         size_t level_;
 
     public:
-        DDNodeIterator(const DDNodeIndex& node_index, bool is_end) : node_index_(node_index), pos_(0)
+        DDNodeIterator(DDNodeIndex* node_index, bool is_end) : node_index_(node_index), pos_(0)
         {
             if (is_end) {
                 level_ = 0; /* This means pointing at end; */
             } else {
-                level_ = node_index.node_index_->height;
+                level_ = node_index->node_index_->height;
             }
         }
 
@@ -453,7 +453,7 @@ public:
             if (level_ <= 0) {
                 return bddfalse;
             }
-            return (bddp)sbddextended_MyVector_get(&node_index_.node_index_->
+            return (bddp)sbddextended_MyVector_get(&node_index_->node_index_->
                                                     level_vec_arr[level_],
                                                     (llint)pos_);
         }
@@ -463,7 +463,7 @@ public:
             if (level_ > 0) {
                 ++pos_;
                 while (level_ > 0 &&
-                       pos_ >= node_index_.node_index_->level_vec_arr[level_].count) {
+                       pos_ >= node_index_->node_index_->level_vec_arr[level_].count) {
                     pos_ = 0;
                     --level_;
                 }
@@ -488,14 +488,13 @@ public:
 
     DDNodeIterator begin()
     {
-        return DDNodeIterator(*this, false);
+        return DDNodeIterator(this, false);
     }
 
     DDNodeIterator end()
     {
-        return DDNodeIterator(*this, true);
+        return DDNodeIterator(this, true);
     }
-
 };
 
 template <typename T> class DDIndex;
@@ -593,9 +592,9 @@ private:
         std::map<bddp, std::pair<llint, bool> > sto;
 
         if (is_max) {
-            sto[bddempty].first = -static_cast<llint>((1ull << 63) - 1);
+            sto[bddempty].first = LLONG_MIN;
         } else {
-            sto[bddempty].first = static_cast<llint>((1ull << 63) - 1);
+            sto[bddempty].first = LLONG_MAX;
         }
         sto[bddsingle].first = 0;
 
@@ -1270,17 +1269,17 @@ public:
     class DDNodeIterator : public std::iterator<std::input_iterator_tag, bddp>
     {
     private:
-        const DDIndex& node_index_;
+        DDIndex* node_index_;
         size_t pos_;
         size_t level_;
 
     public:
-        DDNodeIterator(const DDIndex& node_index, bool is_end) : node_index_(node_index), pos_(0)
+        DDNodeIterator(DDIndex* node_index, bool is_end) : node_index_(node_index), pos_(0)
         {
             if (is_end) {
                 level_ = 0; /* This means pointing at end; */
             } else {
-                level_ = node_index.node_index_->height;
+                level_ = node_index->node_index_->height;
             }
         }
 
@@ -1289,7 +1288,7 @@ public:
             if (level_ <= 0) {
                 return bddfalse;
             }
-            return sbddextended_MyVector_get(&node_index_.node_index_->
+            return sbddextended_MyVector_get(&node_index_->node_index_->
                                                 level_vec_arr[level_],
                                                 (llint)pos_);
         }
@@ -1299,7 +1298,7 @@ public:
             if (level_ > 0) {
                 ++pos_;
                 while (level_ > 0 &&
-                        pos_ >= node_index_.node_index_->level_vec_arr[level_].count) {
+                        pos_ >= node_index_->node_index_->level_vec_arr[level_].count) {
                     pos_ = 0;
                     --level_;
                 }
@@ -1327,8 +1326,8 @@ public:
     private:
         ZBDD f_;
         std::set<bddvar> current_;
-        const std::vector<llint> weights_;
-        const bool is_min_;
+        std::vector<llint> weights_;
+        bool is_min_;
 
         void setCurrent()
         {
@@ -1426,8 +1425,8 @@ public:
     {
     private:
         DDIndex<T>* dd_index_;
-        const count_t card_;
-        const bool reverse_;
+        count_t card_;
+        bool reverse_;
         count_t current_;
 
     public:
@@ -1477,12 +1476,12 @@ public:
 
     DDNodeIterator begin() const
     {
-        return DDNodeIterator(*this, false);
+        return DDNodeIterator(this, false);
     }
 
     DDNodeIterator end() const
     {
-        return DDNodeIterator(*this, true);
+        return DDNodeIterator(this, true);
     }
 
     WeightIterator weight_min_begin(const std::vector<llint>& weights) const
