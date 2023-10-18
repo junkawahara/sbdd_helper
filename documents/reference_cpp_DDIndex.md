@@ -129,7 +129,7 @@ T& getStorageRef(bddp f)
 
 ノード f に関連付けられた T 型のデータへの参照を取得する。
 
-## getZBDD()
+## getZBDD
 
 ```
 ZBDD getZBDD() const

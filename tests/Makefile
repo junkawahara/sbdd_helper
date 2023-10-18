@@ -34,7 +34,18 @@ clang: testclang testcppclang
 
 testc: SBDD_helper_testc_cpp.h SBDD_helper_testc.c ../devel/SBDD_helper.h \
         ../devel/*.h bddc.o
-	gcc $(OPT) $(WOPT4) -Wc++-compat bddc.o SBDD_helper_testc.c -o testc
+	gcc $(STD) $(OPT) $(WOPT4) -Wc++-compat bddc.o SBDD_helper_testc.c -o testc
+
+# currently is not supported
+testc90: SBDD_helper_testc_cpp.h SBDD_helper_testc.c ../devel/SBDD_helper.h \
+        ../devel/*.h bddc.o
+	gcc -std=c90 $(OPT) $(WOPT4) -Wno-long-long -Wc++-compat bddc.o \
+	SBDD_helper_testc.c -o testc90
+
+testc99: SBDD_helper_testc_cpp.h SBDD_helper_testc.c ../devel/SBDD_helper.h \
+        ../devel/*.h bddc.o
+	gcc -std=c99 $(OPT) $(WOPT4) -Wc++-compat bddc.o SBDD_helper_testc.c \
+	-o testc99
 
 testoldgcc: SBDD_helper_testc_cpp.h SBDD_helper_testc.c \
         ../devel/SBDD_helper.h ../devel/*.h bddc-oldgcc.o
@@ -49,7 +60,7 @@ testclang: SBDD_helper_testc_cpp.h SBDD_helper_testc.c \
 testcpp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
         SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h \
 		bddc.o BDD.o ZBDD.o BDDCT.o
-	g++ $(OPT) $(WOPT4) bddc.o BDD.o ZBDD.o BDDCT.o SBDD_helper_testcpp.cpp -o testcpp
+	g++ $(STD) $(OPT) $(WOPT4) bddc.o BDD.o ZBDD.o BDDCT.o SBDD_helper_testcpp.cpp -o testcpp
 
 testcppa: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
         SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h \
