@@ -51,6 +51,11 @@ testcpp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
 		bddc.o BDD.o ZBDD.o BDDCT.o
 	g++ $(OPT) $(WOPT4) bddc.o BDD.o ZBDD.o BDDCT.o SBDD_helper_testcpp.cpp -o testcpp
 
+testcppa: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
+        SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h \
+		bddc.o BDD.o ZBDD.o BDDCT.o
+	g++ $(OPT) -ansi -Wno-long-long $(WOPT4) bddc.o BDD.o ZBDD.o BDDCT.o SBDD_helper_testcpp.cpp -o testcppa
+
 testoldgpp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
         SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h \
 		bddc-oldgcc.o BDD-oldgpp.o ZBDD-oldgpp.o BDDCT-oldgpp.o

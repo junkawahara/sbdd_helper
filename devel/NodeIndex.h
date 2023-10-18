@@ -1068,6 +1068,19 @@ public:
         }
     }
 
+    std::set<bddvar> usedVar() const
+    {
+        std::set<bddvar> result;
+        std::vector<bddvar> size_arr;
+        sizeEachLevel(size_arr);
+        for (int lev = 1; lev <= node_index_->height; ++lev) {
+            if (size_arr[lev] > 0) {
+                result.insert(bddvaroflev(lev));
+            }
+        }
+        return result;
+    }
+
     ullint count()
     {
         makeCountIndex();

@@ -1307,13 +1307,16 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& dd_index)
 
     dd_index.terminal(0).value = 0;
     dd_index.terminal(1).value = 1;
+    std::set<bddvar> varused;
     for (int level = 1; level <= dd_index.height(); ++level) {
         for (ullint j = 0; j < dd_index.size(level); ++j) {
             DDNode<int> n = dd_index.getNode(level, j);
+            varused.insert(bddtop(n.getBddp()));
             n.value = n.child(0).value + n.child(1).value;
         }
     }
     test_eq(static_cast<int>(card), dd_index.root().value);
+    test(dd_index.usedVar() == varused);
 
     llint max_s = -99999999;
     llint min_s = 99999999;
