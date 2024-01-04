@@ -1653,6 +1653,7 @@ public:
 #ifdef SBDDH_GMP
 
 template<>
+inline
 mpz_class sbddh_getCard<mpz_class>(const ZBDD& f)
 {
     DDIndex<int> dd_index(f);
@@ -1662,6 +1663,7 @@ mpz_class sbddh_getCard<mpz_class>(const ZBDD& f)
 #endif /* SBDDH_GMP */
 
 template<>
+inline
 ullint sbddh_getCard<ullint>(const ZBDD& f)
 {
     return static_cast<ullint>(f.Card());

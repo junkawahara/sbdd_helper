@@ -127,12 +127,14 @@ template<typename value_t>
 value_t sbddh_getValueFromMpz(const mpz_class& v);
 
 template<>
+inline
 mpz_class sbddh_getValueFromMpz<mpz_class>(const mpz_class& v)
 {
     return v;
 }
 
 template<>
+inline
 ullint sbddh_getValueFromMpz<ullint>(const mpz_class& v)
 {
     return sbddh_mpz_to_ullint(v);
@@ -143,6 +145,7 @@ template<typename value_t>
 value_t sbddh_getValueFromMpz(value_t v);
 
 template<>
+inline
 ullint sbddh_getValueFromMpz<ullint>(ullint v)
 {
     return v;

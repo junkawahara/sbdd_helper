@@ -12,17 +12,20 @@ public:
         : f(ff), arc(a), fposx(fpx), fposy(fpy) { }
 };
 
+sbddextended_INLINE_FUNC
 bool ExportAsSvg_arcinfo_compare(const ExportAsSvg_arcinfo& a1,
                                     const ExportAsSvg_arcinfo& a2)
 {
     return a1.fposx < a2.fposx;
 }
 
+sbddextended_INLINE_FUNC
 int ExportAsSvg_getCirclePosX(int x, int r, double rad)
 {
     return x + static_cast<int>(r * cos(rad));
 }
 
+sbddextended_INLINE_FUNC
 int ExportAsSvg_getCirclePosY(int y, int r, double rad)
 {
     return y - static_cast<int>(r * sin(rad));
@@ -151,7 +154,7 @@ void bddexportassvg_inner(FILE* fp, bddp f,
             sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
                 "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" "
                 "font-size=\"24\">%d</text>", pos_map[g].first,
-                pos_map[g].second + label_y, level);
+                pos_map[g].second + label_y, bddvaroflev(level));
             sbddextended_writeLine(ss, fp);
         }
     }

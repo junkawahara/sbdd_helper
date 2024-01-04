@@ -54,6 +54,7 @@ C90（`-std=c90`）は（inline 関数が規格に無いため）コンパイル
 * Windows 10 + MinGW + gcc 12.2.0
 * Windows 10 + WSL 2 + Ubuntu 22.04 + gcc 11.4.0
 * Mac 12.5.1 + clang 13.1.6
+* Mac 14.0 + clang 15.0.0
 * Linux Ubuntu 22.04 + gcc 11.4.0
 * Linux CentOS 7 + gcc 4.1.2
 * Linux Ubuntu 20.04 + clang 10.0.0
