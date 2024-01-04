@@ -39,7 +39,6 @@ C/C++ 言語の両方に対応しています。
 
 [SAPPOROBDD](https://github.com/Shin-ichi-Minato/SAPPOROBDD) Ver 1.85 (v.20171126) 以降が必要です。
 2023/10/18 時点の最新版（Ver 1.94、[v.20230102](https://github.com/Shin-ichi-Minato/SAPPOROBDD/tree/v.20230102)）で動作を確認しています。
-古いバージョン（v.20200815 以前）の SAPPOROBDD を用いる場合、SBDDH_NO_BDDCT を定義してください（最新版を用いる場合は定義しないでください）。
 
 C++ 版は、C++98 から C++23 まで（`-std=c++98`, `-std=c++11`, `-std=c++14`, `-std=c++17`, `-std=c++20`, `-std=c++23`）でコンパイルできることを確認しています（gcc のみ。他は未確認）。
 ただし、long long int を用いているため、（long long int が規格にない）C++98 では warning が出ます。
@@ -77,6 +76,14 @@ C 言語（bddc.c のみを使用）の場合は以下のように、bddc.h ヘ�
 C++ 言語（BDD, ZBDD クラスを使用）の場合、以下のように、BDD.h や ZBDD.h ヘッダのインクルードの後に `SBDD_helper.h` をインクルードしてください。
 ```
 #include "ZBDD.h"
+#include "SBDD_helper.h"
+```
+
+BDDCT（重み最適化）を使用する一部の関数（weightRange や weightLE 関数、DDIndex クラスの getKLightestZBDD メンバ関数など）を利用する場合は、以下のように、BDDCT.h ヘッダのインクルードの後に SBDDH_BDDCT マクロを定義して、その後に `SBDD_helper.h` をインクルードしてください。
+```
+#include "ZBDD.h"
+#include "BDDCT.h"
+#define SBDDH_BDDCT
 #include "SBDD_helper.h"
 ```
 

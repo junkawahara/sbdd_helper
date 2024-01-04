@@ -917,7 +917,7 @@ private:
         }
     }
 
-#ifndef SBDDH_NO_BDDCT
+#ifdef SBDDH_BDDCT
     template<typename value_t>
     ZBDD getKLightestZBDD(const ZBDD& f, const value_t& k,
         const std::vector<llint>& weights, int strict)
@@ -975,7 +975,7 @@ private:
             return left_zbdd + delta_index.getKSetsZBDD(k - left_card);
         }
     }
-#endif /* SBDDH_NO_BDDCT */
+#endif /* SBDDH_BDDCT */
 
     template<typename value_t>
     void sampleRandomlyA(ullint* rand_state, std::set<bddvar>& s)
@@ -1254,7 +1254,7 @@ public:
     }
 #endif
 
-#ifndef SBDDH_NO_BDDCT
+#ifdef SBDDH_BDDCT
     ZBDD getKLightestZBDD(ullint k,
         const std::vector<llint>& weights, int strict)
     {
@@ -1287,7 +1287,7 @@ public:
     }
 #endif /* SBDDH_GMP */
 
-#endif /* SBDDH_NO_BDDCT */
+#endif /* SBDDH_BDDCT */
 
 #ifdef SBDDH_GMP /* use GMP random */
     std::set<bddvar> sampleRandomly(gmp_randclass& random)

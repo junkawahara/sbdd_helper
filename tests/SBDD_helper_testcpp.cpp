@@ -31,6 +31,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "BDD.h"
 #include "ZBDD.h"
 #include "BDDCT.h"
+#define SBDDH_BDDCT
 
 #include "SBDD_helper_testc_cpp.h"
 

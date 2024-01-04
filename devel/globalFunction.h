@@ -1426,7 +1426,7 @@ ZBDD exampleZbdd(ullint kind = 0ull)
     return DDUtility::getUniformlyRandomZBDDX(size, &rand_state);
 }
 
-#ifndef SBDDH_NO_BDDCT
+#ifdef SBDDH_BDDCT
 
 sbddextended_INLINE_FUNC
 bool weightRange_initialize(BDDCT* bddct, bddvar lev,
@@ -1516,6 +1516,6 @@ ZBDD weightNE(const ZBDD& f, llint bound, const std::vector<llint>& weights)
     return f - weightEQ(f, bound, weights);
 }
 
-#endif /* SBDDH_NO_BDDCT */
+#endif /* SBDDH_BDDCT */
 
 #endif

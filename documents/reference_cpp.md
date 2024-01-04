@@ -580,6 +580,8 @@ weights[0] は用いられないので任意の値を格納しておく。）
 この関数の内部では SAPPOROBDD の BDDCT クラスを用いており、intersection 演算を用いた方法より高速である。
 同じ f に対して複数回関数を呼び出す場合、直接 BDDCT クラスを用いる方が効率が良い。
 
+本関数を使用する際は、"SBDD_helper.h" をインクルードする前に、SBDDH_BDDCT マクロを定義する必要がある。
+
 ## weightLE / weightLT / weightGE / weightGT / weightEQ / weightNE
 
 ```
@@ -598,6 +600,8 @@ weights[0] は用いられないので任意の値を格納しておく。）
 
 この関数の内部では SAPPOROBDD の BDDCT クラスを用いており、intersection 演算を用いた方法より高速である。
 同じ f に対して複数回関数を呼び出す場合、直接 BDDCT クラスを用いる方が効率が良い。
+
+本関数を使用する際は、"SBDD_helper.h" をインクルードする前に、SBDDH_BDDCT マクロを定義する必要がある。
 
 ## constructZBDDFromElements
 

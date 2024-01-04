@@ -351,6 +351,8 @@ strict が 1 なら、k 個以上の集合を含む。
 重み weights については getMaximum 関数の説明を参照。
 辞書順の定義は getOrderNumber 関数の説明を参照。
 
+本関数を使用する際は、"SBDD_helper.h" をインクルードする前に、SBDDH_BDDCT マクロを定義する必要がある。
+
 ## getKLightestZBDD / getKHeaviestZBDD（GMP版）
 
 ```
@@ -367,6 +369,8 @@ strict が 1 なら、k 個以上の集合を含む。
 重み weights については getMaximum 関数の説明を参照。
 辞書順の定義は getOrderNumber 関数の説明を参照。
 この関数を利用する際は、SBDDH_GMP マクロを冒頭で定義する。
+
+本関数を使用する際は、"SBDD_helper.h" をインクルードする前に、SBDDH_BDDCT マクロを定義する必要がある。
 
 ## sampleRandomly
 
