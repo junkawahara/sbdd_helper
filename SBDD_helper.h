@@ -1,8 +1,8 @@
 /*
 One header library for SAPPOROBDD C/C++ version
-version 1.1.0
+version 1.2.0
 
-Copyright (c) 2017 -- 2023 Jun Kawahara
+Copyright (c) 2017 -- 2024 Jun Kawahara
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software
 and associated documentation files (the "Software"), to deal in the Software without
@@ -252,12 +252,14 @@ template<typename value_t>
 value_t sbddh_getValueFromMpz(const mpz_class& v);
 
 template<>
+inline
 mpz_class sbddh_getValueFromMpz<mpz_class>(const mpz_class& v)
 {
     return v;
 }
 
 template<>
+inline
 ullint sbddh_getValueFromMpz<ullint>(const mpz_class& v)
 {
     return sbddh_mpz_to_ullint(v);
@@ -268,6 +270,7 @@ template<typename value_t>
 value_t sbddh_getValueFromMpz(value_t v);
 
 template<>
+inline
 ullint sbddh_getValueFromMpz<ullint>(ullint v)
 {
     return v;
@@ -2744,7 +2747,7 @@ ZBDD exampleZbdd(ullint kind = 0ull)
     return DDUtility::getUniformlyRandomZBDDX(size, &rand_state);
 }
 
-#ifndef SBDDH_NO_BDDCT
+#ifdef SBDDH_BDDCT
 
 sbddextended_INLINE_FUNC
 bool weightRange_initialize(BDDCT* bddct, bddvar lev,
@@ -2834,7 +2837,7 @@ ZBDD weightNE(const ZBDD& f, llint bound, const std::vector<llint>& weights)
     return f - weightEQ(f, bound, weights);
 }
 
-#endif /* SBDDH_NO_BDDCT */
+#endif /* SBDDH_BDDCT */
 
 #endif
 
@@ -3757,7 +3760,7 @@ private:
         }
     }
 
-#ifndef SBDDH_NO_BDDCT
+#ifdef SBDDH_BDDCT
     template<typename value_t>
     ZBDD getKLightestZBDD(const ZBDD& f, const value_t& k,
         const std::vector<llint>& weights, int strict)
@@ -3815,7 +3818,7 @@ private:
             return left_zbdd + delta_index.getKSetsZBDD(k - left_card);
         }
     }
-#endif /* SBDDH_NO_BDDCT */
+#endif /* SBDDH_BDDCT */
 
     template<typename value_t>
     void sampleRandomlyA(ullint* rand_state, std::set<bddvar>& s)
@@ -4094,7 +4097,7 @@ public:
     }
 #endif
 
-#ifndef SBDDH_NO_BDDCT
+#ifdef SBDDH_BDDCT
     ZBDD getKLightestZBDD(ullint k,
         const std::vector<llint>& weights, int strict)
     {
@@ -4127,7 +4130,7 @@ public:
     }
 #endif /* SBDDH_GMP */
 
-#endif /* SBDDH_NO_BDDCT */
+#endif /* SBDDH_BDDCT */
 
 #ifdef SBDDH_GMP /* use GMP random */
     std::set<bddvar> sampleRandomly(gmp_randclass& random)
@@ -4493,6 +4496,7 @@ public:
 #ifdef SBDDH_GMP
 
 template<>
+inline
 mpz_class sbddh_getCard<mpz_class>(const ZBDD& f)
 {
     DDIndex<int> dd_index(f);
@@ -4502,6 +4506,7 @@ mpz_class sbddh_getCard<mpz_class>(const ZBDD& f)
 #endif /* SBDDH_GMP */
 
 template<>
+inline
 ullint sbddh_getCard<ullint>(const ZBDD& f)
 {
     return static_cast<ullint>(f.Card());
@@ -7016,17 +7021,20 @@ public:
         : f(ff), arc(a), fposx(fpx), fposy(fpy) { }
 };
 
+sbddextended_INLINE_FUNC
 bool ExportAsSvg_arcinfo_compare(const ExportAsSvg_arcinfo& a1,
                                     const ExportAsSvg_arcinfo& a2)
 {
     return a1.fposx < a2.fposx;
 }
 
+sbddextended_INLINE_FUNC
 int ExportAsSvg_getCirclePosX(int x, int r, double rad)
 {
     return x + static_cast<int>(r * cos(rad));
 }
 
+sbddextended_INLINE_FUNC
 int ExportAsSvg_getCirclePosY(int y, int r, double rad)
 {
     return y - static_cast<int>(r * sin(rad));
@@ -7155,7 +7163,7 @@ void bddexportassvg_inner(FILE* fp, bddp f,
             sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
                 "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" "
                 "font-size=\"24\">%d</text>", pos_map[g].first,
-                pos_map[g].second + label_y, level);
+                pos_map[g].second + label_y, bddvaroflev(level));
             sbddextended_writeLine(ss, fp);
         }
     }
