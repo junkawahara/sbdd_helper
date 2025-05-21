@@ -3274,9 +3274,20 @@ public:
         free(node_index_);
     }
 
+#if __cplusplus >= 201703L
+    class DDNodeIterator {
+    public:
+        using iterator_category = std::input_iterator_tag;
+        using value_type = bddp;
+        using difference_type = std::ptrdiff_t;
+        using pointer = bddp*;
+        using reference = bddp&;
+    private:
+#else
     class DDNodeIterator : public std::iterator<std::input_iterator_tag, bddp>
     {
     private:
+#endif
         DDNodeIndex* node_index_;
         size_t pos_;
         size_t level_;
@@ -4222,8 +4233,20 @@ public:
         }
     }
 
+#if __cplusplus >= 201703L
+    class DDNodeIterator {
+    public:
+        using iterator_category = std::input_iterator_tag;
+        using value_type = bddp;
+        using difference_type = std::ptrdiff_t;
+        using pointer = bddp*;
+        using reference = bddp&;
+    private:
+#else
     class DDNodeIterator : public std::iterator<std::input_iterator_tag, bddp>
     {
+    private:
+#endif
     private:
         DDIndex* node_index_;
         size_t pos_;
@@ -4277,9 +4300,20 @@ public:
         }
     };
 
+#if __cplusplus >= 201703L
+    class WeightIterator {
+    public:
+        using iterator_category = std::input_iterator_tag;
+        using value_type = std::set<bddvar>;
+        using difference_type = std::ptrdiff_t;
+        using pointer = std::set<bddvar>*;
+        using reference = std::set<bddvar>&;
+    private:
+#else
     class WeightIterator : public std::iterator<std::input_iterator_tag, std::set<bddvar> >
     {
     private:
+#endif
         ZBDD f_;
         std::set<bddvar> current_;
         std::vector<llint> weights_;
@@ -4330,9 +4364,20 @@ public:
         }
     };
 
+#if __cplusplus >= 201703L
+    class RandomIterator {
+    public:
+        using iterator_category = std::input_iterator_tag;
+        using value_type = std::set<bddvar>;
+        using difference_type = std::ptrdiff_t;
+        using pointer = std::set<bddvar>*;
+        using reference = std::set<bddvar>&;
+    private:
+#else
     class RandomIterator : public std::iterator<std::input_iterator_tag, std::set<bddvar> >
     {
     private:
+#endif
         ZBDD f_;
         std::set<bddvar> current_;
         ullint rand_seed_;
@@ -4377,9 +4422,20 @@ public:
         }
     };
 
+#if __cplusplus >= 201703L
+    class DictIterator {
+    public:
+        using iterator_category = std::input_iterator_tag;
+        using value_type = std::set<bddvar>;
+        using difference_type = std::ptrdiff_t;
+        using pointer = std::set<bddvar>*;
+        using reference = std::set<bddvar>&;
+    private:
+#else
     class DictIterator : public std::iterator<std::input_iterator_tag, std::set<bddvar> >
     {
     private:
+#endif
         DDIndex<T>* dd_index_;
         count_t card_;
         bool reverse_;
@@ -4688,9 +4744,20 @@ void bddElementIterator_next(bddElementIterator* itor, bddvar* arr)
 
 #ifdef __cplusplus
 
+#if __cplusplus >= 201703L
+class ElementIterator {
+public:
+    using iterator_category = std::input_iterator_tag;
+    using value_type = std::set<bddvar>;
+    using difference_type = std::ptrdiff_t;
+    using pointer = std::set<bddvar>*;
+    using reference = std::set<bddvar>&;
+private:
+#else
 class ElementIterator
     : public std::iterator<std::input_iterator_tag, std::set<bddvar> > {
 private:
+#endif
     int sp_;
     std::vector<bddp> bddnode_stack_;
     std::vector<char> op_stack_;

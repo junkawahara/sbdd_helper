@@ -116,9 +116,20 @@ void bddElementIterator_next(bddElementIterator* itor, bddvar* arr)
 
 #ifdef __cplusplus
 
+#if __cplusplus >= 201703L
+class ElementIterator {
+public:
+    using iterator_category = std::input_iterator_tag;
+    using value_type = std::set<bddvar>;
+    using difference_type = std::ptrdiff_t;
+    using pointer = std::set<bddvar>*;
+    using reference = std::set<bddvar>&;
+private:
+#else
 class ElementIterator
     : public std::iterator<std::input_iterator_tag, std::set<bddvar> > {
 private:
+#endif
     int sp_;
     std::vector<bddp> bddnode_stack_;
     std::vector<char> op_stack_;
