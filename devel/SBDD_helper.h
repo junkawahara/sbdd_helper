@@ -65,6 +65,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #ifdef __cplusplus
 namespace sbddh {
+#ifdef SAPPOROBDD_PLUS_PLUS
+using namespace sapporobdd;
+#endif
 #endif
 
 typedef long long int llint;
