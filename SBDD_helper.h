@@ -65,6 +65,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #ifdef __cplusplus
 namespace sbddh {
+#ifdef SAPPOROBDD_PLUS_PLUS
+using namespace sapporobdd;
+#endif
 #endif
 
 typedef long long int llint;
@@ -1351,10 +1354,18 @@ sbddextended_INLINE_FUNC bddp bdderasenot(bddp f)
 
 sbddextended_INLINE_FUNC int bddis64bitversion(void)
 {
+#ifdef SAPPOROBDD_PLUS_PLUS
+#ifdef B_32
+    return 0;
+#else
+    return 1;
+#endif
+#else
 #ifdef B_64
     return 1;
 #else
     return 0;
+#endif
 #endif
 }
 

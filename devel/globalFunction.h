@@ -30,10 +30,18 @@ sbddextended_INLINE_FUNC bddp bdderasenot(bddp f)
 
 sbddextended_INLINE_FUNC int bddis64bitversion(void)
 {
+#ifdef SAPPOROBDD_PLUS_PLUS
+#ifdef B_32
+    return 0;
+#else
+    return 1;
+#endif
+#else
 #ifdef B_64
     return 1;
 #else
     return 0;
+#endif
 #endif
 }
 
