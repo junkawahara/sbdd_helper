@@ -3889,8 +3889,24 @@ public:
 
     ~DDIndex()
     {
-        bddNodeIndex_destruct(node_index_);
-        free(node_index_);
+        clear();
+    }
+
+    void clear()
+    {
+        if (node_index_ != NULL) {
+            bddNodeIndex_destruct(node_index_);
+            free(node_index_);
+            node_index_ = NULL;
+        }
+        storage_.clear();
+        count_storage_.clear();
+        is_count_made = false;
+    }
+
+    bool is_valid() const
+    {
+        return node_index_ != NULL;
     }
 
     bddNodeIndex* getRawPointer()
@@ -3905,26 +3921,41 @@ public:
 
     ZBDD getZBDD() const
     {
+        if (node_index_ == NULL) {
+            return ZBDD(0);
+        }
         return ZBDD_ID(bddcopy(node_index_->f));
     }
 
     int height() const
     {
+        if (node_index_ == NULL) {
+            return 0;
+        }
         return bddgetlev(node_index_->f);
     }
 
     ullint size() const
     {
+        if (node_index_ == NULL) {
+            return 0ull;
+        }
         return bddNodeIndex_size(node_index_);
     }
 
     ullint size(int level) const
     {
+        if (node_index_ == NULL) {
+            return 0ull;
+        }
         return bddNodeIndex_sizeAtLevel(node_index_, level);
     }
 
     void sizeEachLevel(std::vector<bddvar>& arr) const
     {
+        if (node_index_ == NULL) {
+            return;
+        }
         if (!(node_index_->f == bddnull || node_index_->f == bddfalse || node_index_->f == bddtrue)) {
             arr.resize(node_index_->height + 1);
             for (int i = 1; i <= node_index_->height; ++i) {
@@ -3948,6 +3979,9 @@ public:
 
     ullint count()
     {
+        if (node_index_ == NULL) {
+            return 0ull;
+        }
         makeCountIndex();
         return getStorageValue2<ullint>(node_index_->f);
     }
@@ -3955,6 +3989,9 @@ public:
 #ifdef SBDDH_GMP
     mpz_class countMP()
     {
+        if (node_index_ == NULL) {
+            return mpz_class(0);
+        }
         makeCountIndex();
         return getStorageValue2<mpz_class>(node_index_->f);
     }
@@ -3972,7 +4009,7 @@ public:
 
     llint getMaximum(const std::vector<llint>& weights, std::set<bddvar>& s) const
     {
-        if (node_index_->f == bddempty) {
+        if (node_index_ == NULL || node_index_->f == bddempty) {
             return 0ll;
         }
         return optimize(weights, true, s);
@@ -3980,7 +4017,7 @@ public:
 
     llint getMaximum(const std::vector<llint>& weights) const
     {
-        if (node_index_->f == bddempty) {
+        if (node_index_ == NULL || node_index_->f == bddempty) {
             return 0ll;
         }
         std::set<bddvar> dummy;
@@ -3989,7 +4026,7 @@ public:
 
     llint getMinimum(const std::vector<llint>& weights, std::set<bddvar>& s) const
     {
-        if (node_index_->f == bddempty) {
+        if (node_index_ == NULL || node_index_->f == bddempty) {
             return 0ll;
         }
         return optimize(weights, false, s);
@@ -3997,7 +4034,7 @@ public:
 
     llint getMinimum(const std::vector<llint>& weights) const
     {
-        if (node_index_->f == bddempty) {
+        if (node_index_ == NULL || node_index_->f == bddempty) {
             return 0ll;
         }
         std::set<bddvar> dummy;
@@ -4006,6 +4043,9 @@ public:
 
     llint getSum(const std::vector<llint>& weights)
     {
+        if (node_index_ == NULL) {
+            return 0ll;
+        }
         if (node_index_->is_raw) {
             std::cerr << "DDIndex currently does not support raw mode." << std::endl;
             exit(1);
@@ -4033,6 +4073,9 @@ public:
 #ifdef SBDDH_GMP
     mpz_class getSumMP(const std::vector<llint>& weights)
     {
+        if (node_index_ == NULL) {
+            return mpz_class(0);
+        }
         if (node_index_->is_raw) {
             std::cerr << "DDIndex currently does not support raw mode." << std::endl;
             exit(1);
@@ -4061,6 +4104,9 @@ public:
 
     llint getOrderNumber(const std::set<bddvar>& s)
     {
+        if (node_index_ == NULL) {
+            return -1;
+        }
         makeCountIndex();
         std::set<bddvar> ss(s);
         return getOrderNumber(node_index_->f, ss);
@@ -4069,6 +4115,9 @@ public:
 #ifdef SBDDH_GMP
     mpz_class getOrderNumberMP(const std::set<bddvar>& s)
     {
+        if (node_index_ == NULL) {
+            return mpz_class(-1);
+        }
         makeCountIndex();
         std::set<bddvar> ss(s);
         return getOrderNumberMP(node_index_->f, ss);
@@ -4077,6 +4126,9 @@ public:
 
     std::set<bddvar> getSet(llint order)
     {
+        if (node_index_ == NULL) {
+            return std::set<bddvar>();
+        }
         makeCountIndex();
         if (order < 0 || order >= static_cast<llint>(count())) { /* out of range */
             return std::set<bddvar>();
@@ -4089,6 +4141,9 @@ public:
 #ifdef SBDDH_GMP
     std::set<bddvar> getSet(mpz_class order)
     {
+        if (node_index_ == NULL) {
+            return std::set<bddvar>();
+        }
         makeCountIndex();
         if (order < mpz_class(0) || order >= countMP()) { /* out of range */
             return std::set<bddvar>();
@@ -4101,7 +4156,7 @@ public:
 
     ZBDD getKSetsZBDD(ullint k)
     {
-        if (k <= 0) {
+        if (node_index_ == NULL || k <= 0) {
             return ZBDD(0);
         }
         makeCountIndex();
@@ -4111,7 +4166,7 @@ public:
 #ifdef SBDDH_GMP
     ZBDD getKSetsZBDD(const mpz_class& k)
     {
-        if (k <= 0) {
+        if (node_index_ == NULL || k <= 0) {
             return ZBDD(0);
         }
         makeCountIndex();
@@ -4123,6 +4178,9 @@ public:
     ZBDD getKLightestZBDD(ullint k,
         const std::vector<llint>& weights, int strict)
     {
+        if (node_index_ == NULL) {
+            return ZBDD(0);
+        }
         ZBDD f = ZBDD_ID(bddcopy(node_index_->f));
         return getKLightestZBDD<ullint>(f, k, weights, strict);
     }
@@ -4131,6 +4189,9 @@ public:
     ZBDD getKLightestZBDD(const mpz_class& k,
         const std::vector<llint>& weights, int strict)
     {
+        if (node_index_ == NULL) {
+            return ZBDD(0);
+        }
         ZBDD f = ZBDD_ID(bddcopy(node_index_->f));
         return getKLightestZBDD<mpz_class>(f, k, weights, strict);
     }
@@ -4139,6 +4200,9 @@ public:
     ZBDD getKHeaviestZBDD(ullint k,
         const std::vector<llint>& weights, int strict)
     {
+        if (node_index_ == NULL) {
+            return ZBDD(0);
+        }
         ZBDD f = ZBDD_ID(bddcopy(node_index_->f));
         return f - getKLightestZBDD(count() - k, weights, -strict);
     }
@@ -4147,6 +4211,9 @@ public:
     ZBDD getKHeaviestZBDD(const mpz_class& k,
         const std::vector<llint>& weights, int strict)
     {
+        if (node_index_ == NULL) {
+            return ZBDD(0);
+        }
         ZBDD f = ZBDD_ID(bddcopy(node_index_->f));
         return f - getKLightestZBDD(countMP() - k, weights, -strict);
     }
@@ -4157,6 +4224,9 @@ public:
 #ifdef SBDDH_GMP /* use GMP random */
     std::set<bddvar> sampleRandomly(gmp_randclass& random)
     {
+        if (node_index_ == NULL) {
+            return std::set<bddvar>();
+        }
         makeCountIndex();
         return getSet(random.get_z_range(countMP()));
     }
@@ -4167,6 +4237,9 @@ public:
     template <typename U>
     std::set<bddvar> sampleRandomly(U& random_engine)
     {
+        if (node_index_ == NULL) {
+            return std::set<bddvar>();
+        }
         std::uniform_int_distribution<llint> dist(0, count() - 1);
         return getSet(dist(random_engine));
     }
@@ -4175,6 +4248,9 @@ public:
 
     std::set<bddvar> sampleRandomly()
     {
+        if (node_index_ == NULL) {
+            return std::set<bddvar>();
+        }
         makeCountIndex();
         if (count() >= 1) {
             return getSet(rand() % count());
@@ -4189,6 +4265,9 @@ public:
 
     std::set<bddvar> sampleRandomlyA(ullint* rand_state)
     {
+        if (node_index_ == NULL) {
+            return std::set<bddvar>();
+        }
         makeCountIndex();
         if (count() >= 1) {
             std::set<bddvar> s;
@@ -4208,6 +4287,9 @@ public:
 
     DDNode<T> root()
     {
+        if (node_index_ == NULL) {
+            return DDNode<T>(bddfalse, *this);
+        }
         return DDNode<T>(node_index_->f, *this);
     }
 
@@ -4218,11 +4300,17 @@ public:
 
     DDNode<T> getNode(int level, llint pos)
     {
+        if (node_index_ == NULL) {
+            return DDNode<T>(bddfalse, *this);
+        }
         return DDNode<T>(getBddp(level, pos), *this);
     }
 
     void makeCountIndex() /* currently support only for ZDD */
     {
+        if (node_index_ == NULL) {
+            return;
+        }
         if (!is_count_made) {
             is_count_made = true;
 
@@ -4266,7 +4354,7 @@ public:
     public:
         DDNodeIterator(DDIndex* node_index, bool is_end) : node_index_(node_index), pos_(0)
         {
-            if (is_end) {
+            if (is_end || node_index->node_index_ == NULL) {
                 level_ = 0; /* This means pointing at end; */
             } else {
                 level_ = node_index->node_index_->height;
@@ -4275,7 +4363,7 @@ public:
 
         bddp operator*() const
         {
-            if (level_ <= 0) {
+            if (level_ <= 0 || node_index_->node_index_ == NULL) {
                 return bddfalse;
             }
             return sbddextended_MyVector_get(&node_index_->node_index_->
@@ -4285,7 +4373,7 @@ public:
 
         DDNodeIterator& operator++()
         {
-            if (level_ > 0) {
+            if (level_ > 0 && node_index_->node_index_ != NULL) {
                 ++pos_;
                 while (level_ > 0 &&
                         pos_ >= node_index_->node_index_->level_vec_arr[level_].count) {
@@ -4499,16 +4587,19 @@ public:
 
     DDNodeIterator begin() const
     {
-        return DDNodeIterator(this, false);
+        return DDNodeIterator(const_cast<DDIndex*>(this), false);
     }
 
     DDNodeIterator end() const
     {
-        return DDNodeIterator(this, true);
+        return DDNodeIterator(const_cast<DDIndex*>(this), true);
     }
 
     WeightIterator weight_min_begin(const std::vector<llint>& weights) const
     {
+        if (node_index_ == NULL) {
+            return WeightIterator();
+        }
         return WeightIterator(ZBDD_ID(bddcopy(node_index_->f)),
             weights, true);
     }
@@ -4520,6 +4611,9 @@ public:
 
     WeightIterator weight_max_begin(const std::vector<llint>& weights) const
     {
+        if (node_index_ == NULL) {
+            return WeightIterator();
+        }
         return WeightIterator(ZBDD_ID(bddcopy(node_index_->f)),
             weights, false);
     }
@@ -4531,6 +4625,9 @@ public:
 
     RandomIterator random_begin(ullint rand_seed = 1) const
     {
+        if (node_index_ == NULL) {
+            return RandomIterator();
+        }
         return RandomIterator(ZBDD_ID(bddcopy(node_index_->f)), rand_seed);
     }
 
@@ -4541,16 +4638,25 @@ public:
 
     DictIterator dict_begin()
     {
+        if (node_index_ == NULL) {
+            return DictIterator(0);
+        }
         return DictIterator(this, false);
     }
 
     DictIterator dict_end()
     {
+        if (node_index_ == NULL) {
+            return DictIterator(0);
+        }
         return DictIterator(count_v());
     }
 
     DictIterator dict_rbegin()
     {
+        if (node_index_ == NULL) {
+            return DictIterator(0);
+        }
         return DictIterator(this, true);
     }
 
