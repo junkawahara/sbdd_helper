@@ -1513,6 +1513,17 @@ void test_ddindex(bool exhaustive)
     DDIndex<int> s3(f3);
     check_ddindex(f3, s3);
 
+    std::set<bddvar> present_set;
+    present_set.insert(1);
+    ZBDD f_missing = getSingleSet(present_set);
+    DDIndex<int> missing_index(f_missing);
+    std::set<bddvar> missing_set;
+    missing_set.insert(2);
+    test_eq((llint)-1, missing_index.getOrderNumber(missing_set));
+#ifdef SBDDH_GMP
+    test(missing_index.getOrderNumberMP(missing_set) == mpz_class(-1));
+#endif
+
     if (exhaustive) {
         ullint seed = 1;
         for (int i = 0; i < 1000; ++i) {

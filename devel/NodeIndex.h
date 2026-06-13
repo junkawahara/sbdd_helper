@@ -755,10 +755,9 @@ private:
                 value = -1;
             }
         } else {
-            llint v = getStorageValue(bddgetchild1z(f))
-                        + getOrderNumber(bddgetchild0z(f0), s);
+            llint v = getOrderNumber(bddgetchild0z(f0), s);
             if (v >= 0) {
-                value += v;
+                value += getStorageValue(bddgetchild1z(f)) + v;
             } else {
                 value = -1;
             }
@@ -807,10 +806,9 @@ private:
                 value = mpz_class(-1);
             }
         } else {
-            mpz_class v = count_storage_.at(bddgetchild1z(f))
-                + getOrderNumberMP(bddgetchild0z(f0), s);
+            mpz_class v = getOrderNumberMP(bddgetchild0z(f0), s);
             if (v >= 0) {
-                value += v;
+                value += count_storage_.at(bddgetchild1z(f)) + v;
             } else {
                 value = mpz_class(-1);
             }
