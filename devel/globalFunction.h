@@ -1440,12 +1440,39 @@ ZBDD exampleZbdd(ullint kind = 0ull)
 #ifdef SBDDH_BDDCT
 
 sbddextended_INLINE_FUNC
+llint sbddextended_bddcost_min(void)
+{
+    return -static_cast<llint>(bddcost_null) + 1;
+}
+
+sbddextended_INLINE_FUNC
+llint sbddextended_bddcost_max(void)
+{
+    return static_cast<llint>(bddcost_null) - 1;
+}
+
+sbddextended_INLINE_FUNC
+bool sbddextended_is_valid_bddcost(llint v)
+{
+    return sbddextended_bddcost_min() <= v
+        && v <= sbddextended_bddcost_max();
+}
+
+sbddextended_INLINE_FUNC
+void sbddextended_print_bddcost_range_error(const char* name)
+{
+    std::cerr << name << " should be between "
+        << sbddextended_bddcost_min() << " and "
+        << sbddextended_bddcost_max() << std::endl;
+}
+
+sbddextended_INLINE_FUNC
 bool weightRange_initialize(BDDCT* bddct, bddvar lev,
     const std::vector<llint>& weights)
 {
     for (size_t i = 0; i < weights.size(); ++i) {
-        if (weights[i] >= (1ll << 32)) {
-            std::cerr << "Each weight should be less than 2^32" << std::endl;
+        if (!sbddextended_is_valid_bddcost(weights[i])) {
+            sbddextended_print_bddcost_range_error("Each weight");
             return false;
         }
     }
@@ -1466,12 +1493,19 @@ bool weightRange_initialize(BDDCT* bddct, bddvar lev,
 sbddextended_INLINE_FUNC
 ZBDD weightRange(const ZBDD& f, llint lower_bound, llint upper_bound, const std::vector<llint>& weights)
 {
-    if (lower_bound >= (1ll << 32)) {
-        std::cerr << "lower_bound should be less than 2^32" << std::endl;
+    if (lower_bound > upper_bound) {
+        return ZBDD(0);
+    }
+    if (upper_bound < sbddextended_bddcost_min()) {
+        return ZBDD(0);
+    }
+    if (!sbddextended_is_valid_bddcost(upper_bound)) {
+        sbddextended_print_bddcost_range_error("upper_bound");
         return ZBDD(-1);
     }
-    if (upper_bound >= (1ll << 32)) {
-        std::cerr << "upper_bound should be less than 2^32" << std::endl;
+    if (lower_bound > sbddextended_bddcost_min()
+            && !sbddextended_is_valid_bddcost(lower_bound - 1)) {
+        sbddextended_print_bddcost_range_error("lower_bound - 1");
         return ZBDD(-1);
     }
     BDDCT bddct;
@@ -1481,7 +1515,7 @@ ZBDD weightRange(const ZBDD& f, llint lower_bound, llint upper_bound, const std:
     }
 
     ZBDD z = bddct.ZBDD_CostLE(f, static_cast<int>(upper_bound));
-    if (lower_bound > LLONG_MIN) {
+    if (lower_bound > sbddextended_bddcost_min()) {
         z -= bddct.ZBDD_CostLE(f, static_cast<int>(lower_bound - 1));
     }
     return z;
@@ -1496,23 +1530,33 @@ ZBDD weightLE(const ZBDD& f, llint bound, const std::vector<llint>& weights)
 sbddextended_INLINE_FUNC
 ZBDD weightLT(const ZBDD& f, llint bound, const std::vector<llint>& weights)
 {
+    if (bound == LLONG_MIN) {
+        return ZBDD(0);
+    }
     return weightLE(f, bound - 1, weights);
 }
 
 sbddextended_INLINE_FUNC
 ZBDD weightGE(const ZBDD& f, llint bound, const std::vector<llint>& weights)
 {
-    std::vector<llint> negative_weights(weights);
-    for (size_t i = 0; i < weights.size(); ++i) {
-        negative_weights[i] = -negative_weights[i];
+    ZBDD z = weightLT(f, bound, weights);
+    if (z == ZBDD(-1)) {
+        return ZBDD(-1);
     }
-    return weightLE(f, -bound, negative_weights);
+    return f - z;
 }
 
 sbddextended_INLINE_FUNC
 ZBDD weightGT(const ZBDD& f, llint bound, const std::vector<llint>& weights)
 {
-    return weightGE(f, bound + 1, weights);
+    if (bound == LLONG_MAX) {
+        return ZBDD(0);
+    }
+    ZBDD z = weightLE(f, bound, weights);
+    if (z == ZBDD(-1)) {
+        return ZBDD(-1);
+    }
+    return f - z;
 }
 
 sbddextended_INLINE_FUNC
@@ -1524,7 +1568,11 @@ ZBDD weightEQ(const ZBDD& f, llint bound, const std::vector<llint>& weights)
 sbddextended_INLINE_FUNC
 ZBDD weightNE(const ZBDD& f, llint bound, const std::vector<llint>& weights)
 {
-    return f - weightEQ(f, bound, weights);
+    ZBDD z = weightEQ(f, bound, weights);
+    if (z == ZBDD(-1)) {
+        return ZBDD(-1);
+    }
+    return f - z;
 }
 
 #endif /* SBDDH_BDDCT */

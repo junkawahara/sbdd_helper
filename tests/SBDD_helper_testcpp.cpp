@@ -1284,6 +1284,51 @@ llint v_to_w(bddvar v)
     return (llint)(v * v + 3 * v + 8);
 }
 
+void test_weightRange_cost_boundaries()
+{
+    const llint min_cost = sbddextended_bddcost_min();
+    const llint max_cost = sbddextended_bddcost_max();
+    test(sbddextended_is_valid_bddcost(min_cost));
+    test(sbddextended_is_valid_bddcost(max_cost));
+    test(!sbddextended_is_valid_bddcost(min_cost - 1));
+    test(!sbddextended_is_valid_bddcost(max_cost + 1));
+    test(!sbddextended_is_valid_bddcost(static_cast<llint>(bddcost_null)));
+    test(!sbddextended_is_valid_bddcost(-static_cast<llint>(bddcost_null)));
+
+    ZBDD f = getSingleSet(1, 1);
+    std::vector<llint> weights;
+    weights.push_back(0);
+    weights.push_back(max_cost);
+    test(weightLE(f, max_cost, weights) == f);
+    test(weightLT(f, max_cost, weights) == ZBDD(0));
+    test(weightGE(f, max_cost, weights) == f);
+    test(weightGT(f, max_cost, weights) == ZBDD(0));
+    test(weightEQ(f, max_cost, weights) == f);
+    test(weightNE(f, max_cost, weights) == ZBDD(0));
+    test(weightLE(f, min_cost - 1, weights) == ZBDD(0));
+
+    weights[1] = min_cost;
+    test(weightLE(f, min_cost, weights) == f);
+    test(weightLT(f, min_cost, weights) == ZBDD(0));
+    test(weightGE(f, min_cost, weights) == f);
+    test(weightGT(f, min_cost, weights) == ZBDD(0));
+    test(weightEQ(f, min_cost, weights) == f);
+    test(weightNE(f, min_cost, weights) == ZBDD(0));
+    test(weightLT(f, LLONG_MIN, weights) == ZBDD(0));
+    test(weightGE(f, LLONG_MIN, weights) == f);
+    test(weightGT(f, LLONG_MAX, weights) == ZBDD(0));
+
+    std::ostringstream err_stream;
+    std::streambuf* cerr_buf = std::cerr.rdbuf(err_stream.rdbuf());
+    weights[1] = max_cost + 1;
+    test(weightLE(f, 0, weights) == ZBDD(-1));
+    weights[1] = min_cost - 1;
+    test(weightLE(f, 0, weights) == ZBDD(-1));
+    weights[1] = 0;
+    test(weightLE(f, max_cost + 1, weights) == ZBDD(-1));
+    std::cerr.rdbuf(cerr_buf);
+}
+
 void check_ddindex(const ZBDD& f, DDIndex<int>& dd_index)
 {
     ZBDD g(0);
@@ -1583,6 +1628,7 @@ void start_test_cpp(bool exhaustive)
     test_gmp_conversion();
 #endif
     test_BDD_functions();
+    test_weightRange_cost_boundaries();
     test_at_random_cpp();
     test_io_cpp();
     test_io_all_func_cpp();
