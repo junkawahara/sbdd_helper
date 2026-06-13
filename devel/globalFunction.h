@@ -365,8 +365,11 @@ bddp bddgetsingleset(bddvar* vararr, int n)
         assert(1 <= vararr[i] && vararr[i] <= bddvarused());
         for (j = 0; j < i; ++j) { /* check duplicate */
             if (vararr[j] == vararr[i]) {
-                continue;
+                break;
             }
+        }
+        if (j < i) {
+            continue;
         }
         g = bddchange(f, vararr[i]);
         bddfree(f);

@@ -437,7 +437,7 @@ void test_getsingleandpowerset(void)
     bddvar* vararr;
     FILE* fp;
 
-    vararr = (bddvar*)malloc((size_t)N * sizeof(vararr) + 3);
+    vararr = (bddvar*)malloc((size_t)(N + 3) * sizeof(bddvar));
     if (vararr == NULL) {
         fprintf(stderr, "out of memory\n");
         exit(1);
@@ -452,7 +452,7 @@ void test_getsingleandpowerset(void)
     vararr[N + 2] = (bddvar)(2 * (157 % N) + 1);
 
     /* test getsingleset */
-    f = bddgetsingleset(vararr, N);
+    f = bddgetsingleset(vararr, N + 3);
 
     test_eq(bddsize(f), N);
     test_eq(bddcard(f), 1);
