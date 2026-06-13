@@ -889,7 +889,7 @@ sbddextended_INLINE_FUNC ZBDD getSingleSet(int n, ...)
     bddvar v;
 
     if (n == 0) {
-        return ZBDD_ID(1);
+        return ZBDD(1);
     }
 
     va_start(ap, n);

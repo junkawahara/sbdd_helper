@@ -260,6 +260,10 @@ void test_BDD_functions()
     test_eq(getLev(s5), bddlevofvar(5));
     test_eq(s5.Card(), 1);
 
+    test(getSingleSet(0) == ZBDD(1));
+    test_eq(getSingleSet(0).Card(), 1);
+    test(getSingleSet(0).GetID() == bddsingle);
+
     ZBDD f1 = getSingleSet(2, 1, 2);
     test_eq(f1.Card(), 1);
     test(getChild1(f1) == getSingleton(1));
