@@ -384,6 +384,10 @@ class DDNodeIndex {
 private:
     bddNodeIndex* node_index_;
 
+    /* Non-copyable; owns node_index_. */
+    DDNodeIndex(const DDNodeIndex&);
+    DDNodeIndex& operator=(const DDNodeIndex&);
+
 public:
     DDNodeIndex(const BDD& f, bool is_raw = true)
     {
@@ -583,6 +587,10 @@ private:
 #endif
     typedef std::map<bddp, count_t> map_t;
     map_t count_storage_;
+
+    /* Non-copyable; owns node_index_. */
+    DDIndex(const DDIndex&);
+    DDIndex& operator=(const DDIndex&);
 
     void initialize(bddp f, bool /*is_raw*/, int is_zbdd)
     {
