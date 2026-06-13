@@ -817,7 +817,7 @@ private:
     }
 #endif
 
-    void getSet(bddp f, llint order, std::set<bddvar>& s)
+    void getSet(bddp f, ullint order, std::set<bddvar>& s)
     {
         bddp f0 = f;
 
@@ -834,7 +834,7 @@ private:
             }
         }
 
-        llint card1 = static_cast<llint>(getStorageValue(bddgetchild1z(f)));
+        ullint card1 = getStorageValue(bddgetchild1z(f));
         if (order < card1) {
             s.insert(bddgetvar(f));
             getSet(bddgetchild1z(f), order, s);
@@ -870,6 +870,37 @@ private:
         }
     }
 #endif
+
+#ifndef SBDDH_GMP
+    std::set<bddvar> getSetByOrder(ullint order)
+    {
+        if (node_index_ == NULL) {
+            return std::set<bddvar>();
+        }
+        makeCountIndex();
+        if (order >= count()) { /* out of range */
+            return std::set<bddvar>();
+        }
+        std::set<bddvar> s;
+        getSet(node_index_->f, order, s);
+        return s;
+    }
+
+#else
+    std::set<bddvar> getSetByOrder(const mpz_class& order)
+    {
+        if (node_index_ == NULL) {
+            return std::set<bddvar>();
+        }
+        makeCountIndex();
+        if (order < mpz_class(0) || order >= countMP()) { /* out of range */
+            return std::set<bddvar>();
+        }
+        std::set<bddvar> s;
+        getSetMP(node_index_->f, order, s);
+        return s;
+    }
+#endif /* SBDDH_GMP */
 
     template<typename value_t>
     bddp getKSetsZBDD(bddp f, value_t k)
@@ -1270,31 +1301,20 @@ public:
 
     std::set<bddvar> getSet(llint order)
     {
-        if (node_index_ == NULL) {
+        if (order < 0) {
             return std::set<bddvar>();
         }
-        makeCountIndex();
-        if (order < 0 || order >= static_cast<llint>(count())) { /* out of range */
-            return std::set<bddvar>();
-        }
-        std::set<bddvar> s;
-        getSet(node_index_->f, order, s);
-        return s;
+#ifdef SBDDH_GMP
+        return getSetByOrder(sbddh_llint_to_mpz(order));
+#else
+        return getSetByOrder(static_cast<ullint>(order));
+#endif
     }
 
 #ifdef SBDDH_GMP
     std::set<bddvar> getSet(mpz_class order)
     {
-        if (node_index_ == NULL) {
-            return std::set<bddvar>();
-        }
-        makeCountIndex();
-        if (order < mpz_class(0) || order >= countMP()) { /* out of range */
-            return std::set<bddvar>();
-        }
-        std::set<bddvar> s;
-        getSetMP(node_index_->f, order, s);
-        return s;
+        return getSetByOrder(order);
     }
 #endif
 
@@ -1709,11 +1729,8 @@ public:
 
         std::set<bddvar> operator*() const
         {
-            if (reverse_) {
-                return dd_index_->getSet(current_ - 1);
-            } else {
-                return dd_index_->getSet(current_);
-            }
+            count_t order = (reverse_ ? current_ - sbddh_getOne<count_t>() : current_);
+            return dd_index_->getSetByOrder(order);
         }
 
         DictIterator& operator++()

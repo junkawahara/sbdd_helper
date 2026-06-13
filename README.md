@@ -365,7 +365,7 @@ DDIndex は以下のメンバ関数を提供しています。
 |`getSumMP(const std::vector&lt;llint&gt;& weights)`| 集合の重みの総和を取得（GMP版、任意桁数）|
 |`getOrderNumber(const std::set&lt;bddvar&gt;& s)`| s の辞書順番号を取得（64ビットまで）|
 |`getOrderNumberMP(const std::set&lt;bddvar&gt;& s)`| s の辞書順番号を取得（GMP版、任意桁数）|
-|`getSet(llint order)`| 辞書順番号 order の集合を取得（64ビットまで）|
+|`getSet(llint order)`| 辞書順番号 order の集合を取得（非GMP版、order は 0 以上 2^63 未満）|
 |`getSet(mpz_class order)`| 辞書順番号 order の集合を取得（GMP版、任意桁数）|
 |`getKSetsZBDD(ullint k)`| 辞書順に k 個の要素からなる ZBDD を取得（64ビットまで）|
 |`getKSetsZBDD(const mpz_class& k)`| 辞書順に k 個の要素からなる ZBDD を取得（GMP版、任意桁数）|

@@ -1635,6 +1635,53 @@ void test_ddindex(bool exhaustive)
 #endif
 }
 
+void test_ddindex_large_getset_order()
+{
+    const int n = 63;
+    ZBDD base = getPowerSet(n);
+    DDIndex<int> base_index(base);
+
+    test(base_index.count() == (1ull << 63));
+    test(base_index.getSet(-1).empty());
+
+    std::set<bddvar> first = base_index.getSet(0);
+    test(first.empty());
+
+    std::set<bddvar> second = base_index.getSet(1);
+    test(!second.empty());
+    test(isMember(base, second));
+
+    std::set<bddvar> last_signed = base_index.getSet(LLONG_MAX);
+    test(!last_signed.empty());
+    test(isMember(base, last_signed));
+
+    ZBDD shifted = base.Change(n + 1);
+    DDIndex<int> shifted_index(shifted);
+
+    test(shifted_index.count() == (1ull << 63));
+    std::set<bddvar> shifted_first = shifted_index.getSet(0);
+    test(shifted_first.count((bddvar)(n + 1)) == 1);
+    test(isMember(shifted, shifted_first));
+
+    std::set<bddvar> shifted_last = shifted_index.getSet(LLONG_MAX);
+    test(shifted_last.count((bddvar)(n + 1)) == 1);
+    test(isMember(shifted, shifted_last));
+
+    DDIndex<int>::DictIterator shifted_itor = shifted_index.dict_begin();
+    test((*shifted_itor).count((bddvar)(n + 1)) == 1);
+    ++shifted_itor;
+    test((*shifted_itor).count((bddvar)(n + 1)) == 1);
+
+    ZBDD plus_one = base + ZBDD(1).Change(n + 1);
+    DDIndex<int> plus_one_index(plus_one);
+
+    test(plus_one_index.count() == ((1ull << 63) + 1ull));
+    DDIndex<int>::DictIterator plus_one_ritor = plus_one_index.dict_rbegin();
+    std::set<bddvar> plus_one_last = *plus_one_ritor;
+    test(!plus_one_last.empty());
+    test(isMember(plus_one, plus_one_last));
+}
+
 void start_test_cpp(bool exhaustive)
 {
 #ifdef SBDDH_GMP
@@ -1648,6 +1695,7 @@ void start_test_cpp(bool exhaustive)
     test_index_cpp();
     test_elementIterator_cpp();
     test_ddindex(exhaustive);
+    test_ddindex_large_getset_order();
 }
 
 int main(int argc, char** argv)

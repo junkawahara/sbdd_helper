@@ -292,6 +292,8 @@ std::set<bddvar> getSet(llint order)
 
 辞書順で order 番目（0 始まり）の集合を返す。
 order が範囲外（マイナスの値か、要素数以上）の場合は空集合を返す。
+非 GMP 版で直接指定できる order は llint の非負範囲（0 以上 2^63 未満）である。
+2^63 以上の order を直接指定する場合は GMP 版 getSet(mpz_class order) を用いる。
 本メンバ関数は内部にカウント用の情報を記憶させる。
 
 辞書順の定義は getOrderNumber 関数の説明を参照。
@@ -304,7 +306,7 @@ std::set<bddvar> getSet(mpz_class order)
 
 辞書順で order 番目（0 始まり）の集合を返す。
 order が範囲外（マイナスの値か、要素数以上）の場合は空集合を返す。
-返り値は GMP ライブラリの mpz_class であり、任意桁の整数を表現できる。
+order は GMP ライブラリの mpz_class であり、任意桁の整数を表現できる。
 この関数を利用する際は、SBDDH_GMP マクロを冒頭で定義する。
 本メンバ関数は内部にカウント用の情報を記憶させる。
 
