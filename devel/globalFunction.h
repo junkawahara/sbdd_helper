@@ -605,7 +605,7 @@ llint bddcountnodes(bddp* dds, int n, int is_raw)
                 }
             } else { /* zbdd */
                 if (is_zbdd == 0) {
-                    error = 0;
+                    error = 1;
                     break;
                 } else {
                     is_zbdd = 1;
