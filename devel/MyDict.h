@@ -250,13 +250,16 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
         return;
     }
     dest_node_stack = (sbddextended_MyDictNode**)malloc(stack_size * sizeof(sbddextended_MyDictNode*));
-    if (node_stack == NULL) {
+    if (dest_node_stack == NULL) {
         fprintf(stderr, "out of memory\n");
+        free(node_stack);
         return;
     }
     op_stack = (char*)malloc(stack_size * sizeof(char));
     if (op_stack == NULL) {
         fprintf(stderr, "out of memory\n");
+        free(dest_node_stack);
+        free(node_stack);
         return;
     }
 
@@ -316,5 +319,8 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
     }
     assert(debug_count == src->count);
     dest->count = src->count;
+    free(op_stack);
+    free(dest_node_stack);
+    free(node_stack);
 #endif
 }
