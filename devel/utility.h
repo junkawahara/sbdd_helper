@@ -43,6 +43,7 @@ double sbddh_divide(const value_t& op1, const value_t& op2)
 #ifdef SBDDH_GMP
 
 template<>
+inline
 double sbddh_divide(const mpz_class& op1, const mpz_class& op2)
 {
     mpf_class f1(op1.get_str());

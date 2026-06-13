@@ -92,8 +92,8 @@ typedef unsigned long long int ullint;
     const mpz_class sbddextended_VALUE_ZERO(0);
     const mpz_class sbddextended_VALUE_ONE(1);
 #else
-    const llint sbddextended_VALUE_ZERO = 0;
-    const llint sbddextended_VALUE_ONE = 1;
+    static const llint sbddextended_VALUE_ZERO = 0;
+    static const llint sbddextended_VALUE_ONE = 1;
 #endif
 
 /* for compatibility */
