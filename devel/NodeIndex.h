@@ -1344,22 +1344,30 @@ public:
     ZBDD getKHeaviestZBDD(ullint k,
         const std::vector<llint>& weights, int strict)
     {
-        if (node_index_ == NULL) {
+        if (node_index_ == NULL || k == 0) {
             return ZBDD(0);
         }
+        ullint card = count();
         ZBDD f = ZBDD_ID(bddcopy(node_index_->f));
-        return f - getKLightestZBDD(count() - k, weights, -strict);
+        if (k >= card) {
+            return f;
+        }
+        return f - getKLightestZBDD<ullint>(f, card - k, weights, -strict);
     }
 
 #ifdef SBDDH_GMP
     ZBDD getKHeaviestZBDD(const mpz_class& k,
         const std::vector<llint>& weights, int strict)
     {
-        if (node_index_ == NULL) {
+        if (node_index_ == NULL || k <= 0) {
             return ZBDD(0);
         }
+        mpz_class card = countMP();
         ZBDD f = ZBDD_ID(bddcopy(node_index_->f));
-        return f - getKLightestZBDD(countMP() - k, weights, -strict);
+        if (k >= card) {
+            return f;
+        }
+        return f - getKLightestZBDD<mpz_class>(f, card - k, weights, -strict);
     }
 #endif /* SBDDH_GMP */
 

@@ -1275,6 +1275,19 @@ void check_k_lightest(const ZBDD& f, DDIndex<int>& dd_index,
                 }
             }
         }
+        for (int strict = -1; strict <= 1; ++strict) {
+            test(dd_index.getKHeaviestZBDD(0, weights, strict) == ZBDD(0));
+            test(dd_index.getKHeaviestZBDD(card + 1, weights, strict) == f);
+#ifdef SBDDH_GMP
+            test(dd_index.getKHeaviestZBDD(mpz_class(-1), weights, strict)
+                == ZBDD(0));
+            test(dd_index.getKHeaviestZBDD(mpz_class(0), weights, strict)
+                == ZBDD(0));
+            test(dd_index.getKHeaviestZBDD(
+                sbddh_ullint_to_mpz(card) + mpz_class(1), weights, strict)
+                == f);
+#endif
+        }
     }
 }
 
