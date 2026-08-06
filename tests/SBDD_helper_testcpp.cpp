@@ -713,6 +713,40 @@ void test_index_cpp()
     DDNodeIndex index7(ZBDD(1), false);
     test_eq(index7.count(), 1);
     test_eq(index7.size(), 0);
+
+    /* BDD から構築したインデックスでは、ノードの構造を扱う関数と
+       DDNodeIterator が利用できる。count() は ZDD のみに対応しており、
+       終端でない BDD に対して呼び出すとエラー終了するので呼び出さない。 */
+    BDD b = BDDvar(1) & BDDvar(3);
+    DDNodeIndex index8(b, false);
+    test_eq(index8.size(), 2);
+    test_eq(index8.sizeAtLevel(1), 1);
+    test_eq(index8.sizeAtLevel(2), 0);
+    test_eq(index8.sizeAtLevel(3), 1);
+
+    std::vector<bddvar> vec8;
+    index8.sizeEachLevel(vec8);
+    test_eq(vec8.size(), 4);
+    test_eq(vec8[1], 1);
+    test_eq(vec8[2], 0);
+    test_eq(vec8[3], 1);
+
+    int count8 = 0;
+    DDNodeIndex::DDNodeIterator itor8 = index8.begin();
+    while (itor8 != index8.end()) {
+        ++itor8;
+        ++count8;
+    }
+    test_eq(count8, 2);
+
+    /* 終端の BDD は count_arr を参照せずに 0 / 1 を返す */
+    DDNodeIndex index9(BDD(0), false);
+    test_eq(index9.count(), 0);
+    test_eq(index9.size(), 0);
+
+    DDNodeIndex index10(BDD(1), false);
+    test_eq(index10.count(), 1);
+    test_eq(index10.size(), 0);
 }
 
 bool test_count_if_size1(std::set<bddvar> s)

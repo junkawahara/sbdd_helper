@@ -3232,6 +3232,15 @@ ullint bddNodeIndex_count(const bddNodeIndex* node_index)
     } else if (node_index->f == bddtrue) {
         return 1ull;
     }
+    if (node_index->count_arr == NULL) {
+        /* count_arr is made only for a ZDD. It is NULL when the index is */
+        /* made for a BDD, or made by the "WithoutCount" functions. */
+        fprintf(stderr, "bddNodeIndex_count: the number of elements is not "
+                "stored in the index. It is stored only when the index is "
+                "made for a ZDD with counting (bddNodeIndex_makeIndexZ, "
+                "DDNodeIndex(const ZBDD&), etc.).\n");
+        exit(1);
+    }
     if (node_index->is_raw) {
         if (bddisnegative(node_index->f)) {
             return node_index->count_arr[sbddextended_BDDNODE_START] + 1;

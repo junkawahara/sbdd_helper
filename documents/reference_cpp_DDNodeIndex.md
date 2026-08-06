@@ -3,8 +3,9 @@
 このクラスは非推奨になった。代わりに [DDIndex](reference_cpp_DDIndex.md) クラスを推奨する。
 
 BDD/ZBDD に対して「インデックス」を付加することで、
-BDD/ZBDD が表す集合族の要素の個数や、BDD/ZBDD のノードの個数を
+ZBDD が表す集合族の要素の個数や、BDD/ZBDD のノードの個数を
 求める機能を提供する。
+要素の個数を求める count 関数は ZDD のみに対応している。
 
 ### 使用例
 
@@ -45,7 +46,7 @@ BDD/ZBDD が否定枝表現されているとみなしたときの
 ## size
 
 ```
-llint size()
+ullint size()
 ```
 
 インデックス元の BDD/ZDD のノード数を取得する。
@@ -54,7 +55,7 @@ llint size()
 ## sizeAtLevel
 
 ```
-llint sizeAtLevel(int level)
+ullint sizeAtLevel(int level)
 ```
 
 インデックス元の BDD/ZDD の、引数で指定した level のノード数を取得する。
@@ -72,10 +73,17 @@ BDD/ZDD の高さ（根ノードのレベル）+ 1 となる。
 ## count
 
 ```
-llint count()
+ullint count()
 ```
 
-インデックス元の BDD/ZDD が表す集合族の要素の個数を取得する。
+インデックス元の ZDD が表す集合族の要素の個数を取得する。
+
+要素の個数を数える機能は ZDD のみに対応している。
+BDD から構築したインデックス（`DDNodeIndex(const BDD& f)` コンストラクタ）に
+対して本関数を呼び出した場合は、エラーメッセージを表示して `exit(1)` する
+（ただし、BDD が終端の場合は 0 または 1 を返す）。
+BDD から構築したインデックスでは size、sizeAtLevel、sizeEachLevel、
+および DDNodeIterator による巡行が利用できる。
 
 ## DDNodeIndex::DDNodeIterator
 
