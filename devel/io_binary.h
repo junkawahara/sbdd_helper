@@ -35,7 +35,7 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
                                 )
 {
     ullint i, level, max_level, root_id, number_of_nodes;
-    ullint node_count, node_sum;
+    ullint node_count, node_sum, max_number_of_nodes;
     unsigned int number_of_terminals;
     bddvar var;
     bddp f, f0, f1;
@@ -142,6 +142,9 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
     /* level 0, unused (dummy) */
     sbddextended_MyVector_add(&level_vec, 0ll);
 
+    /* the number of nodes that bddnode_buf can hold */
+    max_number_of_nodes = (ullint)(((size_t)-1) / sizeof(bddp));
+
     number_of_nodes = number_of_terminals;
     for (level = 1; level <= max_level; ++level) {
         if (!sbddextended_readUint64(&v64, fp)) {
@@ -150,6 +153,13 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
             return bddnull;
         }
         sbddextended_MyVector_add(&level_vec, (llint)v64);
+        /* The check is written in this form so that */
+        /* number_of_nodes never overflows. */
+        if (v64 > max_number_of_nodes - number_of_nodes) {
+            fprintf(stderr, "The number of nodes in the BDD binary is too large.\n");
+            sbddextended_MyVector_deinitialize(&level_vec);
+            return bddnull;
+        }
         number_of_nodes += v64;
     }
     if (!sbddextended_readUint64(&root_id, fp)) {
@@ -188,10 +198,14 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
                     fprintf(stderr, "0-child must not be negative.\n");
                     sbddextended_freeNodesAndReturnNull();
                 }
-                f0 = bddnode_buf[v64 >> 1];
-            } else {
-                f0 = bddnode_buf[v64];
+                v64 >>= 1;
             }
+            /* A child must be a node that has already been read. */
+            if (v64 >= node_count) {
+                fprintf(stderr, "The node id of a 0-child is out of range.\n");
+                sbddextended_freeNodesAndReturnNull();
+            }
+            f0 = bddnode_buf[v64];
         }
 
         /* read 1-child */
@@ -203,11 +217,19 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
             f1 = bddgetterminal((int)v64, is_zbdd);
         } else {
             if (use_negative_arcs != 0) {
+                if ((v64 >> 1) >= node_count) {
+                    fprintf(stderr, "The node id of a 1-child is out of range.\n");
+                    sbddextended_freeNodesAndReturnNull();
+                }
                 f1 = bddnode_buf[v64 >> 1];
                 if (v64 % 2 == 1) {
                     f1 = bddtakenot(f1);
                 }
             } else {
+                if (v64 >= node_count) {
+                    fprintf(stderr, "The node id of a 1-child is out of range.\n");
+                    sbddextended_freeNodesAndReturnNull();
+                }
                 f1 = bddnode_buf[v64];
             }
         }
@@ -230,14 +252,16 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
             bddnode_buf[node_count] = bddmakenodeb(var, f0, f1);
         }
     }
-    if (use_negative_arcs != 0) {
-        if (root_id % 2 == 1) { /* negative arc */
-            f = bddtakenot(bddcopy(bddnode_buf[root_id >> 1]));
-        } else {
-            f = bddcopy(bddnode_buf[root_id >> 1]);
-        }
+    /* the index of the root node in bddnode_buf */
+    v64 = (use_negative_arcs != 0 ? (root_id >> 1) : root_id);
+    if (v64 >= number_of_nodes) {
+        fprintf(stderr, "The node id of the root is out of range.\n");
+        sbddextended_freeNodesAndReturnNull();
+    }
+    if (use_negative_arcs != 0 && root_id % 2 == 1) { /* negative arc */
+        f = bddtakenot(bddcopy(bddnode_buf[v64]));
     } else {
-        f = bddcopy(bddnode_buf[root_id]);
+        f = bddcopy(bddnode_buf[v64]);
     }
     /* FIX ME: need to free of bddnode_buf[*] */
     for (node_count = number_of_terminals;

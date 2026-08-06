@@ -1135,6 +1135,122 @@ void test_bddbinaryformat_truncated(void)
     }
 }
 
+/* buf の offset バイト目の uint64 を value に書き換えたファイルを
+   読み込ませ、bddnull が返ることを確認する */
+void test_bddbinaryformat_corrupted_at(const unsigned char* buf, long file_size,
+                                       long offset, ullint value)
+{
+    bddp g;
+    FILE* fp;
+    unsigned char* buf2;
+
+    buf2 = (unsigned char*)malloc((size_t)file_size);
+    if (buf2 == NULL) {
+        fprintf(stderr, "out of memory\n");
+        exit(1);
+    }
+    memcpy(buf2, buf, (size_t)file_size);
+    memcpy(buf2 + offset, &value, sizeof(ullint));
+
+    fp = fopen(g_filename1, "wb");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    if (fwrite(buf2, (size_t)1, (size_t)file_size, fp) != (size_t)file_size) {
+        fprintf(stderr, "fwrite failed\n");
+        exit(1);
+    }
+    fclose(fp);
+    free(buf2);
+
+    fp = fopen(g_filename1, "rb");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    g = bddimportzbddasbinary(fp, -1);
+    fclose(fp);
+
+    test(g == bddnull);
+}
+
+/* 範囲外のノード ID を含むバイナリを読み込んでも、未初期化の bddp を
+   使ったり領域外を読んだりせずに bddnull を返すことを確認する */
+void test_bddbinaryformat_corrupted(void)
+{
+    bddp f;
+    FILE* fp;
+    long file_size, header_size, root_id_offset, node_offset;
+    ullint max_level;
+    unsigned char* buf;
+
+    /* ヘッダのサイズ（'BDD' + version + type + number_of_arcs
+       + number_of_terminals + number_of_bits_for_level
+       + number_of_bits_for_id + use_negative_arcs + max_level
+       + number_of_roots + reserved）*/
+    header_size = 3 + 1 + 1 + 2 + 4 + 1 + 1 + 1 + 8 + 8 + 64;
+
+    f = make_test_zbdd();
+
+    fp = fopen(g_filename1, "wb+");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    bddexportzbddasbinary(fp, f, 1, NULL);
+    file_size = ftell(fp);
+    test(file_size > header_size);
+
+    if (fseek(fp, 0l, SEEK_SET) != 0) {
+        fprintf(stderr, "fseek failed\n");
+        exit(1);
+    }
+    buf = (unsigned char*)malloc((size_t)file_size);
+    if (buf == NULL) {
+        fprintf(stderr, "out of memory\n");
+        exit(1);
+    }
+    if (fread(buf, (size_t)1, (size_t)file_size, fp) != (size_t)file_size) {
+        fprintf(stderr, "fread failed\n");
+        exit(1);
+    }
+    fclose(fp);
+
+    /* max_level はヘッダの 14 バイト目から 8 バイト */
+    memcpy(&max_level, buf + 14, sizeof(ullint));
+    root_id_offset = header_size + (long)max_level * 8;
+    node_offset = root_id_offset + 8;
+    /* 1ノードは 0-child と 1-child の ID（各 8 バイト）からなる */
+    test_eq((file_size - node_offset) % 16, 0);
+    test(file_size > node_offset);
+
+    fprintf(stderr, "(the following \"out of range\" messages are expected)\n");
+
+    /* 根の ID が範囲外 */
+    test_bddbinaryformat_corrupted_at(buf, file_size, root_id_offset,
+                                      0xfffffffffffffffeull);
+    /* 先頭ノードの 0-child / 1-child が範囲外 */
+    test_bddbinaryformat_corrupted_at(buf, file_size, node_offset,
+                                      0xfffffffffffffffeull);
+    test_bddbinaryformat_corrupted_at(buf, file_size, node_offset + 8,
+                                      0xfffffffffffffffeull);
+    /* 先頭ノードの 0-child / 1-child がまだ読んでいないノード（自分自身）を指す。
+       否定枝を使うので ID は 2 倍されている */
+    test_bddbinaryformat_corrupted_at(buf, file_size, node_offset, 2ull * 2ull);
+    test_bddbinaryformat_corrupted_at(buf, file_size, node_offset + 8, 2ull * 2ull);
+
+    fprintf(stderr, "(end of the expected messages)\n");
+
+    free(buf);
+    bddfree(f);
+
+    if (remove(g_filename1) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+}
+
 void test_bddbinaryformat(void)
 {
     bddp f;
@@ -1151,6 +1267,7 @@ void test_bddbinaryformat(void)
     bddfree(f);
 
     test_bddbinaryformat_truncated();
+    test_bddbinaryformat_corrupted();
 }
 
 void start_test(void)
