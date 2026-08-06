@@ -20,7 +20,10 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
     sbddextended_MyVector node_vec, level_vec, lo_vec, hi_vec;
     sbddextended_MyDict node_dict;
 
-    sbddextended_readLine(buf, fp); /* read first line */
+    if (!sbddextended_readLine(buf, fp)) { /* read first line */
+        fprintf(stderr, "Unexpected end of the input.\n");
+        return bddnull;
+    }
     if (buf[0] == '.') { /* end of file */
         return bddnull;
     } else if (buf[0] == 'B' && (buf[1] == '\0' || isspace((int)buf[1]))) {

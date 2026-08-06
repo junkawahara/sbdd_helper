@@ -565,6 +565,26 @@ void test_io_cpp()
     test(ZStr(ZBDD(1)) == std::string("{}"));
 }
 
+/* 空のストリームを読み込んでも、未初期化の buf を参照せずに
+   bddnull を返すことを確認する */
+void test_graphillion_empty_stream_cpp()
+{
+    fprintf(stderr, "(the following \"Unexpected end\" messages are expected)\n");
+
+    {
+        std::stringstream ss;
+        BDD b = importBDDAsGraphillion(ss);
+        test(b.GetID() == bddnull);
+    }
+    {
+        std::stringstream ss;
+        ZBDD f = importZBDDAsGraphillion(ss);
+        test(f.GetID() == bddnull);
+    }
+
+    fprintf(stderr, "(end of the expected messages)\n");
+}
+
 void test_io_all_func_cpp()
 {
     const llint n = 3;
@@ -1857,6 +1877,7 @@ void start_test_cpp(bool exhaustive)
     test_weightRange_cost_boundaries();
     test_at_random_cpp();
     test_io_cpp();
+    test_graphillion_empty_stream_cpp();
     test_io_all_func_cpp();
     test_index_cpp();
     test_elementIterator_cpp();

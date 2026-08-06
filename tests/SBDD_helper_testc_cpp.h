@@ -1270,6 +1270,48 @@ void test_bddbinaryformat(void)
     test_bddbinaryformat_corrupted();
 }
 
+/* 空のファイルを読み込んでも、未初期化の buf を参照せずに
+   bddnull を返すことを確認する */
+void test_graphillionformat_empty(void)
+{
+    bddp f;
+    FILE* fp;
+
+    fp = fopen(g_filename1, "w");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    fclose(fp);
+
+    fprintf(stderr, "(the following \"Unexpected end\" messages are expected)\n");
+
+    fp = fopen(g_filename1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    f = bddimportbddasgraphillion(fp, -1);
+    fclose(fp);
+    test(f == bddnull);
+
+    fp = fopen(g_filename1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    f = bddimportzbddasgraphillion(fp, -1);
+    fclose(fp);
+    test(f == bddnull);
+
+    fprintf(stderr, "(end of the expected messages)\n");
+
+    if (remove(g_filename1) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+}
+
 void start_test(void)
 {
     srand(1);
@@ -1288,4 +1330,5 @@ void start_test(void)
     test_index_copy();
     test_elementIterator();
     test_bddbinaryformat();
+    test_graphillionformat_empty();
 }
