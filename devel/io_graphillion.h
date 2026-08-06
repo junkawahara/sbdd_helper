@@ -83,7 +83,7 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
         return bddnull;
     }
 
-    while ((int)bddvarused() < max_level) {
+    while (bddvarused() < (bddvar)root_level) {
         bddnewvar();
     }
 

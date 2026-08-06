@@ -1312,6 +1312,59 @@ void test_graphillionformat_empty(void)
     }
 }
 
+/* ファイル中の最大レベルより大きい root_level を指定しても、必要な数の
+   変数が作られ、指定した根のレベルで復元されることを確認する */
+void test_graphillionformat_root_level(void)
+{
+    const int root_level = 120;
+    bddp f, g;
+    FILE* fp;
+
+    /* ノードは 1 つだけ（graphillion のレベル 1 = 根のレベル）。
+       ファイル中の最大レベルは 1 で、root_level より小さい */
+    fp = fopen(g_filename1, "w");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    fprintf(fp, "0 1 B T\n.\n");
+    fclose(fp);
+
+    fp = fopen(g_filename1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    f = bddimportzbddasgraphillion(fp, root_level);
+    fclose(fp);
+
+    test(f != bddnull);
+    test((int)bddvarused() >= root_level);
+    g = bddgetsingleton(bddvaroflev((bddvar)root_level));
+    test(f == g);
+    bddfree(f);
+    bddfree(g);
+
+    fp = fopen(g_filename1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    f = bddimportbddasgraphillion(fp, root_level);
+    fclose(fp);
+
+    test(f != bddnull);
+    g = bddprime(bddvaroflev((bddvar)root_level));
+    test(f == g);
+    bddfree(f);
+    bddfree(g);
+
+    if (remove(g_filename1) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+}
+
 void start_test(void)
 {
     srand(1);
@@ -1331,4 +1384,5 @@ void start_test(void)
     test_elementIterator();
     test_bddbinaryformat();
     test_graphillionformat_empty();
+    test_graphillionformat_root_level();
 }
