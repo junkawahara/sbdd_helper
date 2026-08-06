@@ -5669,6 +5669,30 @@ std::string zstr(const ZBDD& zbdd)
 
 /* *************** import functions */
 
+/* Reads a value of the BDD binary format and returns bddnull from the */
+/* caller when the binary ends before the value is read. */
+/* Used only in bddimportbddasbinary_inner and undefined after it. */
+#define sbddextended_readOrReturnNull(read_func, value_ptr) \
+    do { \
+        if (!read_func(value_ptr, fp)) { \
+            fprintf(stderr, "Unexpected end of the BDD binary.\n"); \
+            return bddnull; \
+        } \
+    } while (0)
+
+/* Frees the working data of the node reading loop of */
+/* bddimportbddasbinary_inner and returns bddnull from it. */
+/* Used only there and undefined after it. */
+#define sbddextended_freeNodesAndReturnNull() \
+    do { \
+        for (i = number_of_terminals; i < node_count; ++i) { \
+            bddfree(bddnode_buf[i]); \
+        } \
+        free(bddnode_buf); \
+        sbddextended_MyVector_deinitialize(&level_vec); \
+        return bddnull; \
+    } while (0)
+
 sbddextended_INLINE_FUNC
 bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
 #ifdef __cplusplus
@@ -5693,19 +5717,19 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
 
     /* read head 'B' 'D' 'D' */
     for (i = 0; i < 3; ++i) {
-        sbddextended_readUint8(&v8, fp);
+        sbddextended_readOrReturnNull(sbddextended_readUint8, &v8);
         if ((i == 0 && v8 != 'B') || (i >= 1 && v8 != 'D')) {
             fprintf(stderr, "This binary is not in the BDD binary format.\n");
             return bddnull;
         }
     }
-    sbddextended_readUint8(&v8, fp); /* version */
+    sbddextended_readOrReturnNull(sbddextended_readUint8, &v8); /* version */
     if (v8 != 1) {
         fprintf(stderr, "This function supports only version 1.\n");
         return bddnull;
     }
 
-    sbddextended_readUint8(&v8, fp); /* type */
+    sbddextended_readOrReturnNull(sbddextended_readUint8, &v8); /* type */
     if (is_zbdd < 0 && v8 == 1) {
         fprintf(stderr, "Need to specify BDD or ZBDD.\n");
         return bddnull;
@@ -5715,32 +5739,42 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
         fprintf(stderr, "The binary indicates that it is ZDDD, but we interpret it as a BDD.\n");
     }
 
-    sbddextended_readUint16(&v16, fp); /* number_of_arcs */
+    sbddextended_readOrReturnNull(sbddextended_readUint16, &v16); /* number_of_arcs */
     if (v16 != 2) {
         fprintf(stderr, "Currently, this function supports only 2 branches.\n");
         return bddnull;
     }
 
-    sbddextended_readUint32(&number_of_terminals, fp); /* number_of_terminals */
+    /* number_of_terminals */
+    sbddextended_readOrReturnNull(sbddextended_readUint32, &number_of_terminals);
     if (number_of_terminals != 2) {
         fprintf(stderr, "Currently, this function supports only 2 terminals.\n");
         return bddnull;
     }
 
-    sbddextended_readUint8(&v8, fp); /* number_of_bits_for_level */
+    /* number_of_bits_for_level */
+    sbddextended_readOrReturnNull(sbddextended_readUint8, &v8);
     if (v8 != 16) {
         fprintf(stderr, "Currently, this function supports only the case of number_of_bits_for_level == 16.\n");
         return bddnull;
     }
 
-    sbddextended_readUint8(&v8, fp); /* number_of_bits_for_id */
+    /* number_of_bits_for_id */
+    sbddextended_readOrReturnNull(sbddextended_readUint8, &v8);
     if (v8 != 64) {
         fprintf(stderr, "Currently, this function supports only the case of number_of_bits_for_id == 64.\n");
         return bddnull;
     }
 
-    sbddextended_readUint8(&use_negative_arcs, fp); /* use_negative_arcs */
-    sbddextended_readUint64(&max_level, fp); /* max_level */
+    /* use_negative_arcs */
+    sbddextended_readOrReturnNull(sbddextended_readUint8, &use_negative_arcs);
+    /* max_level */
+    sbddextended_readOrReturnNull(sbddextended_readUint64, &max_level);
+
+    if (max_level > (ullint)INT_MAX) {
+        fprintf(stderr, "The value of \"max_level\" in the binary is too large.\n");
+        return bddnull;
+    }
 
     if (root_level < 0) {
         root_level = (int)max_level;
@@ -5750,18 +5784,18 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
         return bddnull;
     }
 
-    sbddextended_readUint64(&v64, fp); /* number_of_roots */
+    sbddextended_readOrReturnNull(sbddextended_readUint64, &v64); /* number_of_roots */
     if (v64 != 1) {
         fprintf(stderr, "Currently, this function supports only 1 root.\n");
         return bddnull;
     }
     /* reserved */
     for (i = 0; i < 8; ++i) {
-        sbddextended_readUint64(&v64, fp);
+        sbddextended_readOrReturnNull(sbddextended_readUint64, &v64);
     }
 
     if (max_level == 0) { /* case of a constant function (0/1-terminal) */
-        sbddextended_readUint64(&v64, fp);
+        sbddextended_readOrReturnNull(sbddextended_readUint64, &v64);
         if (v64 == 0) {
             return bddempty;
         } else if (v64 == 1) {
@@ -5779,11 +5813,19 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
 
     number_of_nodes = number_of_terminals;
     for (level = 1; level <= max_level; ++level) {
-        sbddextended_readUint64(&v64, fp);
+        if (!sbddextended_readUint64(&v64, fp)) {
+            fprintf(stderr, "Unexpected end of the BDD binary.\n");
+            sbddextended_MyVector_deinitialize(&level_vec);
+            return bddnull;
+        }
         sbddextended_MyVector_add(&level_vec, (llint)v64);
         number_of_nodes += v64;
     }
-    sbddextended_readUint64(&root_id, fp);
+    if (!sbddextended_readUint64(&root_id, fp)) {
+        fprintf(stderr, "Unexpected end of the BDD binary.\n");
+        sbddextended_MyVector_deinitialize(&level_vec);
+        return bddnull;
+    }
 
     assert(number_of_nodes >= number_of_terminals);
     assert(number_of_nodes >= 2);
@@ -5803,7 +5845,8 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
             node_count < number_of_nodes; ++node_count) {
         /* read 0-child */
         if (!sbddextended_readUint64(&v64, fp)) {
-            break;
+            fprintf(stderr, "Unexpected end of the BDD binary.\n");
+            sbddextended_freeNodesAndReturnNull();
         }
 
         if (v64 <= 1) {
@@ -5812,7 +5855,7 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
             if (use_negative_arcs != 0) {
                 if(v64 % 2 == 1) {
                     fprintf(stderr, "0-child must not be negative.\n");
-                    return bddnull;
+                    sbddextended_freeNodesAndReturnNull();
                 }
                 f0 = bddnode_buf[v64 >> 1];
             } else {
@@ -5822,8 +5865,8 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
 
         /* read 1-child */
         if (!sbddextended_readUint64(&v64, fp)) {
-            fprintf(stderr, "illegal format\n");
-            return bddnull;
+            fprintf(stderr, "Unexpected end of the BDD binary.\n");
+            sbddextended_freeNodesAndReturnNull();
         }
         if (v64 <= 1) {
             f1 = bddgetterminal((int)v64, is_zbdd);
@@ -5872,6 +5915,9 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
     }
     return f;
 }
+
+#undef sbddextended_readOrReturnNull
+#undef sbddextended_freeNodesAndReturnNull
 
 #ifdef __cplusplus
 

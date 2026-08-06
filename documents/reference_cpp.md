@@ -707,6 +707,10 @@ ZBDD importZBDDAsBinary(std::istream& ist, int root_level = -1)
 [BDD バイナリ形式](https://github.com/junkawahara/dd_documents/blob/main/formats/bdd_binary_format.md) を読み込み、BDD/ZBDD を構築して返す。
 root_level に正の数を指定すると、根のレベルが root_level になる。
 
+入力が BDD バイナリ形式でない場合、対応していない形式の場合、
+および途中で切り詰められている場合は、エラーメッセージを標準エラー出力に
+表示して `BDD(-1)` / `ZBDD(-1)`（bddnull を表す）を返す。
+
 Ver 1.0.0 で BDD 版が実装された。また、否定枝を使わない場合に対応した。
 
 ### 使用例

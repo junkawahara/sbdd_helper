@@ -1047,6 +1047,94 @@ void test_bddbinaryformat_f(bddp f)
     test(f == g);
 }
 
+/* buf の先頭 len バイトだけからなるファイルを読み込ませ、
+   bddnull が返ることを確認する */
+void test_bddbinaryformat_truncated_len(const unsigned char* buf, long len)
+{
+    bddp g;
+    FILE* fp;
+
+    fp = fopen(g_filename1, "wb");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    if (len > 0) {
+        if (fwrite(buf, (size_t)1, (size_t)len, fp) != (size_t)len) {
+            fprintf(stderr, "fwrite failed\n");
+            exit(1);
+        }
+    }
+    fclose(fp);
+
+    fp = fopen(g_filename1, "rb");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    g = bddimportzbddasbinary(fp, -1);
+    fclose(fp);
+
+    test(g == bddnull);
+}
+
+/* 切り詰められたバイナリを読み込んでも、未初期化の値を使わずに
+   bddnull を返すことを確認する */
+void test_bddbinaryformat_truncated(void)
+{
+    bddp f;
+    FILE* fp;
+    long file_size, len;
+    unsigned char* buf;
+
+    f = make_test_zbdd();
+
+    fp = fopen(g_filename1, "wb+");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    bddexportzbddasbinary(fp, f, 1, NULL);
+    file_size = ftell(fp);
+    test(file_size > 0);
+
+    if (fseek(fp, 0l, SEEK_SET) != 0) {
+        fprintf(stderr, "fseek failed\n");
+        exit(1);
+    }
+    buf = (unsigned char*)malloc((size_t)file_size);
+    if (buf == NULL) {
+        fprintf(stderr, "out of memory\n");
+        exit(1);
+    }
+    if (fread(buf, (size_t)1, (size_t)file_size, fp) != (size_t)file_size) {
+        fprintf(stderr, "fread failed\n");
+        exit(1);
+    }
+    fclose(fp);
+
+    fprintf(stderr, "(the following \"Unexpected end\" messages are expected)\n");
+
+    /* ヘッダ部・レベルごとのノード数・根 ID・ノード列の各所で切り詰める */
+    for (len = 0; len < file_size; len = len * 2 + 1) {
+        test_bddbinaryformat_truncated_len(buf, len);
+    }
+    test_bddbinaryformat_truncated_len(buf, file_size / 4);
+    test_bddbinaryformat_truncated_len(buf, file_size / 2);
+    test_bddbinaryformat_truncated_len(buf, file_size * 3 / 4);
+    test_bddbinaryformat_truncated_len(buf, file_size - 1);
+
+    fprintf(stderr, "(end of the expected messages)\n");
+
+    free(buf);
+    bddfree(f);
+
+    if (remove(g_filename1) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+}
+
 void test_bddbinaryformat(void)
 {
     bddp f;
@@ -1061,6 +1149,8 @@ void test_bddbinaryformat(void)
     f = make_test_zbdd();
     test_bddbinaryformat_f(f);
     bddfree(f);
+
+    test_bddbinaryformat_truncated();
 }
 
 void start_test(void)

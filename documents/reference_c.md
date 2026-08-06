@@ -541,6 +541,10 @@ bddimportbddasbinary は BDD bddimportzbddasbinary は ZBDD を返す。
 root_level 引数によって、根ノードが SAPPOROBDD のどのノードレベルに取り込まれるかを
 指定することができる。-1 を指定すると、構築されたZBDDの高さと同じになる。
 
+入力が BDD バイナリ形式でない場合、対応していない形式の場合、
+および途中で切り詰められている場合は、エラーメッセージを標準エラー出力に
+表示して bddnull を返す。
+
 ## bddexportbddasbinary
 
 ```
