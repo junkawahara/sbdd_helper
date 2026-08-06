@@ -1772,6 +1772,48 @@ void test_ddindex_clear()
     /* clear() 済みの DDIndex がスコープを抜けても二重解放しない */
 }
 
+/* BDD から構築した DDIndex では、ノードの構造のみを扱う関数が利用できる。
+   数え上げ・重み系の関数は checkZBDD() がエラーメッセージを表示して
+   exit(1) するため、ここでは呼び出さない。 */
+void test_ddindex_bdd()
+{
+    BDD f = BDDvar(1) & BDDvar(3);
+    DDIndex<int> dd_index(f);
+
+    test(dd_index.isValid());
+    test_eq(dd_index.height(), 3);
+    test_eq(dd_index.size(), 2ull);
+    test_eq(dd_index.size(1), 1ull);
+    test_eq(dd_index.size(2), 0ull);
+    test_eq(dd_index.size(3), 1ull);
+
+    std::vector<bddvar> size_arr;
+    dd_index.sizeEachLevel(size_arr);
+    test_eq(size_arr.size(), 4u);
+    test_eq(size_arr[1], 1u);
+    test_eq(size_arr[2], 0u);
+    test_eq(size_arr[3], 1u);
+
+    std::set<bddvar> used = dd_index.usedVar();
+    test_eq(used.size(), 2u);
+    test(used.count(1) > 0);
+    test(used.count(3) > 0);
+
+    /* 根ノードとその子ノードを取得できる */
+    DDNode<int> root = dd_index.root();
+    test(root.getBddp() == f.GetID());
+    test(root.child(0).isTerminal(0));
+    test(root.child(1).getBddp() == BDDvar(1).GetID());
+
+    /* ノードを巡行できる */
+    int num_nodes = 0;
+    for (DDIndex<int>::DDNodeIterator itor = dd_index.begin();
+            itor != dd_index.end(); ++itor) {
+        ++num_nodes;
+    }
+    test_eq(num_nodes, 2);
+}
+
 void start_test_cpp(bool exhaustive)
 {
 #ifdef SBDDH_GMP
@@ -1787,6 +1829,7 @@ void start_test_cpp(bool exhaustive)
     test_ddindex(exhaustive);
     test_ddindex_large_getset_order();
     test_ddindex_clear();
+    test_ddindex_bdd();
 }
 
 int main(int argc, char** argv)

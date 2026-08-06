@@ -348,6 +348,12 @@ count = 10
 ```
 
 DDIndex は以下のメンバ関数を提供しています。
+なお、BDD から構築した DDIndex で利用できるのは、ノードの構造のみを扱う関数
+（`height`、`size`、`sizeEachLevel`、`usedVar`、`root`、`terminal`、`getNode`、
+`begin`／`end`）です。集合族の要素を数える・列挙する関数（`count` など）や
+重みを扱う関数（`getMaximum` など）、集合を巡行するイテレータは ZBDD のみに
+対応しており、BDD から構築した DDIndex に対して呼び出すとエラーメッセージを
+表示して終了します。
 
 |関数名|機能|
 |------|----|

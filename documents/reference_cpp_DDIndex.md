@@ -1,8 +1,9 @@
 # DDIndex クラス
 
 `DDIndex<T>` クラスは、BDD/ZBDD に対して「インデックス」を付加することで、
-BDD/ZBDD が表す集合族の要素の個数や、BDD/ZBDD のノードの個数を
+ZBDD が表す集合族の要素の個数や、BDD/ZBDD のノードの個数を
 求める機能を提供するクラスである。
+BDD から構築した場合に利用できる機能は限られる（「BDD への対応状況」の節を参照）。
 本クラスは `DDNodeIndex` を改良したクラスである。
 `DDNodeIndex` は用いる必要がなく、本クラスを用いればよい。
 
@@ -102,6 +103,25 @@ BDD/ZBDD が否定枝表現されているとみなしたときの
 インデックスを作成する。
 
 現在のバージョンでは、is_raw が false の場合のみ対応している。
+
+## BDD への対応状況
+
+現在のバージョンでは、BDD から構築した `DDIndex<T>`（`DDIndex(const BDD& f)`
+コンストラクタ、および BDD を表す bddp を渡した `DDIndex(bddp f)` コンストラクタ）
+で利用できるのは、ノードの構造のみを扱う以下の関数である。
+
+- `clear()` / `isValid()` / `getRawPointer()` / `getStorageRef()`
+- `height()` / `size()` / `size(int level)` / `sizeEachLevel()` / `usedVar()`
+- `root()` / `terminal(int t)` / `getNode(int level, llint pos)`
+- `begin()` / `end()`（ノードを巡行する `DDNodeIterator`）
+
+集合族の要素を数えたり列挙したりする関数（`count`、`countMP`、`getSet`、
+`getOrderNumber`、`getKSetsZBDD`、`sampleRandomly` など）と、
+重みを扱う関数（`getMaximum`、`getMinimum`、`getSum`、`getKLightestZBDD` など）、
+および集合を巡行するイテレータ（`weight_min_begin`、`weight_max_begin`、
+`random_begin`、`dict_begin` など）は ZDD のみに対応している。
+BDD から構築したインデックスに対してこれらを呼び出した場合は、
+エラーメッセージを表示して `exit(1)` する。
 
 ## コピー・代入について
 
@@ -234,7 +254,7 @@ ZBDD が表す集合族のいずれかの集合に含まれている変数の番
 ullint count()
 ```
 
-インデックス元の BDD/ZDD が表す集合族の要素の個数（64ビット値）を取得する。
+インデックス元の ZDD が表す集合族の要素の個数（64ビット値）を取得する。
 要素の個数が64ビット値を超える場合、2^64 で割った余りを返す。
 要素の個数が64ビット値を超える場合は countMP 関数を用いれば、
 正確な値が取得できる。
@@ -248,7 +268,7 @@ Ver 1.1.0 から返り値の型を llint から ullint に変更。
 mpz_class countMP()
 ```
 
-インデックス元の BDD/ZDD が表す集合族の要素の個数を取得する。
+インデックス元の ZDD が表す集合族の要素の個数を取得する。
 返り値は GMP ライブラリの mpz_class であり、任意桁の整数を表現できる。
 この関数を利用する際は、SBDDH_GMP マクロを冒頭で定義する。
 本メンバ関数は内部にカウント用の情報を記憶させる。
@@ -430,7 +450,7 @@ template <typename U> std::set<bddvar> sampleRandomly(U& random_engine)
 std::set<bddvar> sampleRandomly()
 ```
 
-BDD/ZBDD が表す集合族から集合を1つ一様ランダムに選んで返す。
+ZBDD が表す集合族から集合を1つ一様ランダムに選んで返す。
 `U& random_engine` を引数にとる関数は C++11 以降で利用できる。
 `U` は乱数エンジンの型であり、`std::mt19937` などが指定できる。
 引数のない関数は、C++98 や C++03 で利用できる。内部では rand() を利用している。
@@ -446,7 +466,7 @@ GMP 版の sampleRandomly を用いる。
 std::set<bddvar> sampleRandomly(gmp_randclass& random)
 ```
 
-BDD/ZBDD が表す集合族から集合を1つ一様ランダムに選んで返す。
+ZBDD が表す集合族から集合を1つ一様ランダムに選んで返す。
 GMP の乱数エンジン gmp_randclass を引数に指定する。
 本メンバ関数は内部にカウント用の情報を記憶させる。
 
@@ -459,7 +479,7 @@ GMP の乱数エンジン gmp_randclass を引数に指定する。
 std::set<bddvar> sampleRandomlyA(ullint* rand_state)
 ```
 
-BDD/ZBDD が表す集合族から集合を1つ一様ランダムに選んで返す。
+ZBDD が表す集合族から集合を1つ一様ランダムに選んで返す。
 乱数の種として、ullint 型の変数へのポインタを引数に指定する。
 乱数として、XORShift を用いている。
 本メンバ関数は内部にカウント用の情報を記憶させる。

@@ -639,9 +639,24 @@ private:
         node_index_ = bddNodeIndex_makeIndexWithoutCount_inner(f, 0, is_zbdd);
     }
 
+    /* The functions that count/enumerate the elements of the family and
+       the functions that deal with weights apply ZDD operations to the
+       nodes. Such operations are invalid for a BDD, so we reject them
+       here instead of letting SAPPOROBDD abort with an obscure message. */
+    void checkZBDD() const
+    {
+        if (node_index_ != NULL && !node_index_->is_zbdd) {
+            std::cerr << "DDIndex currently supports this function only for "
+                         "ZDD, but the index is constructed from a BDD."
+                      << std::endl;
+            exit(1);
+        }
+    }
+
     llint optimize(const std::vector<llint>& weights, bool is_max,
                     std::set<bddvar>& s) const
     {
+        checkZBDD();
         if (node_index_->is_raw) {
             std::cerr << "DDIndex currently does not support raw mode." << std::endl;
             exit(1);
@@ -1540,6 +1555,7 @@ public:
         if (node_index_ == NULL) {
             return;
         }
+        checkZBDD();
         if (!is_count_made) {
             is_count_made = true;
 
@@ -1826,6 +1842,7 @@ public:
         if (node_index_ == NULL) {
             return WeightIterator();
         }
+        checkZBDD();
         return WeightIterator(ZBDD_ID(bddcopy(node_index_->f)),
             weights, true);
     }
@@ -1840,6 +1857,7 @@ public:
         if (node_index_ == NULL) {
             return WeightIterator();
         }
+        checkZBDD();
         return WeightIterator(ZBDD_ID(bddcopy(node_index_->f)),
             weights, false);
     }
@@ -1854,6 +1872,7 @@ public:
         if (node_index_ == NULL) {
             return RandomIterator();
         }
+        checkZBDD();
         return RandomIterator(ZBDD_ID(bddcopy(node_index_->f)), rand_seed);
     }
 
