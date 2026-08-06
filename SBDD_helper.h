@@ -3270,33 +3270,73 @@ void bddNodeIndex_destruct(bddNodeIndex* node_index)
     }
 }
 
+/* "dest" is assumed to be uninitialized. All of its members are overwritten. */
+/* If "dest" already holds an index, call bddNodeIndex_destruct for it */
+/* before calling this function; otherwise its memory leaks. */
 sbddextended_INLINE_FUNC
 void bddNodeIndex_copy(bddNodeIndex* dest,
                        const bddNodeIndex* src)
 {
+    int i;
+
     dest->is_raw = src->is_raw;
-    if (src->node_dict_arr != NULL) {
-        sbddextended_MyDict_copy(dest->node_dict_arr, src->node_dict_arr);
-    } else {
-        dest->node_dict_arr = NULL;
-    }
-    if (src->level_vec_arr != NULL) {
-        sbddextended_MyVector_copy(dest->level_vec_arr, src->level_vec_arr);
-    } else {
-        dest->level_vec_arr = NULL;
-    }
-    if (src->offset_arr != NULL) {
-        memcpy(dest->offset_arr, src->offset_arr, (size_t)(src->height + 1) * sizeof(llint));
-    } else {
-        dest->offset_arr = NULL;
-    }
-    if (src->count_arr != NULL) {
-        memcpy(dest->count_arr, src->count_arr, (size_t)src->offset_arr[0] * sizeof(llint));
-    } else {
-        dest->count_arr = NULL;
-    }
+    dest->is_zbdd = src->is_zbdd;
     dest->height = src->height;
     dest->f = src->f;
+    dest->node_dict_arr = NULL;
+    dest->level_vec_arr = NULL;
+    dest->offset_arr = NULL;
+    dest->count_arr = NULL;
+
+    /* The arrays hold the elements of index 1, 2, ..., height. */
+    /* The element of index 0 is unused (see */
+    /* bddNodeIndex_makeIndexWithoutCount_inner). */
+    if (src->node_dict_arr != NULL) {
+        dest->node_dict_arr = (sbddextended_MyDict*)malloc(
+                            (size_t)(src->height + 1) * sizeof(sbddextended_MyDict));
+        if (dest->node_dict_arr == NULL) {
+            fprintf(stderr, "out of memory\n");
+            exit(1);
+        }
+        for (i = 1; i <= src->height; ++i) {
+            sbddextended_MyDict_initialize(&dest->node_dict_arr[i]);
+            sbddextended_MyDict_copy(&dest->node_dict_arr[i],
+                                     &src->node_dict_arr[i]);
+        }
+    }
+    if (src->level_vec_arr != NULL) {
+        dest->level_vec_arr = (sbddextended_MyVector*)malloc(
+                            (size_t)(src->height + 1) * sizeof(sbddextended_MyVector));
+        if (dest->level_vec_arr == NULL) {
+            fprintf(stderr, "out of memory\n");
+            exit(1);
+        }
+        for (i = 1; i <= src->height; ++i) {
+            sbddextended_MyVector_initialize(&dest->level_vec_arr[i]);
+            sbddextended_MyVector_copy(&dest->level_vec_arr[i],
+                                       &src->level_vec_arr[i]);
+        }
+    }
+    if (src->offset_arr != NULL) {
+        dest->offset_arr = (llint*)malloc((size_t)(src->height + 1) * sizeof(llint));
+        if (dest->offset_arr == NULL) {
+            fprintf(stderr, "out of memory\n");
+            exit(1);
+        }
+        memcpy(dest->offset_arr, src->offset_arr,
+               (size_t)(src->height + 1) * sizeof(llint));
+    }
+    if (src->count_arr != NULL) {
+        /* count_arr has offset_arr[0] elements. */
+        assert(src->offset_arr != NULL);
+        dest->count_arr = (ullint*)malloc((size_t)src->offset_arr[0] * sizeof(ullint));
+        if (dest->count_arr == NULL) {
+            fprintf(stderr, "out of memory\n");
+            exit(1);
+        }
+        memcpy(dest->count_arr, src->count_arr,
+               (size_t)src->offset_arr[0] * sizeof(ullint));
+    }
 }
 
 

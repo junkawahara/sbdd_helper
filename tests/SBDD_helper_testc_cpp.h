@@ -877,6 +877,78 @@ void test_index(void)
     bddNodeIndex_destruct(node_index);
 }
 
+void test_index_copy(void)
+{
+    int i;
+    size_t j;
+    llint value;
+    bddp f, node;
+    bddNodeIndex* node_index;
+    bddNodeIndex* copied;
+    ullint count, size;
+    ullint size_at_level[8];
+
+    f = make_test_zbdd();
+    node_index = bddNodeIndex_makeIndexZ(f);
+    count = bddNodeIndex_count(node_index);
+    size = bddNodeIndex_size(node_index);
+    test(node_index->height < 8);
+    for (i = 1; i <= node_index->height; ++i) {
+        size_at_level[i] = bddNodeIndex_sizeAtLevel(node_index, i);
+    }
+
+    copied = (bddNodeIndex*)malloc(sizeof(bddNodeIndex));
+    if (copied == NULL) {
+        fprintf(stderr, "out of memory\n");
+        exit(1);
+    }
+    bddNodeIndex_copy(copied, node_index);
+
+    /* destruct the source so that the copy must be independent of it */
+    bddNodeIndex_destruct(node_index);
+    free(node_index);
+
+    test_eq(bddNodeIndex_count(copied), count);
+    test_eq(bddNodeIndex_size(copied), size);
+    test_eq(copied->is_zbdd, 1);
+    test_eq(copied->is_raw, 0);
+    for (i = 1; i <= copied->height; ++i) {
+        test_eq(bddNodeIndex_sizeAtLevel(copied, i), size_at_level[i]);
+        /* every node in level_vec_arr must be registered in node_dict_arr */
+        /* with its position in the level as the value */
+        for (j = 0; j < copied->level_vec_arr[i].count; ++j) {
+            node = (bddp)sbddextended_MyVector_get(&copied->level_vec_arr[i],
+                                                    (llint)j);
+            test_eq(sbddextended_MyDict_find(&copied->node_dict_arr[i],
+                                                (llint)node, &value), 1);
+            test_eq(value, (llint)j);
+        }
+    }
+    bddNodeIndex_destruct(copied);
+    free(copied);
+
+    /* the case that f is a terminal, where all the arrays are NULL */
+    node_index = bddNodeIndex_makeIndexZ(bddsingle);
+    copied = (bddNodeIndex*)malloc(sizeof(bddNodeIndex));
+    if (copied == NULL) {
+        fprintf(stderr, "out of memory\n");
+        exit(1);
+    }
+    bddNodeIndex_copy(copied, node_index);
+    bddNodeIndex_destruct(node_index);
+    free(node_index);
+
+    test_eq(bddNodeIndex_count(copied), 1);
+    test_eq(bddNodeIndex_size(copied), 0);
+    test_eq(copied->is_zbdd, 1);
+    test(copied->node_dict_arr == NULL);
+    test(copied->level_vec_arr == NULL);
+    test(copied->offset_arr == NULL);
+    test(copied->count_arr == NULL);
+    bddNodeIndex_destruct(copied);
+    free(copied);
+}
+
 void test_elementIterator(void)
 {
     bddp f;
@@ -1006,6 +1078,7 @@ void start_test(void)
     test_io();
     test_at_random();
     test_index();
+    test_index_copy();
     test_elementIterator();
     test_bddbinaryformat();
 }
