@@ -1682,6 +1682,96 @@ void test_ddindex_large_getset_order()
     test(isMember(plus_one, plus_one_last));
 }
 
+void test_ddindex_clear()
+{
+    ZBDD f = getPowerSet(4);
+
+    DDIndex<int> dd_index(f);
+
+    /* clear() 前は有効 */
+    test(dd_index.isValid());
+    test(dd_index.is_valid()); /* 旧名 */
+    test(dd_index.getRawPointer() != NULL);
+    test_eq(dd_index.count(), 16ull);
+    test_eq(dd_index.usedVar().size(), 4u);
+
+    /* clear() は何度呼んでもよい */
+    dd_index.clear();
+    dd_index.clear();
+    dd_index.clear();
+
+    test(!dd_index.isValid());
+    test(!dd_index.is_valid());
+    test(dd_index.getRawPointer() == NULL);
+
+    /* clear() 後も各メンバ関数を安全に呼び出せる */
+    test_eq(dd_index.height(), 0);
+    test_eq(dd_index.size(), 0ull);
+    test_eq(dd_index.size(1), 0ull);
+    test(dd_index.getZBDD() == ZBDD(0));
+    test_eq(dd_index.count(), 0ull);
+
+    std::vector<bddvar> size_arr;
+    dd_index.sizeEachLevel(size_arr);
+    test_eq(size_arr.size(), 0u);
+
+    test_eq(dd_index.usedVar().size(), 0u);
+
+    std::vector<llint> weights;
+    for (int w = 0; w <= 4; ++w) {
+        weights.push_back(w);
+    }
+    std::set<bddvar> ss;
+    test_eq(dd_index.getMaximum(weights, ss), 0ll);
+    test_eq(dd_index.getMaximum(weights), 0ll);
+    test_eq(dd_index.getMinimum(weights, ss), 0ll);
+    test_eq(dd_index.getMinimum(weights), 0ll);
+    test_eq(dd_index.getSum(weights), 0ll);
+
+    std::set<bddvar> empty_set;
+    test_eq(dd_index.getOrderNumber(empty_set), -1ll);
+    test_eq(dd_index.getSet(0).size(), 0u);
+    test(dd_index.getKSetsZBDD(2ull) == ZBDD(0));
+
+#ifdef SBDDH_BDDCT
+    test(dd_index.getKLightestZBDD(2ull, weights, 0) == ZBDD(0));
+    test(dd_index.getKHeaviestZBDD(2ull, weights, 0) == ZBDD(0));
+#endif
+
+#ifdef SBDDH_GMP
+    test_eq(dd_index.countMP().get_si(), 0l);
+    test_eq(dd_index.getSumMP(weights).get_si(), 0l);
+    test_eq(dd_index.getOrderNumberMP(empty_set).get_si(), -1l);
+    gmp_randclass random(gmp_randinit_default);
+    random.seed(1);
+    test_eq(dd_index.sampleRandomly(random).size(), 0u);
+#else
+#if __cplusplus >= 201103L
+    std::mt19937 mt(1);
+    test_eq(dd_index.sampleRandomly(mt).size(), 0u);
+#else
+    test_eq(dd_index.sampleRandomly().size(), 0u);
+#endif
+#endif
+
+    ullint state = 1;
+    test_eq(dd_index.sampleRandomlyA(&state).size(), 0u);
+
+    /* ノード取得 */
+    test(dd_index.root().getBddp() == bddfalse);
+    test(dd_index.getNode(1, 0).getBddp() == bddfalse);
+
+    /* イテレータは開始と終了が一致する */
+    test(dd_index.begin() == dd_index.end());
+    test(dd_index.weight_min_begin(weights) == dd_index.weight_min_end());
+    test(dd_index.weight_max_begin(weights) == dd_index.weight_max_end());
+    test(dd_index.random_begin() == dd_index.random_end());
+    test(dd_index.dict_begin() == dd_index.dict_end());
+    test(dd_index.dict_rbegin() == dd_index.dict_rend());
+
+    /* clear() 済みの DDIndex がスコープを抜けても二重解放しない */
+}
+
 void start_test_cpp(bool exhaustive)
 {
 #ifdef SBDDH_GMP
@@ -1696,6 +1786,7 @@ void start_test_cpp(bool exhaustive)
     test_elementIterator_cpp();
     test_ddindex(exhaustive);
     test_ddindex_large_getset_order();
+    test_ddindex_clear();
 }
 
 int main(int argc, char** argv)

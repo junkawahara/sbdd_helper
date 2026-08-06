@@ -1087,9 +1087,15 @@ public:
         is_count_made = false;
     }
 
-    bool is_valid() const
+    bool isValid() const
     {
         return node_index_ != NULL;
+    }
+
+    /* for compatibility */
+    bool is_valid() const
+    {
+        return isValid();
     }
 
     bddNodeIndex* getRawPointer()
@@ -1150,6 +1156,9 @@ public:
     std::set<bddvar> usedVar() const
     {
         std::set<bddvar> result;
+        if (node_index_ == NULL) {
+            return result;
+        }
         std::vector<bddvar> size_arr;
         sizeEachLevel(size_arr);
         for (int lev = 1; lev <= node_index_->height; ++lev) {

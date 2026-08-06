@@ -92,8 +92,8 @@ typedef unsigned long long int ullint;
     const mpz_class sbddextended_VALUE_ZERO(0);
     const mpz_class sbddextended_VALUE_ONE(1);
 #else
-    const llint sbddextended_VALUE_ZERO = 0;
-    const llint sbddextended_VALUE_ONE = 1;
+    static const llint sbddextended_VALUE_ZERO = 0;
+    static const llint sbddextended_VALUE_ONE = 1;
 #endif
 
 /* for compatibility */
@@ -171,6 +171,7 @@ double sbddh_divide(const value_t& op1, const value_t& op2)
 #ifdef SBDDH_GMP
 
 template<>
+inline
 double sbddh_divide(const mpz_class& op1, const mpz_class& op2)
 {
     mpf_class f1(op1.get_str());
@@ -738,13 +739,16 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
         return;
     }
     dest_node_stack = (sbddextended_MyDictNode**)malloc(stack_size * sizeof(sbddextended_MyDictNode*));
-    if (node_stack == NULL) {
+    if (dest_node_stack == NULL) {
         fprintf(stderr, "out of memory\n");
+        free(node_stack);
         return;
     }
     op_stack = (char*)malloc(stack_size * sizeof(char));
     if (op_stack == NULL) {
         fprintf(stderr, "out of memory\n");
+        free(dest_node_stack);
+        free(node_stack);
         return;
     }
 
@@ -804,6 +808,9 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
     }
     assert(debug_count == src->count);
     dest->count = src->count;
+    free(op_stack);
+    free(dest_node_stack);
+    free(node_stack);
 #endif
 }
 
@@ -1689,8 +1696,11 @@ bddp bddgetsingleset(bddvar* vararr, int n)
         assert(1 <= vararr[i] && vararr[i] <= bddvarused());
         for (j = 0; j < i; ++j) { /* check duplicate */
             if (vararr[j] == vararr[i]) {
-                continue;
+                break;
             }
+        }
+        if (j < i) {
+            continue;
         }
         g = bddchange(f, vararr[i]);
         bddfree(f);
@@ -1929,7 +1939,7 @@ llint bddcountnodes(bddp* dds, int n, int is_raw)
                 }
             } else { /* zbdd */
                 if (is_zbdd == 0) {
-                    error = 0;
+                    error = 1;
                     break;
                 } else {
                     is_zbdd = 1;
@@ -2210,7 +2220,7 @@ sbddextended_INLINE_FUNC ZBDD getSingleSet(int n, ...)
     bddvar v;
 
     if (n == 0) {
-        return ZBDD_ID(1);
+        return ZBDD(1);
     }
 
     va_start(ap, n);
@@ -2761,12 +2771,39 @@ ZBDD exampleZbdd(ullint kind = 0ull)
 #ifdef SBDDH_BDDCT
 
 sbddextended_INLINE_FUNC
+llint sbddextended_bddcost_min(void)
+{
+    return -static_cast<llint>(bddcost_null) + 1;
+}
+
+sbddextended_INLINE_FUNC
+llint sbddextended_bddcost_max(void)
+{
+    return static_cast<llint>(bddcost_null) - 1;
+}
+
+sbddextended_INLINE_FUNC
+bool sbddextended_is_valid_bddcost(llint v)
+{
+    return sbddextended_bddcost_min() <= v
+        && v <= sbddextended_bddcost_max();
+}
+
+sbddextended_INLINE_FUNC
+void sbddextended_print_bddcost_range_error(const char* name)
+{
+    std::cerr << name << " should be between "
+        << sbddextended_bddcost_min() << " and "
+        << sbddextended_bddcost_max() << std::endl;
+}
+
+sbddextended_INLINE_FUNC
 bool weightRange_initialize(BDDCT* bddct, bddvar lev,
     const std::vector<llint>& weights)
 {
     for (size_t i = 0; i < weights.size(); ++i) {
-        if (weights[i] >= (1ll << 32)) {
-            std::cerr << "Each weight should be less than 2^32" << std::endl;
+        if (!sbddextended_is_valid_bddcost(weights[i])) {
+            sbddextended_print_bddcost_range_error("Each weight");
             return false;
         }
     }
@@ -2787,12 +2824,19 @@ bool weightRange_initialize(BDDCT* bddct, bddvar lev,
 sbddextended_INLINE_FUNC
 ZBDD weightRange(const ZBDD& f, llint lower_bound, llint upper_bound, const std::vector<llint>& weights)
 {
-    if (lower_bound >= (1ll << 32)) {
-        std::cerr << "lower_bound should be less than 2^32" << std::endl;
+    if (lower_bound > upper_bound) {
+        return ZBDD(0);
+    }
+    if (upper_bound < sbddextended_bddcost_min()) {
+        return ZBDD(0);
+    }
+    if (!sbddextended_is_valid_bddcost(upper_bound)) {
+        sbddextended_print_bddcost_range_error("upper_bound");
         return ZBDD(-1);
     }
-    if (upper_bound >= (1ll << 32)) {
-        std::cerr << "upper_bound should be less than 2^32" << std::endl;
+    if (lower_bound > sbddextended_bddcost_min()
+            && !sbddextended_is_valid_bddcost(lower_bound - 1)) {
+        sbddextended_print_bddcost_range_error("lower_bound - 1");
         return ZBDD(-1);
     }
     BDDCT bddct;
@@ -2802,7 +2846,7 @@ ZBDD weightRange(const ZBDD& f, llint lower_bound, llint upper_bound, const std:
     }
 
     ZBDD z = bddct.ZBDD_CostLE(f, static_cast<int>(upper_bound));
-    if (lower_bound > LLONG_MIN) {
+    if (lower_bound > sbddextended_bddcost_min()) {
         z -= bddct.ZBDD_CostLE(f, static_cast<int>(lower_bound - 1));
     }
     return z;
@@ -2817,23 +2861,33 @@ ZBDD weightLE(const ZBDD& f, llint bound, const std::vector<llint>& weights)
 sbddextended_INLINE_FUNC
 ZBDD weightLT(const ZBDD& f, llint bound, const std::vector<llint>& weights)
 {
+    if (bound == LLONG_MIN) {
+        return ZBDD(0);
+    }
     return weightLE(f, bound - 1, weights);
 }
 
 sbddextended_INLINE_FUNC
 ZBDD weightGE(const ZBDD& f, llint bound, const std::vector<llint>& weights)
 {
-    std::vector<llint> negative_weights(weights);
-    for (size_t i = 0; i < weights.size(); ++i) {
-        negative_weights[i] = -negative_weights[i];
+    ZBDD z = weightLT(f, bound, weights);
+    if (z == ZBDD(-1)) {
+        return ZBDD(-1);
     }
-    return weightLE(f, -bound, negative_weights);
+    return f - z;
 }
 
 sbddextended_INLINE_FUNC
 ZBDD weightGT(const ZBDD& f, llint bound, const std::vector<llint>& weights)
 {
-    return weightGE(f, bound + 1, weights);
+    if (bound == LLONG_MAX) {
+        return ZBDD(0);
+    }
+    ZBDD z = weightLE(f, bound, weights);
+    if (z == ZBDD(-1)) {
+        return ZBDD(-1);
+    }
+    return f - z;
 }
 
 sbddextended_INLINE_FUNC
@@ -2845,7 +2899,11 @@ ZBDD weightEQ(const ZBDD& f, llint bound, const std::vector<llint>& weights)
 sbddextended_INLINE_FUNC
 ZBDD weightNE(const ZBDD& f, llint bound, const std::vector<llint>& weights)
 {
-    return f - weightEQ(f, bound, weights);
+    ZBDD z = weightEQ(f, bound, weights);
+    if (z == ZBDD(-1)) {
+        return ZBDD(-1);
+    }
+    return f - z;
 }
 
 #endif /* SBDDH_BDDCT */
@@ -3238,6 +3296,10 @@ class DDNodeIndex {
 private:
     bddNodeIndex* node_index_;
 
+    /* Non-copyable; owns node_index_. */
+    DDNodeIndex(const DDNodeIndex&);
+    DDNodeIndex& operator=(const DDNodeIndex&);
+
 public:
     DDNodeIndex(const BDD& f, bool is_raw = true)
     {
@@ -3438,6 +3500,10 @@ private:
     typedef std::map<bddp, count_t> map_t;
     map_t count_storage_;
 
+    /* Non-copyable; owns node_index_. */
+    DDIndex(const DDIndex&);
+    DDIndex& operator=(const DDIndex&);
+
     void initialize(bddp f, bool /*is_raw*/, int is_zbdd)
     {
         /* currently, we do not support raw mode. We set is_raw to be false. */
@@ -3609,10 +3675,9 @@ private:
                 value = -1;
             }
         } else {
-            llint v = getStorageValue(bddgetchild1z(f))
-                        + getOrderNumber(bddgetchild0z(f0), s);
+            llint v = getOrderNumber(bddgetchild0z(f0), s);
             if (v >= 0) {
-                value += v;
+                value += getStorageValue(bddgetchild1z(f)) + v;
             } else {
                 value = -1;
             }
@@ -3661,10 +3726,9 @@ private:
                 value = mpz_class(-1);
             }
         } else {
-            mpz_class v = count_storage_.at(bddgetchild1z(f))
-                + getOrderNumberMP(bddgetchild0z(f0), s);
+            mpz_class v = getOrderNumberMP(bddgetchild0z(f0), s);
             if (v >= 0) {
-                value += v;
+                value += count_storage_.at(bddgetchild1z(f)) + v;
             } else {
                 value = mpz_class(-1);
             }
@@ -3673,7 +3737,7 @@ private:
     }
 #endif
 
-    void getSet(bddp f, llint order, std::set<bddvar>& s)
+    void getSet(bddp f, ullint order, std::set<bddvar>& s)
     {
         bddp f0 = f;
 
@@ -3690,7 +3754,7 @@ private:
             }
         }
 
-        llint card1 = static_cast<llint>(getStorageValue(bddgetchild1z(f)));
+        ullint card1 = getStorageValue(bddgetchild1z(f));
         if (order < card1) {
             s.insert(bddgetvar(f));
             getSet(bddgetchild1z(f), order, s);
@@ -3726,6 +3790,37 @@ private:
         }
     }
 #endif
+
+#ifndef SBDDH_GMP
+    std::set<bddvar> getSetByOrder(ullint order)
+    {
+        if (node_index_ == NULL) {
+            return std::set<bddvar>();
+        }
+        makeCountIndex();
+        if (order >= count()) { /* out of range */
+            return std::set<bddvar>();
+        }
+        std::set<bddvar> s;
+        getSet(node_index_->f, order, s);
+        return s;
+    }
+
+#else
+    std::set<bddvar> getSetByOrder(const mpz_class& order)
+    {
+        if (node_index_ == NULL) {
+            return std::set<bddvar>();
+        }
+        makeCountIndex();
+        if (order < mpz_class(0) || order >= countMP()) { /* out of range */
+            return std::set<bddvar>();
+        }
+        std::set<bddvar> s;
+        getSetMP(node_index_->f, order, s);
+        return s;
+    }
+#endif /* SBDDH_GMP */
 
     template<typename value_t>
     bddp getKSetsZBDD(bddp f, value_t k)
@@ -3904,9 +3999,15 @@ public:
         is_count_made = false;
     }
 
-    bool is_valid() const
+    bool isValid() const
     {
         return node_index_ != NULL;
+    }
+
+    /* for compatibility */
+    bool is_valid() const
+    {
+        return isValid();
     }
 
     bddNodeIndex* getRawPointer()
@@ -3967,6 +4068,9 @@ public:
     std::set<bddvar> usedVar() const
     {
         std::set<bddvar> result;
+        if (node_index_ == NULL) {
+            return result;
+        }
         std::vector<bddvar> size_arr;
         sizeEachLevel(size_arr);
         for (int lev = 1; lev <= node_index_->height; ++lev) {
@@ -4126,31 +4230,20 @@ public:
 
     std::set<bddvar> getSet(llint order)
     {
-        if (node_index_ == NULL) {
+        if (order < 0) {
             return std::set<bddvar>();
         }
-        makeCountIndex();
-        if (order < 0 || order >= static_cast<llint>(count())) { /* out of range */
-            return std::set<bddvar>();
-        }
-        std::set<bddvar> s;
-        getSet(node_index_->f, order, s);
-        return s;
+#ifdef SBDDH_GMP
+        return getSetByOrder(sbddh_llint_to_mpz(order));
+#else
+        return getSetByOrder(static_cast<ullint>(order));
+#endif
     }
 
 #ifdef SBDDH_GMP
     std::set<bddvar> getSet(mpz_class order)
     {
-        if (node_index_ == NULL) {
-            return std::set<bddvar>();
-        }
-        makeCountIndex();
-        if (order < mpz_class(0) || order >= countMP()) { /* out of range */
-            return std::set<bddvar>();
-        }
-        std::set<bddvar> s;
-        getSetMP(node_index_->f, order, s);
-        return s;
+        return getSetByOrder(order);
     }
 #endif
 
@@ -4200,22 +4293,30 @@ public:
     ZBDD getKHeaviestZBDD(ullint k,
         const std::vector<llint>& weights, int strict)
     {
-        if (node_index_ == NULL) {
+        if (node_index_ == NULL || k == 0) {
             return ZBDD(0);
         }
+        ullint card = count();
         ZBDD f = ZBDD_ID(bddcopy(node_index_->f));
-        return f - getKLightestZBDD(count() - k, weights, -strict);
+        if (k >= card) {
+            return f;
+        }
+        return f - getKLightestZBDD<ullint>(f, card - k, weights, -strict);
     }
 
 #ifdef SBDDH_GMP
     ZBDD getKHeaviestZBDD(const mpz_class& k,
         const std::vector<llint>& weights, int strict)
     {
-        if (node_index_ == NULL) {
+        if (node_index_ == NULL || k <= 0) {
             return ZBDD(0);
         }
+        mpz_class card = countMP();
         ZBDD f = ZBDD_ID(bddcopy(node_index_->f));
-        return f - getKLightestZBDD(countMP() - k, weights, -strict);
+        if (k >= card) {
+            return f;
+        }
+        return f - getKLightestZBDD<mpz_class>(f, card - k, weights, -strict);
     }
 #endif /* SBDDH_GMP */
 
@@ -4557,11 +4658,8 @@ public:
 
         std::set<bddvar> operator*() const
         {
-            if (reverse_) {
-                return dd_index_->getSet(current_ - 1);
-            } else {
-                return dd_index_->getSet(current_);
-            }
+            count_t order = (reverse_ ? current_ - sbddh_getOne<count_t>() : current_);
+            return dd_index_->getSetByOrder(order);
         }
 
         DictIterator& operator++()
