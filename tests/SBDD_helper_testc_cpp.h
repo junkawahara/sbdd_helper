@@ -1365,6 +1365,61 @@ void test_graphillionformat_root_level(void)
     }
 }
 
+/* content の内容のファイルを graphillion 形式として読み込ませ、
+   bddnull が返ることを確認する */
+void test_graphillionformat_corrupted_content(const char* content)
+{
+    bddp f;
+    FILE* fp;
+
+    fp = fopen(g_filename1, "w");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    fputs(content, fp);
+    fclose(fp);
+
+    fp = fopen(g_filename1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    f = bddimportzbddasgraphillion(fp, -1);
+    fclose(fp);
+    test(f == bddnull);
+
+    fp = fopen(g_filename1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    f = bddimportbddasgraphillion(fp, -1);
+    fclose(fp);
+    test(f == bddnull);
+
+    if (remove(g_filename1) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+}
+
+/* 未登録の子ノード ID を含むファイルを読み込んでも、未初期化値を bddp として
+   使わずに bddnull を返すことを確認する */
+void test_graphillionformat_corrupted(void)
+{
+    fprintf(stderr, "(the following \"is not found\" messages are expected)\n");
+
+    /* 0-child (9) が定義されていない */
+    test_graphillionformat_corrupted_content("0 1 9 T\n.\n");
+    /* 1-child (9) が定義されていない */
+    test_graphillionformat_corrupted_content("0 1 B 9\n.\n");
+    /* 子ノード (1) が自分より後に定義されている（前方参照） */
+    test_graphillionformat_corrupted_content("0 1 1 T\n1 2 B T\n.\n");
+
+    fprintf(stderr, "(end of the expected messages)\n");
+}
+
 void start_test(void)
 {
     srand(1);
@@ -1385,4 +1440,5 @@ void start_test(void)
     test_bddbinaryformat();
     test_graphillionformat_empty();
     test_graphillionformat_root_level();
+    test_graphillionformat_corrupted();
 }

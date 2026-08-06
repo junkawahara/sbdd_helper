@@ -6326,6 +6326,25 @@ void bddexportzbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex
 
 /* *************** import functions */
 
+/* Frees the working data of the node construction loop of */
+/* bddimportbddasgraphillion_inner and returns bddnull from it. */
+/* Used only there and undefined after it. */
+#define sbddextended_freeNodesAndReturnNull() \
+    do { \
+        for (j = 0; j < i; ++j) { \
+            if (sbddextended_MyDict_find(&node_dict, \
+                    sbddextended_MyVector_get(&node_vec, j), &value) != 0) { \
+                bddfree((bddp)value); \
+            } \
+        } \
+        sbddextended_MyDict_deinitialize(&node_dict); \
+        sbddextended_MyVector_deinitialize(&hi_vec); \
+        sbddextended_MyVector_deinitialize(&lo_vec); \
+        sbddextended_MyVector_deinitialize(&level_vec); \
+        sbddextended_MyVector_deinitialize(&node_vec); \
+        return bddnull; \
+    } while (0)
+
 sbddextended_INLINE_FUNC
 bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
 #ifdef __cplusplus
@@ -6334,7 +6353,8 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
                                             )
 {
     int c, level, max_level = 0;
-    llint i, id, lo, hi, value, line_count = 0;
+    llint i, j, id, lo, hi, value, line_count = 0;
+    llint lo_value, hi_value;
     llint max_node_id = 0, root_node_id = 0;
     bddvar var;
     char buf[sbddextended_BUFSIZE];
@@ -6422,39 +6442,51 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
         level = (int)sbddextended_MyVector_get(&level_vec, i);
         lo = sbddextended_MyVector_get(&lo_vec, i);
         hi = sbddextended_MyVector_get(&hi_vec, i);
+        /* The children must have been already read because the nodes are */
+        /* sorted from the root to the terminals in the graphillion format. */
+        if (sbddextended_MyDict_find(&node_dict, lo, &lo_value) == 0) {
+            fprintf(stderr, "The 0-child (%lld) of the node %lld is not found.\n",
+                    lo - 2, id - 2);
+            sbddextended_freeNodesAndReturnNull();
+        }
+        if (sbddextended_MyDict_find(&node_dict, hi, &hi_value) == 0) {
+            fprintf(stderr, "The 1-child (%lld) of the node %lld is not found.\n",
+                    hi - 2, id - 2);
+            sbddextended_freeNodesAndReturnNull();
+        }
         var = bddvaroflev((bddvar)(root_level - level + 1));
         if (is_zdd == 0) { /* BDD */
             pf = bddprime(var);
             pfn = bddnot(pf);
-            sbddextended_MyDict_find(&node_dict, lo, &value);
-            p0 = bddand((bddp)value, pfn);
-            sbddextended_MyDict_find(&node_dict, hi, &value);
-            p1 = bddand((bddp)value, pf);
+            p0 = bddand((bddp)lo_value, pfn);
+            p1 = bddand((bddp)hi_value, pf);
             sbddextended_MyDict_add(&node_dict, id, (llint)bddor(p0, p1));
             bddfree(pf);
             bddfree(pfn);
             bddfree(p0);
             bddfree(p1);
         } else { /* ZDD */
-            sbddextended_MyDict_find(&node_dict, lo, &value);
-            p0 = (bddp)value;
-            sbddextended_MyDict_find(&node_dict, hi, &value);
-            p1 = bddchange((bddp)value, var);
+            p0 = (bddp)lo_value;
+            p1 = bddchange((bddp)hi_value, var);
             sbddextended_MyDict_add(&node_dict, id, (llint)bddunion(p0, p1));
             bddfree(p1);
         }
         root_node_id = id; /* The root node is the last node. */
     }
+    /* The root node is always registered because node_vec is not empty. */
+    if (sbddextended_MyDict_find(&node_dict, root_node_id, &value) == 0) {
+        fprintf(stderr, "The root node %lld is not found.\n", root_node_id - 2);
+        sbddextended_freeNodesAndReturnNull();
+    }
+    p = (bddp)value;
+
     for (i = 0; i < (llint)node_vec.count; ++i) {
         id = sbddextended_MyVector_get(&node_vec, i);
-        if (id != root_node_id) {
-            sbddextended_MyDict_find(&node_dict, id, &value);
+        if (id != root_node_id &&
+                sbddextended_MyDict_find(&node_dict, id, &value) != 0) {
             bddfree((bddp)value);
         }
     }
-
-    sbddextended_MyDict_find(&node_dict, root_node_id, &value);
-    p = (bddp)value;
 
     sbddextended_MyDict_deinitialize(&node_dict);
     sbddextended_MyVector_deinitialize(&hi_vec);
@@ -6464,6 +6496,8 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
 
     return p;
 }
+
+#undef sbddextended_freeNodesAndReturnNull
 
 #ifdef __cplusplus
 
