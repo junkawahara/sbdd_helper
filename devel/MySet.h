@@ -51,6 +51,8 @@ int sbddextended_MySet_exists(const sbddextended_MySet* d, llint key)
 #endif
 }
 
+/* "dest" must be initialized before calling this function. */
+/* The current content of "dest" is discarded. */
 sbddextended_INLINE_FUNC
 void sbddextended_MySet_copy(sbddextended_MySet* dest,
                                 const sbddextended_MySet* src)

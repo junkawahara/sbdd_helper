@@ -457,6 +457,8 @@ void sbddextended_MyVector_add(sbddextended_MyVector* v, llint value)
 #endif
 }
 
+/* "dest" must be initialized before calling this function. */
+/* The current content of "dest" is discarded. */
 sbddextended_INLINE_FUNC
 void sbddextended_MyVector_copy(sbddextended_MyVector* dest,
                                 const sbddextended_MyVector* src)
@@ -465,13 +467,17 @@ void sbddextended_MyVector_copy(sbddextended_MyVector* dest,
     *dest->vec = *src->vec;
     dest->count = src->count;
 #else
-    dest->count = src->count;
-    dest->capacity = src->capacity;
-    dest->buf = (llint*)malloc(dest->capacity * sizeof(llint));
-    if (dest->buf == NULL) {
+    llint* buf;
+
+    buf = (llint*)malloc(src->capacity * sizeof(llint));
+    if (buf == NULL) {
         fprintf(stderr, "out of memory\n");
         exit(1);
     }
+    free(dest->buf);
+    dest->buf = buf;
+    dest->count = src->count;
+    dest->capacity = src->capacity;
     memcpy(dest->buf, src->buf, dest->count * sizeof(llint));
 #endif
 }
@@ -703,6 +709,8 @@ int sbddextended_MyDict_find(const sbddextended_MyDict* d, llint key, llint* val
 #endif
 }
 
+/* "dest" must be initialized before calling this function. */
+/* The current content of "dest" is discarded. */
 sbddextended_INLINE_FUNC
 void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
                                 const sbddextended_MyDict* src)
@@ -721,6 +729,9 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
     sbddextended_MyDictNode* dest_node;
     size_t stack_size;
     size_t debug_count;
+
+    /* discard the current content of dest */
+    sbddextended_MyDict_deinitialize(dest);
 
     if (src->root == NULL) {
         assert(src->count == 0);
@@ -867,6 +878,8 @@ int sbddextended_MySet_exists(const sbddextended_MySet* d, llint key)
 #endif
 }
 
+/* "dest" must be initialized before calling this function. */
+/* The current content of "dest" is discarded. */
 sbddextended_INLINE_FUNC
 void sbddextended_MySet_copy(sbddextended_MySet* dest,
                                 const sbddextended_MySet* src)

@@ -90,6 +90,8 @@ void sbddextended_MyVector_add(sbddextended_MyVector* v, llint value)
 #endif
 }
 
+/* "dest" must be initialized before calling this function. */
+/* The current content of "dest" is discarded. */
 sbddextended_INLINE_FUNC
 void sbddextended_MyVector_copy(sbddextended_MyVector* dest,
                                 const sbddextended_MyVector* src)
@@ -98,13 +100,17 @@ void sbddextended_MyVector_copy(sbddextended_MyVector* dest,
     *dest->vec = *src->vec;
     dest->count = src->count;
 #else
-    dest->count = src->count;
-    dest->capacity = src->capacity;
-    dest->buf = (llint*)malloc(dest->capacity * sizeof(llint));
-    if (dest->buf == NULL) {
+    llint* buf;
+
+    buf = (llint*)malloc(src->capacity * sizeof(llint));
+    if (buf == NULL) {
         fprintf(stderr, "out of memory\n");
         exit(1);
     }
+    free(dest->buf);
+    dest->buf = buf;
+    dest->count = src->count;
+    dest->capacity = src->capacity;
     memcpy(dest->buf, src->buf, dest->count * sizeof(llint));
 #endif
 }

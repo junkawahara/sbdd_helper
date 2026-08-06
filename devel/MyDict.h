@@ -214,6 +214,8 @@ int sbddextended_MyDict_find(const sbddextended_MyDict* d, llint key, llint* val
 #endif
 }
 
+/* "dest" must be initialized before calling this function. */
+/* The current content of "dest" is discarded. */
 sbddextended_INLINE_FUNC
 void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
                                 const sbddextended_MyDict* src)
@@ -232,6 +234,9 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
     sbddextended_MyDictNode* dest_node;
     size_t stack_size;
     size_t debug_count;
+
+    /* discard the current content of dest */
+    sbddextended_MyDict_deinitialize(dest);
 
     if (src->root == NULL) {
         assert(src->count == 0);
