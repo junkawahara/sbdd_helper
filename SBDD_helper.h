@@ -2531,6 +2531,17 @@ sbddextended_INLINE_FUNC bool isMember(const ZBDD& f, const T& variables)
     return isMemberZ(f, variables);
 }
 
+/* BDD and ZBDD do not have operator<, so std::set<BDD> and std::set<ZBDD>
+   cannot be instantiated. This comparator can be used instead, as in
+   std::set<BDD, DDComparator<BDD> >. */
+template<typename T>
+struct DDComparator {
+    bool operator()(const T& f, const T& g) const
+    {
+        return f.GetID() < g.GetID();
+    }
+};
+
 sbddextended_INLINE_FUNC
 llint countNodes(const std::vector<bddp>& dds, bool is_raw = false)
 {
@@ -2579,12 +2590,13 @@ llint countNodes(const std::vector<BDD>& dds, bool is_raw = false)
     return count;
 }
 
+template<typename Cmp, typename Alloc>
 sbddextended_INLINE_FUNC
-llint countNodes(const std::set<BDD>& dds, bool is_raw = false)
+llint countNodes(const std::set<BDD, Cmp, Alloc>& dds, bool is_raw = false)
 {
     bddp* bps = new bddp[dds.size()];
     int i = 0;
-    for (std::set<BDD>::const_iterator itor = dds.begin();
+    for (typename std::set<BDD, Cmp, Alloc>::const_iterator itor = dds.begin();
             itor != dds.end(); ++itor) {
         bps[i] = itor->GetID();
         ++i;
@@ -2611,12 +2623,13 @@ llint countNodes(const std::vector<ZBDD>& dds, bool is_raw = false)
     return count;
 }
 
+template<typename Cmp, typename Alloc>
 sbddextended_INLINE_FUNC
-llint countNodes(const std::set<ZBDD>& dds, bool is_raw = false)
+llint countNodes(const std::set<ZBDD, Cmp, Alloc>& dds, bool is_raw = false)
 {
     bddp* bps = new bddp[dds.size()];
     int i = 0;
-    for (std::set<ZBDD>::const_iterator itor = dds.begin();
+    for (typename std::set<ZBDD, Cmp, Alloc>::const_iterator itor = dds.begin();
             itor != dds.end(); ++itor) {
         bps[i] = itor->GetID();
         ++i;

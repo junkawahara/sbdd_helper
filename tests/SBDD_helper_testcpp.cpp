@@ -317,6 +317,29 @@ void test_BDD_functions()
     bps[2] = ZBDD(-1);
     test_eq(countNodes(bps, false), 0);
 
+    /* BDD and ZBDD have no operator<, so a comparator must be given */
+    std::set<ZBDD, DDComparator<ZBDD> > zset;
+    test_eq(countNodes(zset, false), 0);
+    zset.insert(fs[1]);
+    test_eq(countNodes(zset, false), 5);
+    zset.insert(fs[2]);
+    test_eq(countNodes(zset, false), 7);
+    zset.insert(fs[1]); /* already inserted */
+    test_eq(countNodes(zset, false), 7);
+    zset.insert(ZBDD(-1));
+    test_eq(countNodes(zset, false), 0);
+
+    std::set<BDD, DDComparator<BDD> > bset;
+    test_eq(countNodes(bset, false), 0);
+    std::vector<BDD> bvec;
+    for (int i = 0; i < 3; ++i) {
+        BDD bf = exampleBdd(static_cast<ullint>(i));
+        bset.insert(bf);
+        bvec.push_back(bf);
+        test_eq(countNodes(bset, false), countNodes(bvec, false));
+        test_eq(countNodes(bset, true), countNodes(bvec, true));
+    }
+
 #if __cplusplus >= 201103L /* use C++ random class */
     std::mt19937 mt(1);
     for (int i = 0; i < 10; ++i) {

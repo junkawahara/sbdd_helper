@@ -447,12 +447,14 @@ isMember の旧名である。
 llint countNodes(const std::vector<bddp>& dds, bool is_raw = false)
 llint countNodes(const std::set<bddp>& dds, bool is_raw = false)
 llint countNodes(const std::vector<BDD>& dds, bool is_raw = false)
-llint countNodes(const std::set<BDD>& dds, bool is_raw = false)
+llint countNodes(const std::set<BDD, Cmp, Alloc>& dds, bool is_raw = false)
 llint countNodes(const std::vector<ZBDD>& dds, bool is_raw = false)
-llint countNodes(const std::set<ZBDD>& dds, bool is_raw = false)
+llint countNodes(const std::set<ZBDD, Cmp, Alloc>& dds, bool is_raw = false)
 ```
 
 引数で指定した大きさ n の vector/set dds が表す BDD/ZBDD 全体のノード数を返す。ノードは共有されている可能性があり、共有されているノードは 1 つと数える。is_raw は true なら否定枝表現を用いた場合のノード数を、false なら否定枝表現を用いない場合のノード数を返す。dds に bddnull が 1 つでも含まれている場合は 0 を返す。dds が BDD か ZBDD かは自動判定される。dds が BDD と ZBDD の両方を含む場合はエラーメッセージを出力して終了する。
+
+BDD クラスと ZBDD クラスには operator< が定義されていないため、`std::set<BDD>` や `std::set<ZBDD>` はそのままでは使用できない。後述の DDComparator を比較関数として指定すればよい。
 
 ### 使用例
 
@@ -460,6 +462,24 @@ llint countNodes(const std::set<ZBDD>& dds, bool is_raw = false)
 std::vector<ZBDD> dds;
 // ZBDD f0, f1, f2 は何らかの方法で作成
 dds.push_back(f0), dds.push_back(f1), dds.push_back(f2);
+printf("%d", countNodes(dds, false));
+```
+
+## DDComparator
+
+```
+template<typename T>
+struct DDComparator
+```
+
+BDD/ZBDD を std::set や std::map のキーとして使うための比較関数オブジェクトである。BDD クラスと ZBDD クラスには operator< が定義されていないため、標準の std::less の代わりにこれを指定する。順序は BDD/ZBDD の内部 ID（GetID() の値）による。
+
+### 使用例
+
+```
+std::set<ZBDD, DDComparator<ZBDD> > dds;
+// ZBDD f0, f1, f2 は何らかの方法で作成
+dds.insert(f0), dds.insert(f1), dds.insert(f2);
 printf("%d", countNodes(dds, false));
 ```
 
