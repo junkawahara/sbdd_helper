@@ -78,12 +78,13 @@ void sbddextended_MyDict_deinitialize(sbddextended_MyDict* d)
     node_stack = (sbddextended_MyDictNode**)malloc(stack_size * sizeof(sbddextended_MyDictNode*));
     if (node_stack == NULL) {
         fprintf(stderr, "out of memory\n");
-        return;
+        exit(1);
     }
     op_stack = (char*)malloc(stack_size * sizeof(char));
     if (op_stack == NULL) {
         fprintf(stderr, "out of memory\n");
-        return;
+        free(node_stack);
+        exit(1);
     }
 
     sp = 0;
@@ -252,20 +253,20 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
     node_stack = (sbddextended_MyDictNode**)malloc(stack_size * sizeof(sbddextended_MyDictNode*));
     if (node_stack == NULL) {
         fprintf(stderr, "out of memory\n");
-        return;
+        exit(1);
     }
     dest_node_stack = (sbddextended_MyDictNode**)malloc(stack_size * sizeof(sbddextended_MyDictNode*));
     if (dest_node_stack == NULL) {
         fprintf(stderr, "out of memory\n");
         free(node_stack);
-        return;
+        exit(1);
     }
     op_stack = (char*)malloc(stack_size * sizeof(char));
     if (op_stack == NULL) {
         fprintf(stderr, "out of memory\n");
         free(dest_node_stack);
         free(node_stack);
-        return;
+        exit(1);
     }
 
     dest->root = sbddextended_MyDictNode_makeNewNode(src->root->key,
