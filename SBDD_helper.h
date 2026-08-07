@@ -6442,8 +6442,8 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
         level = (int)sbddextended_MyVector_get(&level_vec, i);
         lo = sbddextended_MyVector_get(&lo_vec, i);
         hi = sbddextended_MyVector_get(&hi_vec, i);
-        /* The children must have been already read because the nodes are */
-        /* sorted from the root to the terminals in the graphillion format. */
+        /* The children must have been already registered because the nodes */
+        /* are sorted from the terminals to the root in this format. */
         if (sbddextended_MyDict_find(&node_dict, lo, &lo_value) == 0) {
             fprintf(stderr, "The 0-child (%lld) of the node %lld is not found.\n",
                     lo - 2, id - 2);
