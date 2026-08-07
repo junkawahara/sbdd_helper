@@ -274,7 +274,11 @@ public:
                         exit(1);
                     }
                 }
+                /* The line length is at most sbddextended_BUFSIZE - 2 */
+                /* because of the check above, and thus the null character */
+                /* always fits in buf. */
                 strncpy(buf, st_ + start, static_cast<size_t>(stpos_ - start));
+                buf[stpos_ - start] = '\0';
                 ++stpos_;
                 return true;
             }
