@@ -1581,6 +1581,9 @@ void test_elementsformat_out_of_range(void)
     test_elementsformat_out_of_range_content("1 2\n1 999999\n");
     /* 最終行に改行がない場合 */
     test_elementsformat_out_of_range_content("1 2\n1 999999");
+    /* int に収まらない変数番号（桁あふれ） */
+    test_elementsformat_out_of_range_content("99999999999999999999\n");
+    test_elementsformat_out_of_range_content("1 2\n1 99999999999999999999\n");
 
     fprintf(stderr, "(end of the expected messages)\n");
 }

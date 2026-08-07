@@ -10,7 +10,7 @@ bddp bddconstructzbddfromelements_inner(FILE* fp
     bddp p, q, r;
     bddvar* vararr;
     int vararr_pos, vararr_size;
-    int c, prev_c, v;
+    int c, prev_c, v, is_v_too_large;
     int mode, first;
 
     vararr_size = sbddextended_BUFSIZE;
@@ -26,6 +26,7 @@ bddp bddconstructzbddfromelements_inner(FILE* fp
 
     mode = 0; /* 0: skip ws, 1: reading nums */
     v = 0;
+    is_v_too_large = 0;
     c = 0;
     while (c != -1) {
         prev_c = c;
@@ -47,20 +48,33 @@ bddp bddconstructzbddfromelements_inner(FILE* fp
             if (mode == 0) {
                 if (isdigit(c)) {
                     v = c - '0';
+                    is_v_too_large = 0;
                     mode = 1;
                 }
             } else if (mode == 1) {
                 if (isdigit(c)) {
-                    v = 10 * v + (c - '0');
+                    /* Since the overflow of a signed integer is undefined */
+                    /* behavior, we stop increasing v and remember that the */
+                    /* number in the input does not fit in v. */
+                    if (v > (INT_MAX - (c - '0')) / 10) {
+                        is_v_too_large = 1;
+                    } else {
+                        v = 10 * v + (c - '0');
+                    }
                 }
             }
         }
         if ((c == -1 || c == '\n' || isspace(c)) && mode == 1) {
             /* The variable number must be in {1,...,bddvarused()}. */
             /* Otherwise bddgetsingleset below causes an error. */
-            if (!(1 <= v && v <= (int)bddvarused())) {
-                fprintf(stderr, "The variable number %d is out of range "
-                        "{1,...,%d}.\n", v, (int)bddvarused());
+            if (is_v_too_large != 0 || !(1 <= v && v <= (int)bddvarused())) {
+                if (is_v_too_large != 0) { /* v does not hold the number */
+                    fprintf(stderr, "The variable number is out of range "
+                            "{1,...,%d}.\n", (int)bddvarused());
+                } else {
+                    fprintf(stderr, "The variable number %d is out of range "
+                            "{1,...,%d}.\n", v, (int)bddvarused());
+                }
                 free(vararr);
                 bddfree(p);
                 return bddnull;
