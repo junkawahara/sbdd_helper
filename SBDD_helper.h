@@ -6513,6 +6513,17 @@ void bddexportzbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex
 
 /* *************** import functions */
 
+/* Frees the working vectors of bddimportbddasgraphillion_inner and */
+/* returns bddnull from it. Used only there and undefined after it. */
+#define sbddextended_freeVectorsAndReturnNull() \
+    do { \
+        sbddextended_MyVector_deinitialize(&hi_vec); \
+        sbddextended_MyVector_deinitialize(&lo_vec); \
+        sbddextended_MyVector_deinitialize(&level_vec); \
+        sbddextended_MyVector_deinitialize(&node_vec); \
+        return bddnull; \
+    } while (0)
+
 /* Frees the working data of the node construction loop of */
 /* bddimportbddasgraphillion_inner and returns bddnull from it. */
 /* Used only there and undefined after it. */
@@ -6525,11 +6536,7 @@ void bddexportzbddasbinary(FILE* fp, bddp f, int use_negative_arcs, bddNodeIndex
             } \
         } \
         sbddextended_MyDict_deinitialize(&node_dict); \
-        sbddextended_MyVector_deinitialize(&hi_vec); \
-        sbddextended_MyVector_deinitialize(&lo_vec); \
-        sbddextended_MyVector_deinitialize(&level_vec); \
-        sbddextended_MyVector_deinitialize(&node_vec); \
-        return bddnull; \
+        sbddextended_freeVectorsAndReturnNull(); \
     } while (0)
 
 sbddextended_INLINE_FUNC
@@ -6578,7 +6585,7 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
         c = sscanf(buf, "%s %s %s %s", buf1, buf2, buf3, buf4);
         if (c < 4) {
             fprintf(stderr, "Format error in line %lld\n", line_count);
-            return bddnull;
+            sbddextended_freeVectorsAndReturnNull();
         }
         if (buf3[0] == 'B') {
             lo = 0;
@@ -6613,7 +6620,7 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
     } else if (root_level < max_level) {
         fprintf(stderr, "The argument \"root_level\" must be "
                 "larger than the height of the ZBDD.\n");
-        return bddnull;
+        sbddextended_freeVectorsAndReturnNull();
     }
 
     while (bddvarused() < (bddvar)root_level) {
@@ -6685,6 +6692,7 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
 }
 
 #undef sbddextended_freeNodesAndReturnNull
+#undef sbddextended_freeVectorsAndReturnNull
 
 #ifdef __cplusplus
 
