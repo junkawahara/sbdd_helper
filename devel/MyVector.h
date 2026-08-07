@@ -115,13 +115,16 @@ void sbddextended_MyVector_copy(sbddextended_MyVector* dest,
 #endif
 }
 
+/* The vector must not be empty. */
 sbddextended_INLINE_FUNC
 void sbddextended_MyVector_pop_back(sbddextended_MyVector* v)
 {
 #ifdef __cplusplus
+    assert(!v->vec->empty());
     v->vec->pop_back();
     --v->count;
 #else
+    assert(v->count > 0);
     --v->count;
 #endif
 }
