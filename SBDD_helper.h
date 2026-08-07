@@ -3622,6 +3622,13 @@ private:
                       << std::endl;
             exit(1);
         }
+        if (f == bddnull) {
+            /* No index can be made for bddnull. We leave the index invalid
+               so that isValid() returns false and the member functions
+               behave as if the index were cleared. */
+            node_index_ = NULL;
+            return;
+        }
         node_index_ = bddNodeIndex_makeIndexWithoutCount_inner(f, 0, is_zbdd);
     }
 

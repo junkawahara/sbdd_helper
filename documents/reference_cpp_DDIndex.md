@@ -107,6 +107,10 @@ is_raw に true を指定した場合は、エラーメッセージを表示し�
 `exit(1)` する（否定枝表現のインデックスが必要な場合は、
 旧クラスの `DDNodeIndex` を用いる）。
 
+f が bddnull（`ZBDD(-1)` や `BDD(-1)`）の場合はインデックスを構築せず、
+`isValid()` が false を返す無効なインデックスになる。この場合の各メンバ関数の
+振る舞いは、clear() を呼び出した後と同じである。
+
 ## BDD への対応状況
 
 現在のバージョンでは、BDD から構築した `DDIndex<T>`（`DDIndex(const BDD& f)`
@@ -179,7 +183,7 @@ bool isValid() const
 
 インデックスが有効であるか（clear() が呼ばれていないか）を返す。
 コンストラクタでの構築直後は true を返し、clear() を呼び出した後は
-false を返す。
+false を返す。ただし、bddnull から構築した場合は構築直後から false を返す。
 
 旧名 `is_valid()` も使用できる。
 

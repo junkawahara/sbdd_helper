@@ -1955,6 +1955,41 @@ void test_ddindex_empty_family()
     test(dd_index.random_begin() == dd_index.random_end());
 }
 
+/* bddnull から構築した DDIndex は無効なインデックスになる */
+void test_ddindex_null()
+{
+    DDIndex<int> dd_index(ZBDD(-1));
+
+    test(!dd_index.isValid());
+    test(!dd_index.is_valid()); /* 旧名 */
+    test(dd_index.getRawPointer() == NULL);
+
+    /* clear() 後と同じく、各メンバ関数を安全に呼び出せる */
+    test_eq(dd_index.count(), 0ull);
+#ifdef SBDDH_GMP
+    test(dd_index.countMP() == mpz_class(0));
+#endif
+    test_eq(dd_index.height(), 0);
+    test_eq(dd_index.size(), 0ull);
+    test(dd_index.getZBDD() == ZBDD(0));
+    test_eq(dd_index.usedVar().size(), 0u);
+    test_eq(dd_index.getSet(0).size(), 0u);
+
+    ullint state = 1;
+    test_eq(dd_index.sampleRandomlyA(&state).size(), 0u);
+
+    test(dd_index.begin() == dd_index.end());
+
+    /* bddp を渡すコンストラクタと BDD からの構築でも同様 */
+    DDIndex<int> dd_index_p(bddnull);
+    test(!dd_index_p.isValid());
+    test_eq(dd_index_p.count(), 0ull);
+
+    DDIndex<int> dd_index_b(BDD(-1));
+    test(!dd_index_b.isValid());
+    test_eq(dd_index_b.size(), 0ull);
+}
+
 /* BDD から構築した DDIndex では、ノードの構造のみを扱う関数が利用できる。
    数え上げ・重み系の関数は checkZBDD() がエラーメッセージを表示して
    exit(1) するため、ここでは呼び出さない。 */
@@ -2015,6 +2050,7 @@ void start_test_cpp(bool exhaustive)
     test_ddindex_large_getset_order();
     test_ddindex_clear();
     test_ddindex_empty_family();
+    test_ddindex_null();
     test_ddindex_bdd();
 }
 
