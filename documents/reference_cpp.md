@@ -360,7 +360,7 @@ ZBDD f = getPowerSetNotIncluding(3, 1);
 getPowerSetWithCard(const T& variables, int k)
 ```
 
-variables（を集合とみなしたとき）のべき集合族のうち、要素数が k である集合の族を表すZBDDを返す。variables の各要素や v は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。variables はソートされている必要はない。
+variables（を集合とみなしたとき）のべき集合族のうち、要素数が k である集合の族を表すZBDDを返す。variables の各要素や v は 1 以上、bddvarused() （現在使用している変数の数）以下である必要がある。variables はソートされている必要はない。k が variables の要素数より大きい場合や k が負の場合は、空の族（ZBDD(0)）を返す。
 
 ### 使用例
 
@@ -377,7 +377,7 @@ ZBDD f = getPowerSetWithCard(variables, 2);
 getPowerSetWithCard(int n, int k)
 ```
 
-{1,...,n} のべき集合族のうち、要素数が k である集合の族を表すZBDDを返す。
+{1,...,n} のべき集合族のうち、要素数が k である集合の族を表すZBDDを返す。k が n より大きい場合や k が負の場合は、空の族（ZBDD(0)）を返す。
 
 ### 使用例
 

@@ -521,8 +521,20 @@ void test_at_random_cpp()
     f = getPowerSetWithCard(basev, 3);
     test(f.Card() == 1);
 
+    f = getPowerSetWithCard(basev, 4);
+    test(f == ZBDD(0));
+
+    f = getPowerSetWithCard(basev, -1);
+    test(f == ZBDD(0));
+
+    f = getPowerSetWithCard(basev, -2);
+    test(f == ZBDD(0));
+
     f = getPowerSetWithCard(5, 2);
     test(f.Card() == 10);
+
+    f = getPowerSetWithCard(5, -1);
+    test(f == ZBDD(0));
 
     f = getPowerSetWithCard(3, 2);
     test(f == getSingleSet(2, 1, 2) +

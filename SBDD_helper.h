@@ -2419,6 +2419,10 @@ sbddextended_INLINE_FUNC ZBDD getPowerSetNotIncluding(int n, int v)
 template<typename T>
 sbddextended_INLINE_FUNC ZBDD getPowerSetWithCard(const T& variables, int k)
 {
+    if (k < 0) { /* no set has a negative cardinality */
+        return ZBDD(0);
+    }
+
     int n;
     bddvar* ar = containerToArray(variables, &n);
     if (n < k) {
