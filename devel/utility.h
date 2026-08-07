@@ -7,7 +7,10 @@ const char** sbddextended_strVectorToArray(const std::vector<std::string>& vec)
 {
     const char** arr;
 
-    arr = (const char**)malloc(vec.size() * sizeof(const char*));
+    /* malloc(0) may return NULL, which is not an error. Allocate at least
+       one element so that NULL always means out of memory. */
+    arr = (const char**)malloc((vec.size() > 0 ? vec.size() : 1)
+                                * sizeof(const char*));
     if (arr == NULL) {
         fprintf(stderr, "out of memory\n");
         exit(1);
