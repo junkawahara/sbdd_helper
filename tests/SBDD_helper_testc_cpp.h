@@ -1475,6 +1475,67 @@ void test_knuthformat_empty(void)
     fprintf(stderr, "(end of the expected messages)\n");
 }
 
+/* content の内容のファイルを Knuth 形式として読み込ませ、
+   bddnull が返ることを確認する */
+void test_knuthformat_corrupted_content(const char* content, int is_hex)
+{
+    bddp f;
+    FILE* fp;
+
+    fp = fopen(g_filename1, "w");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    fputs(content, fp);
+    fclose(fp);
+
+    fp = fopen(g_filename1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    f = bddimportbddasknuth(fp, is_hex, -1);
+    fclose(fp);
+    test(f == bddnull);
+
+    fp = fopen(g_filename1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    f = bddimportzbddasknuth(fp, is_hex, -1);
+    fclose(fp);
+    test(f == bddnull);
+
+    if (remove(g_filename1) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+}
+
+/* 範囲外の子ノード ID を含むファイルを読み込んでも、bddnode_buf の
+   領域外を読まずに bddnull を返すことを確認する */
+void test_knuthformat_corrupted(void)
+{
+    fprintf(stderr, "(the following \"out of range\" messages are expected)\n");
+
+    /* 0-child (9) がノード数を超えている */
+    test_knuthformat_corrupted_content("#1\n2:9,1\n", 0);
+    /* 1-child (9) がノード数を超えている */
+    test_knuthformat_corrupted_content("#1\n2:0,9\n", 0);
+    /* 0-child (2) が自分自身 */
+    test_knuthformat_corrupted_content("#1\n2:2,1\n", 0);
+    /* 0-child (2) が自分 (3) より小さい（まだ構築されていないノード） */
+    test_knuthformat_corrupted_content("#1\n2:0,1\n#2\n3:2,0\n", 0);
+    /* ノード 3 の構築後にノード 2 でエラーになる（構築済みノードの解放） */
+    test_knuthformat_corrupted_content("#1\n2:9,1\n#2\n3:0,1\n", 0);
+    /* 16 進表記で、符号付きに変換すると負になる 0-child */
+    test_knuthformat_corrupted_content("#1\n2:ffffffffffffffff,1\n", 1);
+
+    fprintf(stderr, "(end of the expected messages)\n");
+}
+
 void start_test(void)
 {
     srand(1);
@@ -1497,4 +1558,5 @@ void start_test(void)
     test_graphillionformat_root_level();
     test_graphillionformat_corrupted();
     test_knuthformat_empty();
+    test_knuthformat_corrupted();
 }

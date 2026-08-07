@@ -1,5 +1,20 @@
 /* *************** import functions */
 
+/* Frees the working data of the node construction loop of */
+/* bddimportbddasknuth_inner and returns bddnull from it. */
+/* Used only there and undefined after it. */
+#define sbddextended_freeNodeBufAndReturnNull() \
+    do { \
+        for (j = (llint)lo_vec.count - 1; j > i; --j) { \
+            bddfree(bddnode_buf[j]); \
+        } \
+        free(bddnode_buf); \
+        sbddextended_MyVector_deinitialize(&hi_vec); \
+        sbddextended_MyVector_deinitialize(&lo_vec); \
+        sbddextended_MyVector_deinitialize(&level_vec); \
+        return bddnull; \
+    } while (0)
+
 sbddextended_INLINE_FUNC
 bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
                                 int is_zbdd
@@ -9,7 +24,7 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
                                 )
 {
     int c, level, level_count = 1;
-    llint i, id, lo, hi, line_count = 0;
+    llint i, j, id, lo, hi, line_count = 0;
     ullint idu, lou, hiu;
     bddvar var;
     char buf[sbddextended_BUFSIZE];
@@ -127,21 +142,36 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
         }
         assert(level < (llint)level_vec.count);
         assert((1 <= root_level - level + 1) && ((root_level - level + 1) <= (int)bddvarused()));
+        lo = sbddextended_MyVector_get(&lo_vec, i);
+        hi = sbddextended_MyVector_get(&hi_vec, i);
+        /* A child must be a terminal or a node whose id is larger than */
+        /* that of the current node, that is, an already constructed one. */
+        if (!(0 <= lo && lo < sbddextended_BDDNODE_START) &&
+                !(i < lo && lo < (llint)lo_vec.count)) {
+            fprintf(stderr, "The 0-child (%lld) of the node %lld is "
+                    "out of range.\n", lo, i);
+            sbddextended_freeNodeBufAndReturnNull();
+        }
+        if (!(0 <= hi && hi < sbddextended_BDDNODE_START) &&
+                !(i < hi && hi < (llint)lo_vec.count)) {
+            fprintf(stderr, "The 1-child (%lld) of the node %lld is "
+                    "out of range.\n", hi, i);
+            sbddextended_freeNodeBufAndReturnNull();
+        }
         var = bddvaroflev((bddvar)(root_level - level + 1));
         if (is_zbdd == 0) { /* BDD */
             pf = bddprime(var);
             pfn = bddnot(pf);
-            p0 = bddand(bddnode_buf[sbddextended_MyVector_get(&lo_vec, i)], pfn);
-            p1 = bddand(bddnode_buf[sbddextended_MyVector_get(&hi_vec, i)], pf);
+            p0 = bddand(bddnode_buf[lo], pfn);
+            p1 = bddand(bddnode_buf[hi], pf);
             bddnode_buf[i] = bddor(p0, p1);
             bddfree(pf);
             bddfree(pfn);
             bddfree(p0);
             bddfree(p1);
         } else { /* ZDD */
-            p0 = bddnode_buf[sbddextended_MyVector_get(&lo_vec, i)];
-            p1 = bddchange(bddnode_buf[sbddextended_MyVector_get(&hi_vec, i)],
-                            var);
+            p0 = bddnode_buf[lo];
+            p1 = bddchange(bddnode_buf[hi], var);
             bddnode_buf[i] = bddunion(p0, p1);
             bddfree(p1);
         }
@@ -161,6 +191,8 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
 
     return p;
 }
+
+#undef sbddextended_freeNodeBufAndReturnNull
 
 #ifdef __cplusplus
 
