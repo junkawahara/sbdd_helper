@@ -918,7 +918,10 @@ int sbddextended_readLine_inner(char* buf, FILE* fp)
         return 0;
     }
     n = strlen(buf);
-    if (buf[n - 1] != '\n') {
+    /* The last line of a file may have no newline character at the end. */
+    /* In that case, fgets has read the file up to its end, and thus the */
+    /* next character is EOF. Otherwise the line is too long for buf. */
+    if (n > 0 && buf[n - 1] != '\n' && fgetc(fp) != EOF) {
         fprintf(stderr, "Each line must not exceed %d characters\n",
                 sbddextended_BUFSIZE);
         exit(1);

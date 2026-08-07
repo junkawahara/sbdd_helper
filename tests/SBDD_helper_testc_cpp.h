@@ -1536,6 +1536,85 @@ void test_knuthformat_corrupted(void)
     fprintf(stderr, "(end of the expected messages)\n");
 }
 
+/* 最終行に改行のないファイルを、行長超過と誤判定せずに読み込めることを
+   確認する（C 版の readLine） */
+void test_readline_no_newline_at_end(void)
+{
+    bddp f, g;
+    FILE* fp;
+
+    /* Knuth 形式。レベル 1 のノードが 1 つだけで、最終行に改行がない */
+    fp = fopen(g_filename1, "w");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    fputs("#1\n2:0,1", fp);
+    fclose(fp);
+
+    fp = fopen(g_filename1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    f = bddimportzbddasknuth(fp, 0, -1);
+    fclose(fp);
+    g = bddgetsingleton(bddvaroflev(1));
+    test(f == g);
+    bddfree(f);
+    bddfree(g);
+
+    fp = fopen(g_filename1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    f = bddimportbddasknuth(fp, 0, -1);
+    fclose(fp);
+    g = bddprime(bddvaroflev(1));
+    test(f == g);
+    bddfree(f);
+    bddfree(g);
+
+    /* graphillion 形式。ノードが 1 つだけで、最終行に改行がない */
+    fp = fopen(g_filename1, "w");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    fputs("0 1 B T", fp);
+    fclose(fp);
+
+    fp = fopen(g_filename1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    f = bddimportzbddasgraphillion(fp, -1);
+    fclose(fp);
+    g = bddgetsingleton(bddvaroflev(1));
+    test(f == g);
+    bddfree(f);
+    bddfree(g);
+
+    fp = fopen(g_filename1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    f = bddimportbddasgraphillion(fp, -1);
+    fclose(fp);
+    g = bddprime(bddvaroflev(1));
+    test(f == g);
+    bddfree(f);
+    bddfree(g);
+
+    if (remove(g_filename1) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+}
+
 void start_test(void)
 {
     srand(1);
@@ -1559,4 +1638,5 @@ void start_test(void)
     test_graphillionformat_corrupted();
     test_knuthformat_empty();
     test_knuthformat_corrupted();
+    test_readline_no_newline_at_end();
 }
