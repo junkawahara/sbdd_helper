@@ -555,6 +555,10 @@ void bddexportzbddasbinary(FILE* fp, bddp f)
 BDD/ZBDD f を [BDD バイナリ形式](https://github.com/junkawahara/dd_documents/blob/main/formats/bdd_binary_format.md) で、引数で指定したファイルポインタ fp に書き込む。
 bddexportbddasknuth は BDD を、bddexportzbddasknuth は ZBDD を引数にとる。
 
+多バイトの値は、計算機のバイトオーダーや型のサイズによらず、
+固定長（16/32/64 ビット）のリトルエンディアンで読み書きされる。
+したがって、書き込んだファイルは異なる機種でも読み込むことができる。
+
 ## bddimportbddasgraphillion
 
 ```

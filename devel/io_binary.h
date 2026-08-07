@@ -1,5 +1,11 @@
 /* *************** import functions */
 
+/* Note on the byte order: each multi-byte value of the BDD binary format */
+/* is read and written in little endian with a fixed width (16/32/64 bits) */
+/* regardless of the byte order and the type sizes of the machine. */
+/* See sbddextended_bytesToUint16 in readLine.h and */
+/* sbddextended_uint16ToBytes in writeLine.h. */
+
 /* Reads a value of the BDD binary format and returns bddnull from the */
 /* caller when the binary ends before the value is read. */
 /* Used only in bddimportbddasbinary_inner and undefined after it. */

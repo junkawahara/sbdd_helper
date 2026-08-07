@@ -936,6 +936,45 @@ int sbddextended_readLine_inner(char* buf, FILE* fp)
     return 1;
 }
 
+/* The binary formats treated in this library store each multi-byte value */
+/* in little endian and in a fixed width (16/32/64 bits), which do not */
+/* depend on the byte order nor the type sizes of the machine. The */
+/* following functions convert a byte sequence read from a binary into */
+/* a value. They are written so that no shift wider than the type occurs */
+/* even if the type is narrower than the value in the binary. */
+sbddextended_INLINE_FUNC
+unsigned short sbddextended_bytesToUint16(const unsigned char* buf)
+{
+    int i;
+    unsigned short v = 0;
+    for (i = 1; i >= 0; --i) {
+        v = (unsigned short)(((unsigned int)v << 8) | (unsigned int)buf[i]);
+    }
+    return v;
+}
+
+sbddextended_INLINE_FUNC
+unsigned int sbddextended_bytesToUint32(const unsigned char* buf)
+{
+    int i;
+    unsigned int v = 0;
+    for (i = 3; i >= 0; --i) {
+        v = (v << 8) | (unsigned int)buf[i];
+    }
+    return v;
+}
+
+sbddextended_INLINE_FUNC
+ullint sbddextended_bytesToUint64(const unsigned char* buf)
+{
+    int i;
+    ullint v = 0;
+    for (i = 7; i >= 0; --i) {
+        v = (v << 8) | (ullint)buf[i];
+    }
+    return v;
+}
+
 sbddextended_INLINE_FUNC
 int sbddextended_readUint8_inner(unsigned char* v, FILE* fp)
 {
@@ -946,22 +985,37 @@ int sbddextended_readUint8_inner(unsigned char* v, FILE* fp)
 sbddextended_INLINE_FUNC
 int sbddextended_readUint16_inner(unsigned short* v, FILE* fp)
 {
+    unsigned char buf[2];
     assert(fp != NULL);
-    return fread(v, sizeof(unsigned short), (size_t)1, fp) != 0;
+    if (fread(buf, sizeof(unsigned char), (size_t)2, fp) != (size_t)2) {
+        return 0;
+    }
+    *v = sbddextended_bytesToUint16(buf);
+    return 1;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_readUint32_inner(unsigned int* v, FILE* fp)
 {
+    unsigned char buf[4];
     assert(fp != NULL);
-    return fread(v, sizeof(unsigned int), (size_t)1, fp) != 0;
+    if (fread(buf, sizeof(unsigned char), (size_t)4, fp) != (size_t)4) {
+        return 0;
+    }
+    *v = sbddextended_bytesToUint32(buf);
+    return 1;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_readUint64_inner(ullint* v, FILE* fp)
 {
+    unsigned char buf[8];
     assert(fp != NULL);
-    return fread(v, sizeof(ullint), (size_t)1, fp) != 0;
+    if (fread(buf, sizeof(unsigned char), (size_t)8, fp) != (size_t)8) {
+        return 0;
+    }
+    *v = sbddextended_bytesToUint64(buf);
+    return 1;
 }
 
 
@@ -1030,54 +1084,60 @@ public:
     }
 
     bool operator()(unsigned short* v, FILE* fp) const {
+        unsigned char buf[2];
         switch (mode_) {
         case STREAM:
-            ist_->read(reinterpret_cast<char*>(v), sizeof(unsigned short));
-            if (!ist_ || ist_->eof()) {
+            ist_->read(reinterpret_cast<char*>(buf), 2);
+            if (!*ist_ || ist_->gcount() != 2) {
                 return false;
             }
-            break;
+            *v = sbddextended_bytesToUint16(buf);
+            return true;
         case FP:
             return sbddextended_readUint16_inner(v, fp) != 0;
         case STRING:
             std::cerr << "not implemented" << std::endl;
             return false;
         }
-        return true;
+        return false; /* never come here */
     }
 
     bool operator()(unsigned int* v, FILE* fp) const {
+        unsigned char buf[4];
         switch (mode_) {
         case STREAM:
-            ist_->read(reinterpret_cast<char*>(v), sizeof(unsigned int));
-            if (!ist_ || ist_->eof()) {
+            ist_->read(reinterpret_cast<char*>(buf), 4);
+            if (!*ist_ || ist_->gcount() != 4) {
                 return false;
             }
-            break;
+            *v = sbddextended_bytesToUint32(buf);
+            return true;
         case FP:
             return sbddextended_readUint32_inner(v, fp) != 0;
         case STRING:
             std::cerr << "not implemented" << std::endl;
             return false;
         }
-        return true;
+        return false; /* never come here */
     }
 
     bool operator()(ullint* v, FILE* fp) const {
+        unsigned char buf[8];
         switch (mode_) {
         case STREAM:
-            ist_->read(reinterpret_cast<char*>(v), sizeof(ullint));
-            if (!ist_ || ist_->eof()) {
+            ist_->read(reinterpret_cast<char*>(buf), 8);
+            if (!*ist_ || ist_->gcount() != 8) {
                 return false;
             }
-            break;
+            *v = sbddextended_bytesToUint64(buf);
+            return true;
         case FP:
             return sbddextended_readUint64_inner(v, fp) != 0;
         case STRING:
             std::cerr << "not implemented" << std::endl;
             return false;
         }
-        return true;
+        return false; /* never come here */
     }
 };
 
@@ -1193,6 +1253,40 @@ int sbddextended_writeLine_inner(const char* buf, FILE* fp)
     return 1;
 }
 
+/* Converts a value into a byte sequence of a fixed width in little endian */
+/* so that the produced binary does not depend on the byte order nor the */
+/* type sizes of the machine. See also the comment of */
+/* sbddextended_bytesToUint16 in readLine.h. */
+sbddextended_INLINE_FUNC
+void sbddextended_uint16ToBytes(unsigned short v, unsigned char* buf)
+{
+    int i;
+    for (i = 0; i < 2; ++i) {
+        buf[i] = (unsigned char)(v & 0xffu);
+        v = (unsigned short)(v >> 8);
+    }
+}
+
+sbddextended_INLINE_FUNC
+void sbddextended_uint32ToBytes(unsigned int v, unsigned char* buf)
+{
+    int i;
+    for (i = 0; i < 4; ++i) {
+        buf[i] = (unsigned char)(v & 0xffu);
+        v >>= 8;
+    }
+}
+
+sbddextended_INLINE_FUNC
+void sbddextended_uint64ToBytes(ullint v, unsigned char* buf)
+{
+    int i;
+    for (i = 0; i < 8; ++i) {
+        buf[i] = (unsigned char)(v & 0xffu);
+        v >>= 8;
+    }
+}
+
 sbddextended_INLINE_FUNC
 int sbddextended_writeUint8_inner(unsigned char v, FILE* fp)
 {
@@ -1203,22 +1297,28 @@ int sbddextended_writeUint8_inner(unsigned char v, FILE* fp)
 sbddextended_INLINE_FUNC
 int sbddextended_writeUint16_inner(unsigned short v, FILE* fp)
 {
+    unsigned char buf[2];
     assert(fp != NULL);
-    return fwrite(&v, sizeof(unsigned short), (size_t)1, fp) != 0;
+    sbddextended_uint16ToBytes(v, buf);
+    return fwrite(buf, sizeof(unsigned char), (size_t)2, fp) == (size_t)2;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_writeUint32_inner(unsigned int v, FILE* fp)
 {
+    unsigned char buf[4];
     assert(fp != NULL);
-    return fwrite(&v, sizeof(unsigned int), (size_t)1, fp) != 0;
+    sbddextended_uint32ToBytes(v, buf);
+    return fwrite(buf, sizeof(unsigned char), (size_t)4, fp) == (size_t)4;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_writeUint64_inner(ullint v, FILE* fp)
 {
+    unsigned char buf[8];
     assert(fp != NULL);
-    return fwrite(&v, sizeof(ullint), (size_t)1, fp) != 0;
+    sbddextended_uint64ToBytes(v, buf);
+    return fwrite(buf, sizeof(unsigned char), (size_t)8, fp) == (size_t)8;
 }
 
 #ifdef __cplusplus
@@ -1270,11 +1370,13 @@ public:
 
     bool operator()(unsigned short v, FILE* fp) const {
         /*std::cerr << "uint16 " << (ullint)v << std::endl; */
+        unsigned char buf[2];
         if (is_fstream_) {
             if (!*ost_) {
                 return false;
             }
-            ost_->write(reinterpret_cast<char*>(&v), sizeof(unsigned short));
+            sbddextended_uint16ToBytes(v, buf);
+            ost_->write(reinterpret_cast<char*>(buf), 2);
         } else {
             assert(fp != NULL);
             return sbddextended_writeUint16_inner(v, fp) != 0;
@@ -1284,11 +1386,13 @@ public:
 
     bool operator()(unsigned int v, FILE* fp) const {
         /*std::cerr << "uint32 " << (ullint)v << std::endl; */
+        unsigned char buf[4];
         if (is_fstream_) {
             if (!*ost_) {
                 return false;
             }
-            ost_->write(reinterpret_cast<char*>(&v), sizeof(unsigned int));
+            sbddextended_uint32ToBytes(v, buf);
+            ost_->write(reinterpret_cast<char*>(buf), 4);
         } else {
             assert(fp != NULL);
             return sbddextended_writeUint32_inner(v, fp) != 0;
@@ -1298,11 +1402,13 @@ public:
 
     bool operator()(ullint v, FILE* fp) const {
         /*std::cerr << "uint64 " << (ullint)v << std::endl; */
+        unsigned char buf[8];
         if (is_fstream_) {
             if (!*ost_) {
                 return false;
             }
-            ost_->write(reinterpret_cast<char*>(&v), sizeof(ullint));
+            sbddextended_uint64ToBytes(v, buf);
+            ost_->write(reinterpret_cast<char*>(buf), 8);
         } else {
             assert(fp != NULL);
             return sbddextended_writeUint64_inner(v, fp) != 0;
@@ -5742,6 +5848,12 @@ std::string zstr(const ZBDD& zbdd)
 #endif
 
 /* *************** import functions */
+
+/* Note on the byte order: each multi-byte value of the BDD binary format */
+/* is read and written in little endian with a fixed width (16/32/64 bits) */
+/* regardless of the byte order and the type sizes of the machine. */
+/* See sbddextended_bytesToUint16 in readLine.h and */
+/* sbddextended_uint16ToBytes in writeLine.h. */
 
 /* Reads a value of the BDD binary format and returns bddnull from the */
 /* caller when the binary ends before the value is read. */

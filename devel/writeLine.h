@@ -16,6 +16,40 @@ int sbddextended_writeLine_inner(const char* buf, FILE* fp)
     return 1;
 }
 
+/* Converts a value into a byte sequence of a fixed width in little endian */
+/* so that the produced binary does not depend on the byte order nor the */
+/* type sizes of the machine. See also the comment of */
+/* sbddextended_bytesToUint16 in readLine.h. */
+sbddextended_INLINE_FUNC
+void sbddextended_uint16ToBytes(unsigned short v, unsigned char* buf)
+{
+    int i;
+    for (i = 0; i < 2; ++i) {
+        buf[i] = (unsigned char)(v & 0xffu);
+        v = (unsigned short)(v >> 8);
+    }
+}
+
+sbddextended_INLINE_FUNC
+void sbddextended_uint32ToBytes(unsigned int v, unsigned char* buf)
+{
+    int i;
+    for (i = 0; i < 4; ++i) {
+        buf[i] = (unsigned char)(v & 0xffu);
+        v >>= 8;
+    }
+}
+
+sbddextended_INLINE_FUNC
+void sbddextended_uint64ToBytes(ullint v, unsigned char* buf)
+{
+    int i;
+    for (i = 0; i < 8; ++i) {
+        buf[i] = (unsigned char)(v & 0xffu);
+        v >>= 8;
+    }
+}
+
 sbddextended_INLINE_FUNC
 int sbddextended_writeUint8_inner(unsigned char v, FILE* fp)
 {
@@ -26,22 +60,28 @@ int sbddextended_writeUint8_inner(unsigned char v, FILE* fp)
 sbddextended_INLINE_FUNC
 int sbddextended_writeUint16_inner(unsigned short v, FILE* fp)
 {
+    unsigned char buf[2];
     assert(fp != NULL);
-    return fwrite(&v, sizeof(unsigned short), (size_t)1, fp) != 0;
+    sbddextended_uint16ToBytes(v, buf);
+    return fwrite(buf, sizeof(unsigned char), (size_t)2, fp) == (size_t)2;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_writeUint32_inner(unsigned int v, FILE* fp)
 {
+    unsigned char buf[4];
     assert(fp != NULL);
-    return fwrite(&v, sizeof(unsigned int), (size_t)1, fp) != 0;
+    sbddextended_uint32ToBytes(v, buf);
+    return fwrite(buf, sizeof(unsigned char), (size_t)4, fp) == (size_t)4;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_writeUint64_inner(ullint v, FILE* fp)
 {
+    unsigned char buf[8];
     assert(fp != NULL);
-    return fwrite(&v, sizeof(ullint), (size_t)1, fp) != 0;
+    sbddextended_uint64ToBytes(v, buf);
+    return fwrite(buf, sizeof(unsigned char), (size_t)8, fp) == (size_t)8;
 }
 
 #ifdef __cplusplus
@@ -93,11 +133,13 @@ public:
 
     bool operator()(unsigned short v, FILE* fp) const {
         /*std::cerr << "uint16 " << (ullint)v << std::endl; */
+        unsigned char buf[2];
         if (is_fstream_) {
             if (!*ost_) {
                 return false;
             }
-            ost_->write(reinterpret_cast<char*>(&v), sizeof(unsigned short));
+            sbddextended_uint16ToBytes(v, buf);
+            ost_->write(reinterpret_cast<char*>(buf), 2);
         } else {
             assert(fp != NULL);
             return sbddextended_writeUint16_inner(v, fp) != 0;
@@ -107,11 +149,13 @@ public:
 
     bool operator()(unsigned int v, FILE* fp) const {
         /*std::cerr << "uint32 " << (ullint)v << std::endl; */
+        unsigned char buf[4];
         if (is_fstream_) {
             if (!*ost_) {
                 return false;
             }
-            ost_->write(reinterpret_cast<char*>(&v), sizeof(unsigned int));
+            sbddextended_uint32ToBytes(v, buf);
+            ost_->write(reinterpret_cast<char*>(buf), 4);
         } else {
             assert(fp != NULL);
             return sbddextended_writeUint32_inner(v, fp) != 0;
@@ -121,11 +165,13 @@ public:
 
     bool operator()(ullint v, FILE* fp) const {
         /*std::cerr << "uint64 " << (ullint)v << std::endl; */
+        unsigned char buf[8];
         if (is_fstream_) {
             if (!*ost_) {
                 return false;
             }
-            ost_->write(reinterpret_cast<char*>(&v), sizeof(ullint));
+            sbddextended_uint64ToBytes(v, buf);
+            ost_->write(reinterpret_cast<char*>(buf), 8);
         } else {
             assert(fp != NULL);
             return sbddextended_writeUint64_inner(v, fp) != 0;

@@ -765,6 +765,10 @@ use_negative_arcs は否定枝を使うかどうかを表す bool 値であり�
 use_negative_arcs が true のときは、DDIndex は raw モードで作成されていなければならない。
 use_negative_arcs が false のときは、DDIndex は通常モード（raw モードではないモード）で作成されていなければならない。
 
+多バイトの値は、計算機のバイトオーダーや型のサイズによらず、
+固定長（16/32/64 ビット）のリトルエンディアンで読み書きされる。
+したがって、書き込んだファイルは異なる機種でも読み込むことができる。
+
 
 Ver 1.0.0 で BDD 版が実装された。また、引数 use_negative_arcs と DDIndex に対応した。
 

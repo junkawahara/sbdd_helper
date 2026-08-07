@@ -26,6 +26,45 @@ int sbddextended_readLine_inner(char* buf, FILE* fp)
     return 1;
 }
 
+/* The binary formats treated in this library store each multi-byte value */
+/* in little endian and in a fixed width (16/32/64 bits), which do not */
+/* depend on the byte order nor the type sizes of the machine. The */
+/* following functions convert a byte sequence read from a binary into */
+/* a value. They are written so that no shift wider than the type occurs */
+/* even if the type is narrower than the value in the binary. */
+sbddextended_INLINE_FUNC
+unsigned short sbddextended_bytesToUint16(const unsigned char* buf)
+{
+    int i;
+    unsigned short v = 0;
+    for (i = 1; i >= 0; --i) {
+        v = (unsigned short)(((unsigned int)v << 8) | (unsigned int)buf[i]);
+    }
+    return v;
+}
+
+sbddextended_INLINE_FUNC
+unsigned int sbddextended_bytesToUint32(const unsigned char* buf)
+{
+    int i;
+    unsigned int v = 0;
+    for (i = 3; i >= 0; --i) {
+        v = (v << 8) | (unsigned int)buf[i];
+    }
+    return v;
+}
+
+sbddextended_INLINE_FUNC
+ullint sbddextended_bytesToUint64(const unsigned char* buf)
+{
+    int i;
+    ullint v = 0;
+    for (i = 7; i >= 0; --i) {
+        v = (v << 8) | (ullint)buf[i];
+    }
+    return v;
+}
+
 sbddextended_INLINE_FUNC
 int sbddextended_readUint8_inner(unsigned char* v, FILE* fp)
 {
@@ -36,22 +75,37 @@ int sbddextended_readUint8_inner(unsigned char* v, FILE* fp)
 sbddextended_INLINE_FUNC
 int sbddextended_readUint16_inner(unsigned short* v, FILE* fp)
 {
+    unsigned char buf[2];
     assert(fp != NULL);
-    return fread(v, sizeof(unsigned short), (size_t)1, fp) != 0;
+    if (fread(buf, sizeof(unsigned char), (size_t)2, fp) != (size_t)2) {
+        return 0;
+    }
+    *v = sbddextended_bytesToUint16(buf);
+    return 1;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_readUint32_inner(unsigned int* v, FILE* fp)
 {
+    unsigned char buf[4];
     assert(fp != NULL);
-    return fread(v, sizeof(unsigned int), (size_t)1, fp) != 0;
+    if (fread(buf, sizeof(unsigned char), (size_t)4, fp) != (size_t)4) {
+        return 0;
+    }
+    *v = sbddextended_bytesToUint32(buf);
+    return 1;
 }
 
 sbddextended_INLINE_FUNC
 int sbddextended_readUint64_inner(ullint* v, FILE* fp)
 {
+    unsigned char buf[8];
     assert(fp != NULL);
-    return fread(v, sizeof(ullint), (size_t)1, fp) != 0;
+    if (fread(buf, sizeof(unsigned char), (size_t)8, fp) != (size_t)8) {
+        return 0;
+    }
+    *v = sbddextended_bytesToUint64(buf);
+    return 1;
 }
 
 
@@ -120,54 +174,60 @@ public:
     }
 
     bool operator()(unsigned short* v, FILE* fp) const {
+        unsigned char buf[2];
         switch (mode_) {
         case STREAM:
-            ist_->read(reinterpret_cast<char*>(v), sizeof(unsigned short));
-            if (!ist_ || ist_->eof()) {
+            ist_->read(reinterpret_cast<char*>(buf), 2);
+            if (!*ist_ || ist_->gcount() != 2) {
                 return false;
             }
-            break;
+            *v = sbddextended_bytesToUint16(buf);
+            return true;
         case FP:
             return sbddextended_readUint16_inner(v, fp) != 0;
         case STRING:
             std::cerr << "not implemented" << std::endl;
             return false;
         }
-        return true;
+        return false; /* never come here */
     }
 
     bool operator()(unsigned int* v, FILE* fp) const {
+        unsigned char buf[4];
         switch (mode_) {
         case STREAM:
-            ist_->read(reinterpret_cast<char*>(v), sizeof(unsigned int));
-            if (!ist_ || ist_->eof()) {
+            ist_->read(reinterpret_cast<char*>(buf), 4);
+            if (!*ist_ || ist_->gcount() != 4) {
                 return false;
             }
-            break;
+            *v = sbddextended_bytesToUint32(buf);
+            return true;
         case FP:
             return sbddextended_readUint32_inner(v, fp) != 0;
         case STRING:
             std::cerr << "not implemented" << std::endl;
             return false;
         }
-        return true;
+        return false; /* never come here */
     }
 
     bool operator()(ullint* v, FILE* fp) const {
+        unsigned char buf[8];
         switch (mode_) {
         case STREAM:
-            ist_->read(reinterpret_cast<char*>(v), sizeof(ullint));
-            if (!ist_ || ist_->eof()) {
+            ist_->read(reinterpret_cast<char*>(buf), 8);
+            if (!*ist_ || ist_->gcount() != 8) {
                 return false;
             }
-            break;
+            *v = sbddextended_bytesToUint64(buf);
+            return true;
         case FP:
             return sbddextended_readUint64_inner(v, fp) != 0;
         case STRING:
             std::cerr << "not implemented" << std::endl;
             return false;
         }
-        return true;
+        return false; /* never come here */
     }
 };
 
