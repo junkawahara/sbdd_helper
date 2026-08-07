@@ -329,6 +329,14 @@ void test_BDD_functions()
         ZBDD fx = getRandomZBDDWithCard(i * 10 + 5, i * 10 + 10, mt);
         test(fx.Card() == static_cast<unsigned int>(i * 10 + 10));
     }
+
+    /* card == 2^level is the maximum, and larger cards are errors */
+    test(getRandomZBDDWithCard(3, 8, mt).Card() == 8u);
+    test(getRandomZBDDWithCard(3, 9, mt) == ZBDD(-1));
+    test(getRandomZBDDWithCard(0, 1, mt).Card() == 1u);
+    test(getRandomZBDDWithCard(0, 2, mt) == ZBDD(-1));
+    test(getRandomZBDDWithCard(3, 0, mt) == ZBDD(0));
+    test(getRandomZBDDWithCard(3, -1, mt) == ZBDD(-1));
 #endif
 
     ullint rand_state = 31415926535ull;
@@ -343,6 +351,14 @@ void test_BDD_functions()
         ZBDD fx = getRandomZBDDWithCardX(i * 10 + 5, i * 10 + 10, &rand_state);
         test(fx.Card() == static_cast<unsigned int>(i * 10 + 10));
     }
+
+    /* card == 2^level is the maximum, and larger cards are errors */
+    test(getRandomZBDDWithCardX(3, 8, &rand_state).Card() == 8u);
+    test(getRandomZBDDWithCardX(3, 9, &rand_state) == ZBDD(-1));
+    test(getRandomZBDDWithCardX(0, 1, &rand_state).Card() == 1u);
+    test(getRandomZBDDWithCardX(0, 2, &rand_state) == ZBDD(-1));
+    test(getRandomZBDDWithCardX(3, 0, &rand_state) == ZBDD(0));
+    test(getRandomZBDDWithCardX(3, -1, &rand_state) == ZBDD(-1));
     {
         BDD fx = exampleBdd();
         ZBDD fy = exampleZbdd();

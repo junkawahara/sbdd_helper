@@ -1273,6 +1273,22 @@ llint countNodes(const std::set<ZBDD>& dds, bool is_raw = false)
     return count;
 }
 
+/* Returns true if no ZBDD whose node levels are at most 'level' can have
+   exactly 'card' elements, that is, card < 0 or card > 2^level. */
+sbddextended_INLINE_FUNC bool sbddh_isCardOutOfRange(int level, llint card)
+{
+    if (card < 0) {
+        return true;
+    }
+    if (level < 0) {
+        level = 0;
+    }
+    if (level >= 63) { /* 2^level is larger than any llint value */
+        return false;
+    }
+    return card > ((llint)1 << level);
+}
+
 #if __cplusplus >= 201103L
 
 class DDUtilityCpp11 {
@@ -1299,6 +1315,10 @@ public:
     template <typename T>
     static ZBDD getRandomZBDDWithCard(int level, llint card, T& random_engine)
     {
+        if (sbddh_isCardOutOfRange(level, card)) {
+            return ZBDD(-1);
+        }
+
         ZBDD f(0);
         std::set<bddvar> s;
         std::uniform_int_distribution<int> dist(0, 1);
@@ -1373,6 +1393,10 @@ public:
 
     static ZBDD getRandomZBDDWithCardX(int level, llint card, ullint* rand_state)
     {
+        if (sbddh_isCardOutOfRange(level, card)) {
+            return ZBDD(-1);
+        }
+
         ZBDD f(0);
         std::set<bddvar> s;
 

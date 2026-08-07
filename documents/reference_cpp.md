@@ -537,6 +537,7 @@ ZBDD getRandomZBDDWithCard(int level, llint card, T& random_engine)
 ノードレベルが最大 level である（すなわち根ノードのレベルが level 以下である）ZBDD のうち、要素数が card 個であるものをランダムに作成して返す。
 この関数を呼び出す前に、BDD_NewVar を少なくとも level 回呼び出して、変数を level 個用意する必要がある。
 この関数は、card に依存する計算時間がかかる（card が大きすぎると計算が終わらない）。
+card が負の場合や 2^level より大きい場合は、そのような ZBDD が存在しないため、ZBDD(-1)（null）を返す。
 引数の T& random_engine は、乱数生成エンジンを指定する。<random> ヘッダのインクルードが必要である。この関数は C++ 版にのみ存在し、C++11 以降でコンパイルした場合のみ使用可能である。
 
 ### 使用例
