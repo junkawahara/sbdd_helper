@@ -263,11 +263,12 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
     } else {
         f = bddcopy(bddnode_buf[v64]);
     }
-    /* FIX ME: need to free of bddnode_buf[*] */
     for (node_count = number_of_terminals;
             node_count < number_of_nodes; ++node_count) {
         bddfree(bddnode_buf[node_count]);
     }
+    free(bddnode_buf);
+    sbddextended_MyVector_deinitialize(&level_vec);
     return f;
 }
 
