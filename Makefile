@@ -1,29 +1,29 @@
-SBDDDIR = SBDD
-OPT = -O3 -DB_64
-WOPT = -Wall -Wextra -Wformat=2 -pedantic-errors
+# The build and test rules are in tests/Makefile. This Makefile only
+# forwards the targets to it so that make can also be run at the
+# repository root.
+#
+# The location of the SAPPOROBDD source tree (which must have the src/
+# and include/ directories) is specified by SBDDDIR. Its default value
+# is ../../SAPPOROBDD as seen from tests/, that is, the SAPPOROBDD
+# directory placed next to this repository. Note that a relative path
+# given here is interpreted from tests/, and thus specifying an
+# absolute path is recommended:
+#
+#     make SBDDDIR=/path/to/SAPPOROBDD all
+#
+# The distributed header SBDD_helper.h is not built by this Makefile.
+# It is generated from the sources in devel/ by
+#
+#     cd devel && python3 combine.py
 
-all: testc testcpp
+TESTDIR = tests
 
-testc: SBDD_helper_testc_cpp.h SBDD_helper_testc.c SBDD_helper.h $(SBDDDIR)/bddc.o
-	gcc $(OPT) $(WOPT) -Wc++-compat $(SBDDDIR)/bddc.o SBDD_helper_testc.c -o testc
+TARGETS = all clang oldgcc \
+testc testc99 testcpp testcpp-gmp testcpp98 \
+testclang testcppclang testoldgcc testoldgpp \
+testnewc testnewcpp clean
 
-testcpp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp SBDD_helper_testc.c SBDD_helper.h $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o
-	g++ $(OPT) $(WOPT) $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o SBDD_helper_testcpp.cpp -o testcpp
+.PHONY: $(TARGETS)
 
-testnewc: SBDD_helper_testc_cpp.h SBDD_helper_testc.c SBDD_helper.h $(SBDDDIR)/bddc.o
-	gcc $(OPT) $(WOPT) -DSBDD_VERSION=185 $(SBDDDIR)/bddc.o SBDD_helper_testc.c -o testc
-
-testnewcpp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp SBDD_helper_testc.c SBDD_helper.h $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o
-	g++ $(OPT) $(WOPT) -DSBDD_VERSION=185 $(SBDDDIR)/bddc.o $(SBDDDIR)/BDD.o $(SBDDDIR)/ZBDD.o SBDD_helper_testcpp.cpp -o testcpp
-
-$(SBDDDIR)/bddc.o: $(SBDDDIR)/bddc.c $(SBDDDIR)/bddc.h
-	gcc $(OPT) $(SBDDDIR)/bddc.c -c -o $(SBDDDIR)/bddc.o
-
-$(SBDDDIR)/BDD.o: $(SBDDDIR)/BDD.cc $(SBDDDIR)/BDD.h
-	g++ $(OPT) $(SBDDDIR)/BDD.cc -c -o $(SBDDDIR)/BDD.o
-
-$(SBDDDIR)/ZBDD.o: $(SBDDDIR)/ZBDD.cc $(SBDDDIR)/ZBDD.h
-	g++ $(OPT) $(SBDDDIR)/ZBDD.cc -c -o $(SBDDDIR)/ZBDD.o
-
-clean:
-	rm -f $(SBDDDIR)/*.o testc.exe testc testcpp.exe testcpp
+$(TARGETS):
+	$(MAKE) -C $(TESTDIR) $@
