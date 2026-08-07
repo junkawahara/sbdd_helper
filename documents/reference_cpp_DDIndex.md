@@ -91,8 +91,8 @@ count = 10
 ## コンストラクタ
 
 ```
-DDIndex(const BDD& f, bool is_raw = true)
-DDIndex(const ZBDD& f, bool is_raw = true)
+DDIndex(const BDD& f, bool is_raw = false)
+DDIndex(const ZBDD& f, bool is_raw = false)
 DDIndex(bddp f, bool is_raw = false)
 ```
 
@@ -103,6 +103,9 @@ BDD/ZBDD が否定枝表現されているとみなしたときの
 インデックスを作成する。
 
 現在のバージョンでは、is_raw が false の場合のみ対応している。
+is_raw に true を指定した場合は、エラーメッセージを表示して
+`exit(1)` する（否定枝表現のインデックスが必要な場合は、
+旧クラスの `DDNodeIndex` を用いる）。
 
 ## BDD への対応状況
 

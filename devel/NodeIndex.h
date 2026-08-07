@@ -641,10 +641,15 @@ private:
     DDIndex(const DDIndex&);
     DDIndex& operator=(const DDIndex&);
 
-    void initialize(bddp f, bool /*is_raw*/, int is_zbdd)
+    void initialize(bddp f, bool is_raw, int is_zbdd)
     {
-        /* currently, we do not support raw mode. We set is_raw to be false. */
-        /*node_index_ = bddNodeIndex_makeIndexWithoutCount_inner(f, (is_raw ? 1 : 0), is_zbdd); */
+        /* currently, we do not support raw mode. We reject it here instead
+           of silently constructing an index of the non-raw mode. */
+        if (is_raw) {
+            std::cerr << "DDIndex currently does not support raw mode."
+                      << std::endl;
+            exit(1);
+        }
         node_index_ = bddNodeIndex_makeIndexWithoutCount_inner(f, 0, is_zbdd);
     }
 
