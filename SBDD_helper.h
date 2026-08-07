@@ -7655,6 +7655,7 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
 
     if (is_making_index) {
         bddNodeIndex_destruct(node_index);
+        free(node_index);
     }
 }
 
