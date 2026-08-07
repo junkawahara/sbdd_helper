@@ -87,6 +87,17 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
     sbddextended_MyVector_add(&level_vec, (llint)lo_vec.count);
     assert(level_count == (int)level_vec.count);
 
+    /* The input contains no node (the file is empty or consists only of */
+    /* level header lines). Note that the root node must exist at the */
+    /* index sbddextended_BDDNODE_START of bddnode_buf. */
+    if ((llint)lo_vec.count <= sbddextended_BDDNODE_START) {
+        fprintf(stderr, "Unexpected end of the input.\n");
+        sbddextended_MyVector_deinitialize(&hi_vec);
+        sbddextended_MyVector_deinitialize(&lo_vec);
+        sbddextended_MyVector_deinitialize(&level_vec);
+        return bddnull;
+    }
+
     if (root_level < 0) {
         root_level = level_count - 1;
     } else if (root_level < level_count - 1) {

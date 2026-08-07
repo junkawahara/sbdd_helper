@@ -585,6 +585,36 @@ void test_graphillion_empty_stream_cpp()
     fprintf(stderr, "(end of the expected messages)\n");
 }
 
+/* ノードが 1 つも含まれないストリームを読み込んでも、bddnode_buf の
+   領域外を読まずに bddnull を返すことを確認する */
+void test_knuth_empty_stream_cpp()
+{
+    fprintf(stderr, "(the following \"Unexpected end\" messages are expected)\n");
+
+    {
+        std::stringstream ss;
+        BDD b = importBDDAsKnuth(ss, false);
+        test(b.GetID() == bddnull);
+    }
+    {
+        std::stringstream ss;
+        ZBDD f = importZBDDAsKnuth(ss, false);
+        test(f.GetID() == bddnull);
+    }
+    {
+        std::stringstream ss("#1\n");
+        BDD b = importBDDAsKnuth(ss, false);
+        test(b.GetID() == bddnull);
+    }
+    {
+        std::stringstream ss("#1\n");
+        ZBDD f = importZBDDAsKnuth(ss, false);
+        test(f.GetID() == bddnull);
+    }
+
+    fprintf(stderr, "(end of the expected messages)\n");
+}
+
 void test_io_all_func_cpp()
 {
     const llint n = 3;
@@ -1878,6 +1908,7 @@ void start_test_cpp(bool exhaustive)
     test_at_random_cpp();
     test_io_cpp();
     test_graphillion_empty_stream_cpp();
+    test_knuth_empty_stream_cpp();
     test_io_all_func_cpp();
     test_index_cpp();
     test_elementIterator_cpp();
