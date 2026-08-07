@@ -1481,7 +1481,11 @@ public:
             return std::set<bddvar>();
         }
         makeCountIndex();
-        return getSet(random.get_z_range(countMP()));
+        const mpz_class card = countMP();
+        if (card <= 0) { /* get_z_range needs a positive range */
+            return std::set<bddvar>();
+        }
+        return getSet(random.get_z_range(card));
     }
 #else /* SBDDH_GMP */
 
@@ -1493,8 +1497,13 @@ public:
         if (node_index_ == NULL) {
             return std::set<bddvar>();
         }
-        std::uniform_int_distribution<llint> dist(0, count() - 1);
-        return getSet(dist(random_engine));
+        makeCountIndex();
+        const ullint card = count();
+        if (card < 1) { /* the distribution needs a non-empty range */
+            return std::set<bddvar>();
+        }
+        std::uniform_int_distribution<ullint> dist(0, card - 1);
+        return getSetByOrder(dist(random_engine));
     }
 
 #else /* __cplusplus >= 201103L // use rand() function */

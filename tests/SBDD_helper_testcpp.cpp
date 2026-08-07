@@ -1924,6 +1924,37 @@ void test_ddindex_clear()
     /* clear() 済みの DDIndex がスコープを抜けても二重解放しない */
 }
 
+/* 空の族（要素数 0）から構築した DDIndex */
+void test_ddindex_empty_family()
+{
+    DDIndex<int> dd_index(ZBDD(0));
+
+    test(dd_index.isValid());
+    test_eq(dd_index.count(), 0ull);
+#ifdef SBDDH_GMP
+    test(dd_index.countMP() == mpz_class(0));
+#endif
+
+    /* 要素が 1 つもないので、サンプリングは空集合を返す */
+#ifdef SBDDH_GMP
+    gmp_randclass random(gmp_randinit_default);
+    random.seed(1);
+    test_eq(dd_index.sampleRandomly(random).size(), 0u);
+#else
+#if __cplusplus >= 201103L
+    std::mt19937 mt(1);
+    test_eq(dd_index.sampleRandomly(mt).size(), 0u);
+#else
+    test_eq(dd_index.sampleRandomly().size(), 0u);
+#endif
+#endif
+
+    ullint state = 1;
+    test_eq(dd_index.sampleRandomlyA(&state).size(), 0u);
+
+    test(dd_index.random_begin() == dd_index.random_end());
+}
+
 /* BDD から構築した DDIndex では、ノードの構造のみを扱う関数が利用できる。
    数え上げ・重み系の関数は checkZBDD() がエラーメッセージを表示して
    exit(1) するため、ここでは呼び出さない。 */
@@ -1983,6 +2014,7 @@ void start_test_cpp(bool exhaustive)
     test_ddindex(exhaustive);
     test_ddindex_large_getset_order();
     test_ddindex_clear();
+    test_ddindex_empty_family();
     test_ddindex_bdd();
 }
 
