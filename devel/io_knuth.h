@@ -1,5 +1,16 @@
 /* *************** import functions */
 
+/* Frees the working vectors of bddimportbddasknuth_inner and returns */
+/* bddnull from it. Used only there (after all the three vectors are */
+/* initialized) and undefined after it. */
+#define sbddextended_freeVectorsAndReturnNull() \
+    do { \
+        sbddextended_MyVector_deinitialize(&hi_vec); \
+        sbddextended_MyVector_deinitialize(&lo_vec); \
+        sbddextended_MyVector_deinitialize(&level_vec); \
+        return bddnull; \
+    } while (0)
+
 /* Frees the working data of the node construction loop of */
 /* bddimportbddasknuth_inner and returns bddnull from it. */
 /* Used only there and undefined after it. */
@@ -9,10 +20,7 @@
             bddfree(bddnode_buf[j]); \
         } \
         free(bddnode_buf); \
-        sbddextended_MyVector_deinitialize(&hi_vec); \
-        sbddextended_MyVector_deinitialize(&lo_vec); \
-        sbddextended_MyVector_deinitialize(&level_vec); \
-        return bddnull; \
+        sbddextended_freeVectorsAndReturnNull(); \
     } while (0)
 
 sbddextended_INLINE_FUNC
@@ -49,6 +57,8 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
             c = sscanf(buf, "#%d", &level);
             if (c < 1) {
                 fprintf(stderr, "Format error in line %lld\n", line_count);
+                /* lo_vec and hi_vec are not initialized yet. */
+                sbddextended_MyVector_deinitialize(&level_vec);
                 return bddnull;
             }
             assert(level == level_count);
@@ -72,7 +82,7 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
             c = sscanf(buf, "#%d", &level);
             if (c < 1) {
                 fprintf(stderr, "Format error in line %lld\n", line_count);
-                return bddnull;
+                sbddextended_freeVectorsAndReturnNull();
             }
             assert(level == level_count);
             ++level_count;
@@ -88,12 +98,12 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
             }
             if (c < 3) {
                 fprintf(stderr, "Format error in line %lld\n", line_count);
-                return bddnull;
+                sbddextended_freeVectorsAndReturnNull();
             }
             if (id != (llint)lo_vec.count) {
                 fprintf(stderr, "Format error in line %lld\n",
                         line_count);
-                return bddnull;
+                sbddextended_freeVectorsAndReturnNull();
             }
             sbddextended_MyVector_add(&lo_vec, lo);
             sbddextended_MyVector_add(&hi_vec, hi);
@@ -107,10 +117,7 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
     /* index sbddextended_BDDNODE_START of bddnode_buf. */
     if ((llint)lo_vec.count <= sbddextended_BDDNODE_START) {
         fprintf(stderr, "Unexpected end of the input.\n");
-        sbddextended_MyVector_deinitialize(&hi_vec);
-        sbddextended_MyVector_deinitialize(&lo_vec);
-        sbddextended_MyVector_deinitialize(&level_vec);
-        return bddnull;
+        sbddextended_freeVectorsAndReturnNull();
     }
 
     if (root_level < 0) {
@@ -118,7 +125,7 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
     } else if (root_level < level_count - 1) {
         fprintf(stderr, "The argument \"root_level\" must be "
                 "larger than the height of the ZBDD.\n");
-        return bddnull;
+        sbddextended_freeVectorsAndReturnNull();
     }
 
     while (bddvarused() < (bddvar)root_level) {
@@ -193,6 +200,7 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
 }
 
 #undef sbddextended_freeNodeBufAndReturnNull
+#undef sbddextended_freeVectorsAndReturnNull
 
 #ifdef __cplusplus
 
