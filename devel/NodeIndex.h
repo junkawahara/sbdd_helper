@@ -1522,20 +1522,26 @@ public:
             return std::set<bddvar>();
         }
         makeCountIndex();
-        if (count() >= 1) {
-            std::set<bddvar> s;
+        std::set<bddvar> s;
 #ifdef SBDDH_GMP
-            /* card is larger than or equal to 2^64 */
-            if (countMP() >= mpz_class("18446744073709551616")) {
-                sampleRandomlyA<mpz_class>(rand_state, s);
-                return s;
-            }
-#endif
-            sampleRandomlyA<ullint>(rand_state, s);
+        /* count() is the card modulo 2^64, so it must not be used to */
+        /* decide whether the family is empty. */
+        const mpz_class card = countMP();
+        if (card <= 0) {
             return s;
-        } else {
-            return std::set<bddvar>();
         }
+        /* card is larger than or equal to 2^64 */
+        if (card >= mpz_class("18446744073709551616")) {
+            sampleRandomlyA<mpz_class>(rand_state, s);
+            return s;
+        }
+#else
+        if (count() < 1) {
+            return s;
+        }
+#endif
+        sampleRandomlyA<ullint>(rand_state, s);
+        return s;
     }
 
     DDNode<T> root()

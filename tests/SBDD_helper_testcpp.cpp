@@ -1767,6 +1767,23 @@ void test_ddindex(bool exhaustive)
     test(sp.getOrderNumberMP(ss) == last_value);
     test(ss == sp.getSet(last_value));
 
+    /* the card is exactly 2^64, that is, 0 modulo 2^64.
+       Every set of f64 contains the variable 65, so an empty
+       sampled set means that the sampling failed. */
+    while (bddvarused() < 65) {
+        bddnewvar();
+    }
+    ZBDD f64 = getPowerSet(64).Change(65);
+    DDIndex<int> index64(f64);
+    test(index64.countMP().get_str() == "18446744073709551616");
+    test_eq(index64.count(), 0ull); /* the card modulo 2^64 */
+    ullint state64 = 1;
+    for (int i = 0; i < 10; ++i) {
+        std::set<bddvar> varset64 = index64.sampleRandomlyA(&state64);
+        test(varset64.count(65) == 1);
+        test(isMember(f64, varset64));
+    }
+
 #endif
 }
 
