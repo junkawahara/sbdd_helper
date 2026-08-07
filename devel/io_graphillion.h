@@ -315,11 +315,14 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
             for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
                 child = bddgetchildg(node, k, is_zbdd, 0);
                 if (!bddisterminal(child)) {
-                    n += sbddextended_snprintf1(ss + n, sbddextended_BUFSIZE, " %lld", (llint)child);
+                    n += sbddextended_snprintf1(ss + sbddextended_bufPos(n),
+                        sbddextended_bufRest(n), " %lld", (llint)child);
                 } else if (child == bddempty) {
-                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, " B");
+                    n += sbddextended_snprintf0(ss + sbddextended_bufPos(n),
+                        sbddextended_bufRest(n), " B");
                 } else if (child == bddsingle) {
-                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, " T");
+                    n += sbddextended_snprintf0(ss + sbddextended_bufPos(n),
+                        sbddextended_bufRest(n), " T");
                 }
             }
             sbddextended_writeLine(ss, fp);

@@ -306,6 +306,30 @@ ullint sbddh_getValueFromMpz<ullint>(ullint v)
     #endif
 #endif
 
+/* The following two functions are used to append a string to a buffer of */
+/* sbddextended_BUFSIZE bytes in which n characters have already been */
+/* written. Note that n may be negative or may exceed the buffer size */
+/* because snprintf returns the number of characters that would have been */
+/* written if the buffer were large enough. The write position and the */
+/* remaining size are clamped so that the appended write never goes */
+/* outside the buffer. */
+sbddextended_INLINE_FUNC
+size_t sbddextended_bufPos(int n)
+{
+    if (n < 0) {
+        return 0;
+    } else if ((size_t)n >= (size_t)sbddextended_BUFSIZE) {
+        return (size_t)sbddextended_BUFSIZE - 1;
+    }
+    return (size_t)n;
+}
+
+sbddextended_INLINE_FUNC
+size_t sbddextended_bufRest(int n)
+{
+    return (size_t)sbddextended_BUFSIZE - sbddextended_bufPos(n);
+}
+
 #ifdef SBDDH_SNPRINTF_EXISTS
 
 /* We use the following macros instead of vsnprintf because passing */
@@ -6832,11 +6856,14 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
             for (k = 0; k < sbddextended_NUMBER_OF_CHILDREN; ++k) {
                 child = bddgetchildg(node, k, is_zbdd, 0);
                 if (!bddisterminal(child)) {
-                    n += sbddextended_snprintf1(ss + n, sbddextended_BUFSIZE, " %lld", (llint)child);
+                    n += sbddextended_snprintf1(ss + sbddextended_bufPos(n),
+                        sbddextended_bufRest(n), " %lld", (llint)child);
                 } else if (child == bddempty) {
-                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, " B");
+                    n += sbddextended_snprintf0(ss + sbddextended_bufPos(n),
+                        sbddextended_bufRest(n), " B");
                 } else if (child == bddsingle) {
-                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, " T");
+                    n += sbddextended_snprintf0(ss + sbddextended_bufPos(n),
+                        sbddextended_bufRest(n), " T");
                 }
             }
             sbddextended_writeLine(ss, fp);
@@ -7556,27 +7583,31 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
                     n = sbddextended_snprintf4(ss, sbddextended_BUFSIZE,
                         "\tv%d_%lld -> v%d_%lld", i, (llint)j,
                         clevel, cvalue);
-                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
+                    n += sbddextended_snprintf0(ss + sbddextended_bufPos(n),
+                        sbddextended_bufRest(n),
                     " [color = \"#81B65D\", penwidth = 2.5");
                     if (k == 0) {
-                        n += sbddextended_snprintf0(ss + n,
-                            sbddextended_BUFSIZE, ", style = dotted");
+                        n += sbddextended_snprintf0(
+                            ss + sbddextended_bufPos(n),
+                            sbddextended_bufRest(n), ", style = dotted");
                     }
-                    sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
-                        "];");
+                    sbddextended_snprintf0(ss + sbddextended_bufPos(n),
+                        sbddextended_bufRest(n), "];");
                     sbddextended_writeLine(ss, fp);
                 } else {
                     n = sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
                         "\tv%d_%lld -> t%d", i, (llint)j,
                         (child == bddfalse ? 0 : 1));
-                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
+                    n += sbddextended_snprintf0(ss + sbddextended_bufPos(n),
+                        sbddextended_bufRest(n),
                         " [color = \"#81B65D\", penwidth = 2.5");
                     if (k == 0) {
-                        n += sbddextended_snprintf0(ss + n,
-                            sbddextended_BUFSIZE, ", style = dotted");
+                        n += sbddextended_snprintf0(
+                            ss + sbddextended_bufPos(n),
+                            sbddextended_bufRest(n), ", style = dotted");
                     }
-                    sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
-                        "];");
+                    sbddextended_snprintf0(ss + sbddextended_bufPos(n),
+                        sbddextended_bufRest(n), "];");
                     sbddextended_writeLine(ss, fp);
                 }
             }
@@ -7584,14 +7615,15 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
         n = sbddextended_snprintf1(ss, sbddextended_BUFSIZE,
             "\t{rank = same; r%d; ", i);
         for (j = 0; j < node_index->level_vec_arr[i].count; ++j) {
-            n += sbddextended_snprintf2(ss + n, sbddextended_BUFSIZE,
-                "v%d_%lld; ", i, (llint)j);
+            n += sbddextended_snprintf2(ss + sbddextended_bufPos(n),
+                sbddextended_bufRest(n), "v%d_%lld; ", i, (llint)j);
             if (j % 10 == 9 && j < node_index->level_vec_arr[i].count - 1) {
                 sbddextended_writeLine(ss, fp);
                 n = sbddextended_snprintf0(ss, sbddextended_BUFSIZE, "\t\t");
             }
         }
-        n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, "}");
+        n += sbddextended_snprintf0(ss + sbddextended_bufPos(n),
+            sbddextended_bufRest(n), "}");
         sbddextended_writeLine(ss, fp);
     }
 

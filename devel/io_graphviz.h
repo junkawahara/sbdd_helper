@@ -106,27 +106,31 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
                     n = sbddextended_snprintf4(ss, sbddextended_BUFSIZE,
                         "\tv%d_%lld -> v%d_%lld", i, (llint)j,
                         clevel, cvalue);
-                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
+                    n += sbddextended_snprintf0(ss + sbddextended_bufPos(n),
+                        sbddextended_bufRest(n),
                     " [color = \"#81B65D\", penwidth = 2.5");
                     if (k == 0) {
-                        n += sbddextended_snprintf0(ss + n,
-                            sbddextended_BUFSIZE, ", style = dotted");
+                        n += sbddextended_snprintf0(
+                            ss + sbddextended_bufPos(n),
+                            sbddextended_bufRest(n), ", style = dotted");
                     }
-                    sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
-                        "];");
+                    sbddextended_snprintf0(ss + sbddextended_bufPos(n),
+                        sbddextended_bufRest(n), "];");
                     sbddextended_writeLine(ss, fp);
                 } else {
                     n = sbddextended_snprintf3(ss, sbddextended_BUFSIZE,
                         "\tv%d_%lld -> t%d", i, (llint)j,
                         (child == bddfalse ? 0 : 1));
-                    n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
+                    n += sbddextended_snprintf0(ss + sbddextended_bufPos(n),
+                        sbddextended_bufRest(n),
                         " [color = \"#81B65D\", penwidth = 2.5");
                     if (k == 0) {
-                        n += sbddextended_snprintf0(ss + n,
-                            sbddextended_BUFSIZE, ", style = dotted");
+                        n += sbddextended_snprintf0(
+                            ss + sbddextended_bufPos(n),
+                            sbddextended_bufRest(n), ", style = dotted");
                     }
-                    sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE,
-                        "];");
+                    sbddextended_snprintf0(ss + sbddextended_bufPos(n),
+                        sbddextended_bufRest(n), "];");
                     sbddextended_writeLine(ss, fp);
                 }
             }
@@ -134,14 +138,15 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
         n = sbddextended_snprintf1(ss, sbddextended_BUFSIZE,
             "\t{rank = same; r%d; ", i);
         for (j = 0; j < node_index->level_vec_arr[i].count; ++j) {
-            n += sbddextended_snprintf2(ss + n, sbddextended_BUFSIZE,
-                "v%d_%lld; ", i, (llint)j);
+            n += sbddextended_snprintf2(ss + sbddextended_bufPos(n),
+                sbddextended_bufRest(n), "v%d_%lld; ", i, (llint)j);
             if (j % 10 == 9 && j < node_index->level_vec_arr[i].count - 1) {
                 sbddextended_writeLine(ss, fp);
                 n = sbddextended_snprintf0(ss, sbddextended_BUFSIZE, "\t\t");
             }
         }
-        n += sbddextended_snprintf0(ss + n, sbddextended_BUFSIZE, "}");
+        n += sbddextended_snprintf0(ss + sbddextended_bufPos(n),
+            sbddextended_bufRest(n), "}");
         sbddextended_writeLine(ss, fp);
     }
 

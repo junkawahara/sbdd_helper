@@ -178,6 +178,30 @@ ullint sbddh_getValueFromMpz<ullint>(ullint v)
     #endif
 #endif
 
+/* The following two functions are used to append a string to a buffer of */
+/* sbddextended_BUFSIZE bytes in which n characters have already been */
+/* written. Note that n may be negative or may exceed the buffer size */
+/* because snprintf returns the number of characters that would have been */
+/* written if the buffer were large enough. The write position and the */
+/* remaining size are clamped so that the appended write never goes */
+/* outside the buffer. */
+sbddextended_INLINE_FUNC
+size_t sbddextended_bufPos(int n)
+{
+    if (n < 0) {
+        return 0;
+    } else if ((size_t)n >= (size_t)sbddextended_BUFSIZE) {
+        return (size_t)sbddextended_BUFSIZE - 1;
+    }
+    return (size_t)n;
+}
+
+sbddextended_INLINE_FUNC
+size_t sbddextended_bufRest(int n)
+{
+    return (size_t)sbddextended_BUFSIZE - sbddextended_bufPos(n);
+}
+
 #ifdef SBDDH_SNPRINTF_EXISTS
 
 /* We use the following macros instead of vsnprintf because passing */
