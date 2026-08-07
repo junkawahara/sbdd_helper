@@ -1776,7 +1776,9 @@ void sbddextended_sort_array(bddvar* arr, int n)
     }
 }
 
-/* must free the returned pointer */
+/* must free the returned pointer.
+   This function never returns NULL; it calls exit(1) when it fails to
+   allocate memory. */
 sbddextended_INLINE_FUNC
 bddvar* sbddextended_getsortedarraybylevel_inner(const bddvar* vararr, int n)
 {
@@ -1787,7 +1789,7 @@ bddvar* sbddextended_getsortedarraybylevel_inner(const bddvar* vararr, int n)
     ar = (bddvar*)malloc((size_t)n * sizeof(bddvar));
     if (ar == NULL) {
         fprintf(stderr, "out of memory\n");
-        return NULL;
+        exit(1);
     }
 
     /* translate varIDs to levels */
@@ -1809,9 +1811,6 @@ bddp bddgetpowerset(const bddvar* vararr, int n)
     bddvar v;
 
     ar = sbddextended_getsortedarraybylevel_inner(vararr, n);
-    if (ar == NULL) {
-        return bddnull;
-    }
 
     f = bddsingle;
     for (i = 0; i < n; ++i) {
@@ -1885,9 +1884,6 @@ int bddismemberz(bddp f, const bddvar* vararr, int n)
     }
 
     ar = sbddextended_getsortedarraybylevel_inner(vararr, n);
-    if (ar == NULL) {
-        return -1;
-    }
     c = bddismemberz_inner(f, ar, n);
 
     free(ar);
