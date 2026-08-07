@@ -5457,6 +5457,15 @@ bddp bddconstructzbddfromelements_inner(FILE* fp
             }
         }
         if ((c == -1 || c == '\n' || isspace(c)) && mode == 1) {
+            /* The variable number must be in {1,...,bddvarused()}. */
+            /* Otherwise bddgetsingleset below causes an error. */
+            if (!(1 <= v && v <= (int)bddvarused())) {
+                fprintf(stderr, "The variable number %d is out of range "
+                        "{1,...,%d}.\n", v, (int)bddvarused());
+                free(vararr);
+                bddfree(p);
+                return bddnull;
+            }
             if (vararr_pos >= vararr_size) {
                 vararr_size *= 2;
                 vararr = (bddvar*)realloc(vararr, (size_t)vararr_size * sizeof(bddvar));

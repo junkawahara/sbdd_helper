@@ -1536,6 +1536,55 @@ void test_knuthformat_corrupted(void)
     fprintf(stderr, "(end of the expected messages)\n");
 }
 
+/* content の内容のファイルを要素形式として読み込ませ、
+   bddnull が返ることを確認する */
+void test_elementsformat_out_of_range_content(const char* content)
+{
+    bddp f;
+    FILE* fp;
+
+    fp = fopen(g_filename1, "w");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    fputs(content, fp);
+    fclose(fp);
+
+    fp = fopen(g_filename1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    f = bddconstructzbddfromelements(fp);
+    fclose(fp);
+    test(f == bddnull);
+
+    if (remove(g_filename1) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+}
+
+/* 使用中の変数の個数を超える変数番号を含むファイルを読み込んでも、
+   異常終了せずに bddnull を返すことを確認する
+   （変数番号 999999 は bddvarmax を超えるので、常に範囲外である） */
+void test_elementsformat_out_of_range(void)
+{
+    fprintf(stderr, "(the following \"out of range\" messages are expected)\n");
+
+    /* 変数番号 0 は存在しない */
+    test_elementsformat_out_of_range_content("0\n");
+    /* 変数番号が使用中の変数の個数を超えている */
+    test_elementsformat_out_of_range_content("999999\n");
+    /* 2 行目でエラーになる（構築済みの ZBDD の解放） */
+    test_elementsformat_out_of_range_content("1 2\n1 999999\n");
+    /* 最終行に改行がない場合 */
+    test_elementsformat_out_of_range_content("1 2\n1 999999");
+
+    fprintf(stderr, "(end of the expected messages)\n");
+}
+
 /* 最終行に改行のないファイルを、行長超過と誤判定せずに読み込めることを
    確認する（C 版の readLine） */
 void test_readline_no_newline_at_end(void)
@@ -1638,5 +1687,6 @@ void start_test(void)
     test_graphillionformat_corrupted();
     test_knuthformat_empty();
     test_knuthformat_corrupted();
+    test_elementsformat_out_of_range();
     test_readline_no_newline_at_end();
 }

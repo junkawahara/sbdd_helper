@@ -447,6 +447,10 @@ bddp bddconstructzbddfromelements(FILE* fp)
 空集合に対応する行は、ファイルの末尾に置いてはいけない。
 過去には引数に large_sep、small_sep を指定できたが、廃止された。
 
+変数番号は 1 以上 bddvarused()（使用中の変数の個数）以下でなければならない。
+範囲外の変数番号が現れた場合は、エラーメッセージを標準エラー出力に表示して
+bddnull を返す。
+
 ### 使用例
 
 ファイルの例
