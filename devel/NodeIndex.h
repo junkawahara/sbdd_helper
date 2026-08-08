@@ -1664,7 +1664,6 @@ public:
     {
     private:
 #endif
-    private:
         DDIndex* node_index_;
         size_t pos_;
         size_t level_;
