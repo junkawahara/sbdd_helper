@@ -3622,6 +3622,12 @@ private:
     DDNodeIndex& operator=(const DDNodeIndex&);
 
 public:
+    /* The index stores the bddp of f without taking a reference of its own
+       (it does not call bddcopy), so the BDD/ZBDD passed to the
+       constructor must be kept alive by the caller while the index is
+       used. Building an index from a temporary, as in
+       DDIndex<int> index(getPowerSet(10)), leaves the index pointing at
+       nodes that a garbage collection is free to reclaim. */
     DDNodeIndex(const BDD& f, bool is_raw = true)
     {
         node_index_ = bddNodeIndex_makeIndex_inner(f.GetID(), (is_raw ? 1 : 0), 0);
@@ -4318,6 +4324,12 @@ private:
     }
 
 public:
+    /* The index stores the bddp of f without taking a reference of its own
+       (it does not call bddcopy), so the BDD/ZBDD passed to the
+       constructor must be kept alive by the caller while the index is
+       used. Building an index from a temporary, as in
+       DDIndex<int> index(getPowerSet(10)), leaves the index pointing at
+       nodes that a garbage collection is free to reclaim. */
     DDIndex(const BDD& f, bool is_raw = false) : is_count_made(false)
     {
         initialize(f.GetID(), is_raw, 0);
@@ -5395,6 +5407,9 @@ private:
     }
 
 public:
+    /* f is stored without taking a reference of its own (bddcopy is not
+       called), so the ZBDD it comes from must be kept alive while the
+       iterator is used. */
     ElementIterator(bddp f, bool is_end)
     {
         if (is_end || f == bddnull || f == bddempty) {
@@ -5461,6 +5476,9 @@ public:
     }
 };
 
+/* Like ElementIterator, the holder stores f without taking a reference of
+   its own, so the ZBDD passed to the constructor must be kept alive by
+   the caller while the holder and the iterators it returns are used. */
 class ElementIteratorHolder {
 private:
     bddp f_;

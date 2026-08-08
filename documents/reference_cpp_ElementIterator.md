@@ -35,3 +35,18 @@ while (itor != eih.end()) {
 std::cout << std::count_if(eih.begin(), eih.end(), is_size2);
 ```
 
+### 注意
+
+`ElementIteratorHolder` と `ElementIterator` は、渡された ZBDD の根を指す
+ポインタ（bddp）を、参照カウンタを増やさずに保持する。そのため、
+イテレータを使用している間は、コンストラクタに渡した ZBDD をユーザ側で
+保持しておく必要がある。一時オブジェクトから構築した場合、その ZBDD は
+文の終わりで破棄され、以降のガベージコレクションでノードが回収されて、
+イテレータが解放済みのノードをたどる可能性がある。
+
+```
+ZBDD f = ...;
+ElementIteratorHolder eih1(f);              // f を保持しているので正しい
+
+ElementIteratorHolder eih2(getPowerSet(10)); // 誤り。一時オブジェクトは破棄される
+```

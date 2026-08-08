@@ -178,6 +178,9 @@ private:
     }
 
 public:
+    /* f is stored without taking a reference of its own (bddcopy is not
+       called), so the ZBDD it comes from must be kept alive while the
+       iterator is used. */
     ElementIterator(bddp f, bool is_end)
     {
         if (is_end || f == bddnull || f == bddempty) {
@@ -244,6 +247,9 @@ public:
     }
 };
 
+/* Like ElementIterator, the holder stores f without taking a reference of
+   its own, so the ZBDD passed to the constructor must be kept alive by
+   the caller while the holder and the iterators it returns are used. */
 class ElementIteratorHolder {
 private:
     bddp f_;
