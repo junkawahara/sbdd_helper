@@ -241,6 +241,56 @@ void test_MyVector(void)
     sbddextended_MyVector_deinitialize(&v);
 }
 
+#ifndef __cplusplus
+
+/* Returns the height of the subtree whose root is "node" if it is a valid
+   AVL tree whose keys are sorted, and -1 otherwise. */
+llint test_MyDict_checkTree(const sbddextended_MyDictNode* node)
+{
+    llint hl;
+    llint hr;
+
+    if (node == NULL) {
+        return 0;
+    }
+    hl = test_MyDict_checkTree(node->left);
+    hr = test_MyDict_checkTree(node->right);
+    if (hl < 0 || hr < 0) {
+        return -1;
+    }
+    if (node->left != NULL && !(node->left->key < node->key)) {
+        return -1;
+    }
+    if (node->right != NULL && !(node->key < node->right->key)) {
+        return -1;
+    }
+    if (hl - hr > 1 || hr - hl > 1) {
+        return -1;
+    }
+    if ((llint)node->height != (hl > hr ? hl : hr) + 1) {
+        return -1;
+    }
+    return (llint)node->height;
+}
+
+/* Tests that the tree is a valid AVL tree of height at most
+   2 * log2(count + 1). */
+void test_MyDict_testBalanced(const sbddextended_MyDict* d)
+{
+    llint height;
+    int log_count;
+
+    height = test_MyDict_checkTree(d->root);
+    test(height > 0);
+    log_count = 0;
+    while (((llint)1 << log_count) < (llint)d->count + 1) {
+        ++log_count;
+    }
+    test(height <= 2 * log_count);
+}
+
+#endif
+
 void test_MyDict(void)
 {
     int N = 1024 + 1;
@@ -262,6 +312,13 @@ void test_MyDict(void)
         sbddextended_MyDict_add(&d, 5 * N - i * 2, 3 * N + i);
     }
     test_eq(d.count, N * 2);
+
+#ifndef __cplusplus
+    /* The keys are inserted in the increasing and in the decreasing
+       order, which would build a tree of height N if the tree were not
+       rebalanced. */
+    test_MyDict_testBalanced(&d);
+#endif
 
     for (i = 0; i < N; ++i) {
         test_eq(sbddextended_MyDict_find(&d, i * 2, &value), 1);
@@ -287,6 +344,10 @@ void test_MyDict(void)
     sbddextended_MyDict_copy(&d1, &d);
 
     test_eq(d1.count, d.count);
+
+#ifndef __cplusplus
+    test_MyDict_testBalanced(&d1);
+#endif
 
     for (i = 0; i < N; ++i) {
         test_eq(sbddextended_MyDict_find(&d1, i * 2, &value), 1);

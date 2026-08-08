@@ -495,12 +495,23 @@ void sbddextended_MyVector_pop_back(sbddextended_MyVector* v)
 
 #ifndef __cplusplus
 
+/* The dictionary is an AVL tree. Without the rebalancing, inserting the
+   keys in the increasing order, which is what the importers of the file
+   formats do, would build a tree of height n and make each insertion and
+   each lookup take O(n) time. */
+
 typedef struct tagsbddextended_MyDictNode {
     struct tagsbddextended_MyDictNode* left;
     struct tagsbddextended_MyDictNode* right;
     llint key;
     llint value;
+    /* the height of the subtree whose root is this node (a leaf has 1) */
+    int height;
 } sbddextended_MyDictNode;
+
+/* An AVL tree of height h has at least Fib(h + 2) - 1 nodes, so a tree of
+   height 92 has more than 2^63 nodes and cannot be built in practice. */
+#define sbddextended_MYDICT_MAXHEIGHT 92
 
 sbddextended_INLINE_FUNC
 sbddextended_MyDictNode* sbddextended_MyDictNode_makeNewNode(llint key,
@@ -517,6 +528,80 @@ sbddextended_MyDictNode* sbddextended_MyDictNode_makeNewNode(llint key,
     node->right = NULL;
     node->key = key;
     node->value = value;
+    node->height = 1;
+    return node;
+}
+
+sbddextended_INLINE_FUNC
+int sbddextended_MyDictNode_height(const sbddextended_MyDictNode* node)
+{
+    return (node == NULL ? 0 : node->height);
+}
+
+sbddextended_INLINE_FUNC
+void sbddextended_MyDictNode_updateHeight(sbddextended_MyDictNode* node)
+{
+    int hl;
+    int hr;
+
+    hl = sbddextended_MyDictNode_height(node->left);
+    hr = sbddextended_MyDictNode_height(node->right);
+    node->height = (hl > hr ? hl : hr) + 1;
+}
+
+sbddextended_INLINE_FUNC
+sbddextended_MyDictNode* sbddextended_MyDictNode_rotateLeft(
+                                        sbddextended_MyDictNode* node)
+{
+    sbddextended_MyDictNode* r;
+
+    r = node->right;
+    node->right = r->left;
+    r->left = node;
+    sbddextended_MyDictNode_updateHeight(node);
+    sbddextended_MyDictNode_updateHeight(r);
+    return r;
+}
+
+sbddextended_INLINE_FUNC
+sbddextended_MyDictNode* sbddextended_MyDictNode_rotateRight(
+                                        sbddextended_MyDictNode* node)
+{
+    sbddextended_MyDictNode* l;
+
+    l = node->left;
+    node->left = l->right;
+    l->right = node;
+    sbddextended_MyDictNode_updateHeight(node);
+    sbddextended_MyDictNode_updateHeight(l);
+    return l;
+}
+
+/* Rebalance the subtree whose root is "node". Both children must be
+   balanced and their heights must differ by at most 2. The root of the
+   rebalanced subtree is returned. */
+sbddextended_INLINE_FUNC
+sbddextended_MyDictNode* sbddextended_MyDictNode_balance(
+                                        sbddextended_MyDictNode* node)
+{
+    int balance;
+
+    sbddextended_MyDictNode_updateHeight(node);
+    balance = sbddextended_MyDictNode_height(node->left)
+                - sbddextended_MyDictNode_height(node->right);
+    if (balance > 1) {
+        if (sbddextended_MyDictNode_height(node->left->left)
+                < sbddextended_MyDictNode_height(node->left->right)) {
+            node->left = sbddextended_MyDictNode_rotateLeft(node->left);
+        }
+        return sbddextended_MyDictNode_rotateRight(node);
+    } else if (balance < -1) {
+        if (sbddextended_MyDictNode_height(node->right->right)
+                < sbddextended_MyDictNode_height(node->right->left)) {
+            node->right = sbddextended_MyDictNode_rotateRight(node->right);
+        }
+        return sbddextended_MyDictNode_rotateLeft(node);
+    }
     return node;
 }
 
@@ -642,37 +727,45 @@ void sbddextended_MyDict_add(sbddextended_MyDict* d, llint key, llint value)
     (*d->dict)[key] = value;
     assert(d->dict->size() == static_cast<size_t>(d->count));
 #else
+    sbddextended_MyDictNode* path[sbddextended_MYDICT_MAXHEIGHT];
+    char dir[sbddextended_MYDICT_MAXHEIGHT];
     sbddextended_MyDictNode* node;
-    if (d->root == NULL) {
-        d->root = sbddextended_MyDictNode_makeNewNode(key, value);
-        ++d->count;
-    } else {
-        node = d->root;
-        while (node != NULL) {
-            if (node->key == key) { /* found */
-                node->value = value;
-                break;
-            } else if (key < node->key) {
-                if (node->left != NULL) {
-                    node = node->left;
-                } else {
-                    node->left =
-                        sbddextended_MyDictNode_makeNewNode(key, value);
-                    ++d->count;
-                    break;
-                }
-            } else { /* key > node->key */
-                if (node->right != NULL) {
-                    node = node->right;
-                } else {
-                    node->right =
-                        sbddextended_MyDictNode_makeNewNode(key, value);
-                    ++d->count;
-                    break;
-                }
-            }
+    int sp;
+    int i;
+
+    /* search for the key, remembering the path from the root */
+    sp = 0;
+    node = d->root;
+    while (node != NULL) {
+        if (node->key == key) { /* found */
+            node->value = value;
+            return;
         }
+        assert(sp < sbddextended_MYDICT_MAXHEIGHT);
+        path[sp] = node;
+        if (key < node->key) {
+            dir[sp] = 0;
+            node = node->left;
+        } else { /* key > node->key */
+            dir[sp] = 1;
+            node = node->right;
+        }
+        ++sp;
     }
+
+    node = sbddextended_MyDictNode_makeNewNode(key, value);
+    ++d->count;
+
+    /* hang the new node and rebalance the path back to the root */
+    for (i = sp - 1; i >= 0; --i) {
+        if (dir[i] == 0) {
+            path[i]->left = node;
+        } else {
+            path[i]->right = node;
+        }
+        node = sbddextended_MyDictNode_balance(path[i]);
+    }
+    d->root = node;
 #endif
 }
 
@@ -768,6 +861,7 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
                                                         src->root->value);
     dest->root->key = src->root->key;
     dest->root->value = src->root->value;
+    dest->root->height = src->root->height;
 
     sp = 0;
     node_stack[sp] = src->root;
@@ -802,6 +896,7 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
             node_stack[sp] = child;
             dest_node_stack[sp] =
                 sbddextended_MyDictNode_makeNewNode(child->key, child->value);
+            dest_node_stack[sp]->height = child->height;
             op_stack[sp] = 0;
 
             if (op == 0) {
