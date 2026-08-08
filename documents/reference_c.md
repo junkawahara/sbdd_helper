@@ -144,6 +144,20 @@ bddvar bddgetlev(bddp f)
 
 f の level を返す。
 
+## 子ノードを取得する関数についての注意
+
+以下の bddgetchild で始まる関数は、いずれも参照カウンタを増加させない
+「弱参照」を返す。そのため、次の点に注意する必要がある。
+
+* 得られた bddp ポインタを開放（bddfree）してはいけない。
+* 得られた bddp ポインタが有効なのは、引数 f がノードを保持している間だけである。
+f を開放した後にガベージコレクションが起こると、得られていたポインタは無効になる。
+f より長く子ノードを保持したい場合は、bddcopy でコピーする。
+* C++ で得られた bddp から BDD/ZBDD オブジェクトを作る場合は、
+`ZBDD_ID(bddcopy(bddgetchild0z(f)))` のように bddcopy を通す。
+`ZBDD_ID(bddgetchild0z(f))` と書くと、取得していない参照を
+ZBDD のデストラクタが開放してしまう。
+
 ## bddgetchild0b
 
 ```

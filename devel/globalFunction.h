@@ -108,6 +108,14 @@ sbddextended_INLINE_FUNC bddvar bddgetlev(bddp f)
     return bddlevofvar(bddtop(f));
 }
 
+/* All the bddgetchild* functions return a weak reference: the reference
+   counter of the returned bddp is not incremented, so the caller must not
+   release it with bddfree. The returned pointer is valid only while f
+   holds the child; after f is released, a garbage collection can free the
+   child and leave the pointer dangling. Use bddcopy to keep a child longer
+   than f. In C++, write ZBDD_ID(bddcopy(bddgetchild0z(f))) rather than
+   ZBDD_ID(bddgetchild0z(f)), which would make the ZBDD destructor release
+   a reference that was never taken. */
 sbddextended_INLINE_FUNC bddp bddgetchild0b(bddp f)
 {
     bddp g;
