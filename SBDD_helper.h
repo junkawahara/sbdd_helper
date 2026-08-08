@@ -3867,10 +3867,26 @@ private:
         }
     }
 
+    /* The weights are indexed by the variable number, so the vector must
+       have an element for every variable of f. std::vector does not check
+       the index, so check the size here, as weightRange does. */
+    void checkWeights(const std::vector<llint>& weights) const
+    {
+        for (int level = 1; level <= height(); ++level) {
+            if (weights.size() <= static_cast<size_t>(bddvaroflev(level))) {
+                std::cerr << "The size of weights should be larger than "
+                             "the maximum variable number in f."
+                          << std::endl;
+                exit(1);
+            }
+        }
+    }
+
     llint optimize(const std::vector<llint>& weights, bool is_max,
                     std::set<bddvar>& s) const
     {
         checkZBDD();
+        checkWeights(weights);
         if (node_index_->is_raw) {
             std::cerr << "DDIndex currently does not support raw mode." << std::endl;
             exit(1);
@@ -4514,6 +4530,7 @@ public:
 
     llint getSum(const std::vector<llint>& weights)
     {
+        checkWeights(weights);
         if (node_index_ == NULL) {
             return 0ll;
         }
@@ -4544,6 +4561,7 @@ public:
 #ifdef SBDDH_GMP
     mpz_class getSumMP(const std::vector<llint>& weights)
     {
+        checkWeights(weights);
         if (node_index_ == NULL) {
             return mpz_class(0);
         }

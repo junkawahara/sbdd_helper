@@ -313,6 +313,8 @@ llint getMaximum(const std::vector<llint>& weights) const
 weights は要素の重みであり、BDD/ZBDD の変数番号を添え字とし、値が重みである vector である。
 （BDD/ZBDD の変数番号は 1 から n である。weights[i] が変数番号 i の重みを表す。
 weights[0] は用いられないので任意の値を格納しておく。）
+weights の大きさは、f に現れる変数番号の最大値より大きくなければならない。
+これを満たさない場合は、エラーメッセージを出力してプログラムを終了（exit(1)）する。
 
 ## getMinimum
 
@@ -326,6 +328,8 @@ llint getMinimum(const std::vector<llint>& weights) const
 weights は要素の重みであり、BDD/ZBDD の変数番号を添え字とし、値が重みである vector である。
 （BDD/ZBDD の変数番号は 1 から n である。weights[i] が変数番号 i の重みを表す。
 weights[0] は用いられないので任意の値を格納しておく。）
+weights の大きさは、f に現れる変数番号の最大値より大きくなければならない。
+これを満たさない場合は、エラーメッセージを出力してプログラムを終了（exit(1)）する。
 
 ## getSum
 
@@ -337,6 +341,8 @@ llint getSum(const std::vector<llint>& weights)
 weights は要素の重みであり、BDD/ZBDD の変数番号を添え字とし、値が重みである vector である。
 （BDD/ZBDD の変数番号は 1 から n である。weights[i] が変数番号 i の重みを表す。
 weights[0] は用いられないので任意の値を格納しておく。）
+weights の大きさは、f に現れる変数番号の最大値より大きくなければならない。
+これを満たさない場合は、エラーメッセージを出力してプログラムを終了（exit(1)）する。
 本メンバ関数は内部にカウント用の情報を記憶させる。
 
 ## getSumMP
@@ -349,6 +355,8 @@ mpz_class getSumMP(const std::vector<llint>& weights)
 weights は要素の重みであり、BDD/ZBDD の変数番号を添え字とし、値が重みである vector である。
 （BDD/ZBDD の変数番号は 1 から n である。weights[i] が変数番号 i の重みを表す。
 weights[0] は用いられないので任意の値を格納しておく。）
+weights の大きさは、f に現れる変数番号の最大値より大きくなければならない。
+これを満たさない場合は、エラーメッセージを出力してプログラムを終了（exit(1)）する。
 返り値は GMP ライブラリの mpz_class であり、任意桁の整数を表現できる。
 この関数を利用する際は、SBDDH_GMP マクロを冒頭で定義する。
 本メンバ関数は内部にカウント用の情報を記憶させる。
@@ -583,6 +591,8 @@ WeightIterator の重み最小化の開始イテレータを返す。詳細は�
 weights は要素の重みであり、BDD/ZBDD の変数番号を添え字とし、値が重みである vector である。
 （BDD/ZBDD の変数番号は 1 から n である。weights[i] が変数番号 i の重みを表す。
 weights[0] は用いられないので任意の値を格納しておく。）
+weights の大きさは、f に現れる変数番号の最大値より大きくなければならない。
+これを満たさない場合は、エラーメッセージを出力してプログラムを終了（exit(1)）する。
 
 ## weight_min_end
 
@@ -604,6 +614,8 @@ WeightIterator の重み最大化の開始イテレータを返す。詳細は�
 weights は要素の重みであり、BDD/ZBDD の変数番号を添え字とし、値が重みである vector である。
 （BDD/ZBDD の変数番号は 1 から n である。weights[i] が変数番号 i の重みを表す。
 weights[0] は用いられないので任意の値を格納しておく。）
+weights の大きさは、f に現れる変数番号の最大値より大きくなければならない。
+これを満たさない場合は、エラーメッセージを出力してプログラムを終了（exit(1)）する。
 
 ## weight_max_end
 
