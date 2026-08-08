@@ -25,6 +25,32 @@ SBDD_helper の機能は以下のマクロによって切り替わる。
 
 以下では C 版、C++ 版の両方の変更点について記述する。
 
+### 未リリース
+
+* 互換性のために `#define` で残されていた以下の旧関数名を削除。新しい名前を使用すること。
+これらはマクロであったため、名前空間 sbddh の外にも影響し、
+利用者側の同名の関数や変数を書き換えてしまう問題があった。
+    * getAllSetsIncluding、getAllPowerSetsIncluding → getPowerSetIncluding
+    * getAllPowerSetsNotIncluding → getPowerSetNotIncluding
+    * getAllSetsWithCard、getAllPowerSetsWithCard → getPowerSetWithCard
+    * bddconstructzbddfrombinary → bddimportzbddasbinary
+    * constructZBDDFromBinary → importZBDDAsBinary
+    * bddwritezbddtobinary → bddexportzbddasbinary
+    * writeZBDDToBinary → exportZBDDAsBinary
+    * constructZBDDFromGraphillion → importZBDDAsGraphillion
+    * bddwritebddforgraphillion → bddexportbddasgraphillion
+    * writeZBDDForGraphillion → exportZBDDAsGraphillion
+    * bddconstructbddfromfileknuth → bddimportbddasknuth
+    * bddconstructzbddfromfileknuth → bddimportzbddasknuth
+    * constructBDDFromFileKnuth → importBDDAsKnuth
+    * constructZBDDFromFileKnuth → importZBDDAsKnuth
+    * bddwritezbddtofileknuth → bddexportzbddasknuth
+    * writeZBDDToFileKnuth → exportZBDDAsKnuth
+    * bddwritebddforgraphviz → bddexportbddasgraphviz
+    * writeBDDForGraphviz → exportBDDAsGraphviz
+    * writeZBDDForGraphviz → exportZBDDAsGraphviz
+* 同様に名前空間の外に影響していた `unused` マクロを `sbddextended_unused` に改名。
+
 ### Version 1.2.0 (2024/1/4)
 
 * SBDDH_NO_BDDCT（BDDCT を使用しない場合に定義するマクロ）を廃止。SBDDH_BDDCT マクロを導入。この変更により、BDDCT 関連の機能を使用する場合、SBDD_helper.h をインクルードする前に SBDDH_BDDCT マクロを定義する必要がある。

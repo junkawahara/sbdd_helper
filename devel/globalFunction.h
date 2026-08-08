@@ -77,7 +77,7 @@ sbddextended_INLINE_FUNC void bddnewvarrev(unsigned int n)
    the API and always terminates the program with an error message. */
 sbddextended_INLINE_FUNC int bddisvalid(bddp f)
 {
-    unused(f);
+    sbddextended_unused(f);
     fprintf(stderr, "not supported in the one header library\n");
     exit(1);
 }

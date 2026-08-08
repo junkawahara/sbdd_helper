@@ -73,7 +73,7 @@ using namespace sapporobdd;
 typedef long long int llint;
 typedef unsigned long long int ullint;
 
-#define unused(a) (void)(a)
+#define sbddextended_unused(a) (void)(a)
 
 /* inline function qualifier for gcc */
 /* if a compile error occurs, change the qualifier */
@@ -95,36 +95,6 @@ typedef unsigned long long int ullint;
     static const llint sbddextended_VALUE_ZERO = 0;
     static const llint sbddextended_VALUE_ONE = 1;
 #endif
-
-/* for compatibility */
-#define getAllSetsIncluding getPowerSetIncluding
-#define getAllPowerSetsIncluding getPowerSetIncluding
-#define getAllPowerSetsNotIncluding getPowerSetNotIncluding
-#define getAllSetsWithCard getPowerSetWithCard
-#define getAllPowerSetsWithCard getPowerSetWithCard
-
-#define bddconstructzbddfrombinary bddimportzbddasbinary
-#define constructZBDDFromBinary importZBDDAsBinary
-
-#define bddwritezbddtobinary bddexportzbddasbinary
-#define writeZBDDToBinary exportZBDDAsBinary
-
-#define constructZBDDFromGraphillion importZBDDAsGraphillion
-#define bddwritebddforgraphillion bddexportbddasgraphillion
-#define writeZBDDForGraphillion exportZBDDAsGraphillion
-
-#define bddconstructbddfromfileknuth bddimportbddasknuth
-#define bddconstructzbddfromfileknuth bddimportzbddasknuth
-#define constructBDDFromFileKnuth importBDDAsKnuth
-#define constructZBDDFromFileKnuth importZBDDAsKnuth
-
-#define bddwritezbddtofileknuth bddexportzbddasknuth
-#define writeZBDDToFileKnuth exportZBDDAsKnuth
-
-#define bddwritebddforgraphviz bddexportbddasgraphviz
-#define writeBDDForGraphviz exportBDDAsGraphviz
-#define writeZBDDForGraphviz exportZBDDAsGraphviz
-
 
 
 #ifdef __cplusplus
@@ -1568,7 +1538,7 @@ sbddextended_INLINE_FUNC void bddnewvarrev(unsigned int n)
    the API and always terminates the program with an error message. */
 sbddextended_INLINE_FUNC int bddisvalid(bddp f)
 {
-    unused(f);
+    sbddextended_unused(f);
     fprintf(stderr, "not supported in the one header library\n");
     exit(1);
 }

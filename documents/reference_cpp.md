@@ -332,7 +332,7 @@ base_variables（を集合とみなしたとき）のべき集合族のうち、
 std::vector<bddvar> base_variables;
 base_variables.push_back(2); base_variables.push_back(3);
 // f は {{5},{2, 5},{3, 5},{2, 3, 5}} を表す ZBDD
-ZBDD f = getAllSetsIncluding(base_variables, 5);
+ZBDD f = getPowerSetIncluding(base_variables, 5);
 ```
 
 ## getPowerSetIncluding
@@ -349,7 +349,7 @@ getPowerSetIncluding(int n, int v)
 
 ```
 // f は {{1},{1, 2},{1, 3},{1, 2, 3}} を表す ZBDD
-ZBDD f = getAllPowerSetsIncluding(3, 1);
+ZBDD f = getPowerSetIncluding(3, 1);
 ```
 
 ## getPowerSetNotIncluding
@@ -721,7 +721,7 @@ zbdd が 0 終端のときは "E" を、1 終端のときは "{}" を出力す�
 
 ```
 // f は {3, 2}, {3, 1}, {2, 1} を表す ZBDD
-ZBDD f = getAllPowerSetsWithCard(3, 2);
+ZBDD f = getPowerSetWithCard(3, 2);
 // "{3, 2}, {3, 1}, {2, 1}" が出力される
 std::cout << ZStr(f) << std::endl;
 ```
