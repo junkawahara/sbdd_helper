@@ -1078,6 +1078,9 @@ public:
         case STREAM:
             return ist_->get();
         case FP:
+            if (fp == NULL) { /* the caller passes NULL in the other modes */
+                return -1;
+            }
             return fgetc(fp);
         case STRING:
             if (stpos_ >= stlen_) {
