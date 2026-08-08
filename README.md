@@ -275,7 +275,7 @@ bool 値を返す判定関数は以下のものがあります。
 |関数名|機能|
 |------|----|
 |`is64BitVersion()`| |
-|`isValid(const BDD& f)`| |
+|`isValid(const BDD& f)`| 未実装（呼び出すと exit(1) する）|
 |`isTerminal(const BDD& f)`| |
 |`isEmptyMember(const ZBDD& f)`| |
 |`isMember(const ZBDD& f, const T& variables)`| |

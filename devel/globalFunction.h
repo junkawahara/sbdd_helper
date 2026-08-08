@@ -71,6 +71,10 @@ sbddextended_INLINE_FUNC void bddnewvarrev(unsigned int n)
     }
 }
 
+/* Not implemented. Deciding whether a bddp is valid requires access to
+   the internal data of SAPPOROBDD, which is not available to the one
+   header library. This function is kept only for the compatibility of
+   the API and always terminates the program with an error message. */
 sbddextended_INLINE_FUNC int bddisvalid(bddp f)
 {
     unused(f);
@@ -698,6 +702,8 @@ sbddextended_INLINE_FUNC void SBDDH_NewVarRev(unsigned int n)
     bddnewvarrev(n);
 }
 
+/* Not implemented. See the comment of bddisvalid; both overloads always
+   terminate the program with an error message. */
 sbddextended_INLINE_FUNC bool isValid(const BDD& f)
 {
     return bddisvalid(f.GetID()) != 0;

@@ -135,6 +135,19 @@ BDD_NewVarOfLev() 関数を n 回呼び出す。
 この関数を呼び出した場合、ノードのレベルは、変数の数 - ノードの変数番号 + 1 となる。
 すなわち、根から終端に向かって変数番号は増える方向である。
 
+## isValid
+
+```
+bool isValid(const BDD& f)
+bool isValid(const ZBDD& f)
+```
+
+**本関数は実装されていない。**
+[bddisvalid](reference_c.md#bddisvalid) を呼び出すだけであり、
+呼び出すとエラーメッセージを出力してプログラムを終了（exit(1)）する。
+（`DDIndex` クラスの
+[isValid](reference_cpp_DDIndex.md#isvalid) メンバ関数とは別の関数である。）
+
 ## isEmptyMember
 
 ```
