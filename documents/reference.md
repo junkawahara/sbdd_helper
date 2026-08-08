@@ -9,6 +9,18 @@ Version 1.2.0
 
 C++ 版では、C 版の全ての関数も使用可能である。
 
+## マクロ
+
+SBDD_helper の機能は以下のマクロによって切り替わる。
+各マクロの詳細は [README のマクロ一覧](../README.md#マクロ一覧)を参照のこと。
+
+| マクロ | 定義する場所 | 説明 |
+|--------|--------------|------|
+| SBDDH_GMP | ユーザが `SBDD_helper.h` のインクルードより前に定義する | GMP を用いた機能を有効にする。Version 1.0.3 以前の名称は USE_GMP。 |
+| SBDDH_BDDCT | ユーザが `BDDCT.h` のインクルードより後、`SBDD_helper.h` のインクルードより前に定義する | BDDCT（重み最適化）を用いた機能を有効にする。 |
+| SAPPOROBDD_PLUS_PLUS | [SAPPOROBDD++](https://github.com/junkawahara/SAPPOROBDD-plus-plus) の `bddc.h` が定義する（ユーザは定義しない） | SAPPOROBDD++ に対応した動作に切り替える。名前空間 sbddh の中で `using namespace sapporobdd;` を行い、64 ビット版かどうかの判定を B_32 マクロの有無で行う。 |
+| B_64 / B_32 | SAPPOROBDD（SAPPOROBDD++）側のマクロ | 64 ビット版と 32 ビット版のどちらを使用するかを表す。bddis64bitversion 関数（C++ 版は is64BitVersion 関数）の返り値が決まる。 |
+
 ## 変更点
 
 以下では C 版、C++ 版の両方の変更点について記述する。

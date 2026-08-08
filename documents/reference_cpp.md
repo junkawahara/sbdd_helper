@@ -110,6 +110,8 @@ bool is64BitVersion()
 
 SAPPOROBDD の64ビット版でコンパイルが行われているかどうか判定する。正確には、B_64 マクロが定義されている場合、true を返し、されていない場合、false を返す。
 
+ただし、SAPPOROBDD++ を使用している場合（SAPPOROBDD_PLUS_PLUS マクロが定義されている場合）は、B_32 マクロが定義されていない場合に true を返し、定義されている場合に false を返す。SAPPOROBDD++ では 64 ビット版が既定であり、32 ビット版を使用する場合に B_32 マクロを定義するためである。
+
 ## SBDDH_NewVar
 
 ```

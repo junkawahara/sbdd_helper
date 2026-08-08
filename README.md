@@ -115,6 +115,48 @@ GMP を利用した機能を用いる場合、SBDDH_GMP マクロを定義しま
 g++ -DSBDDH_GMP program.cpp
 ```
 
+## マクロ一覧
+
+`SBDD_helper.h` の機能は以下のマクロによって切り替わります。
+
+| マクロ | 定義する場所 | 説明 |
+|--------|--------------|------|
+| SBDDH_GMP | ユーザが `SBDD_helper.h` のインクルードより前に定義する | GMP を用いた機能（2^64 を超える要素の数え上げ、重み和の計算、ランダムサンプリング）を有効にします。詳しくは「[GMP について](#gmp-について)」を参照してください。 |
+| SBDDH_BDDCT | ユーザが `BDDCT.h` のインクルードより後、`SBDD_helper.h` のインクルードより前に定義する | BDDCT（重み最適化）を用いた機能（weightRange 関数や DDIndex クラスの getKLightestZBDD メンバ関数など）を有効にします。詳しくは「[インストール](#インストール)」を参照してください。 |
+| SAPPOROBDD_PLUS_PLUS | SAPPOROBDD++ の `bddc.h` が定義する（ユーザは定義しません） | SAPPOROBDD++ に対応した動作に切り替えます。詳しくは「[SAPPOROBDD++ について](#sapporobdd-について)」を参照してください。 |
+| B_64 / B_32 | SAPPOROBDD（SAPPOROBDD++）側のマクロ | 64 ビット版と 32 ビット版のどちらを使用するかを表します。`SBDD_helper.h` では、bddis64bitversion 関数（C++ 版は is64BitVersion 関数）の返り値がこれらのマクロによって決まります。 |
+
+## SAPPOROBDD++ について
+
+SAPPOROBDD を C++ で書き直した [SAPPOROBDD++](https://github.com/junkawahara/SAPPOROBDD-plus-plus) にも対応しています。
+
+SAPPOROBDD++ では `bddc.h` の中で SAPPOROBDD_PLUS_PLUS マクロが定義されるため、
+利用者がこのマクロを定義する必要はありません（SAPPOROBDD++ を使用しない場合は定義しないでください）。
+以下のように、SAPPOROBDD++ のヘッダのインクルードの後に `SBDD_helper.h` をインクルードしてください。
+SAPPOROBDD++ ではクラスや関数が名前空間 sapporobdd の中で定義されているため、
+`using namespace sapporobdd;` も併せて記述します。
+
+```
+#include "BDD.h"
+#include "ZDD.h"
+#include "SBDD_helper.h"
+
+using namespace sapporobdd;
+using namespace sbddh;
+```
+
+SAPPOROBDD_PLUS_PLUS マクロが定義されている場合、`SBDD_helper.h` の動作は以下のように変わります。
+
+* 名前空間 sbddh の中で `using namespace sapporobdd;` を行います。
+* 64 ビット版かどうかの判定（bddis64bitversion 関数、is64BitVersion 関数）を、
+B_64 マクロではなく B_32 マクロの有無で行います。
+SAPPOROBDD++ では 64 ビット版が既定であり、32 ビット版を使用する場合に B_32 マクロを定義するためです。
+
+なお、SAPPOROBDD++ では ZBDD クラスが ZDD クラスにリネームされています
+（ZBDD の名前も引き続き使用できます）。
+`SBDD_helper.h` が提供する関数名・クラス名は変更していないため、
+ZBDD を含む名前（printZBDDElements など）のまま使用してください。
+
 # C++ 言語版簡易チュートリアル
 
 以下では簡単な使用例を紹介します。
