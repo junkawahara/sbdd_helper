@@ -710,6 +710,14 @@ void test_io_all_func_cpp()
                 test(b == g1);
             }
         }
+        {
+            /* elements 形式は ZBDD のみに対応している */
+            std::stringstream ss;
+            printZBDDElements(ss, f, "\n", " ");
+            ss.seekg(0);
+            ZBDD g1 = constructZBDDFromElements(ss);
+            test(f == g1);
+        }
         for (int i = 0; i < 2; ++i) {
             std::stringstream ss;
             if (i == 1) {
@@ -743,6 +751,204 @@ void test_io_all_func_cpp()
             }
         }
     }
+}
+
+/* s の中に部分文字列 sub が現れる回数を返す */
+size_t countSubstring(const std::string& s, const std::string& sub)
+{
+    size_t count = 0;
+    size_t pos = 0;
+
+    while ((pos = s.find(sub, pos)) != std::string::npos) {
+        ++count;
+        pos += sub.size();
+    }
+    return count;
+}
+
+/* filename の内容を文字列として読み込む */
+std::string fileToString(const char* filename)
+{
+    std::ifstream ifs(filename, std::ifstream::binary);
+    if (!ifs) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    std::ostringstream oss;
+    oss << ifs.rdbuf();
+    return oss.str();
+}
+
+/* graphviz 形式で出力された DD の構造を検査する。
+   size は（否定枝表現を用いない）ノードの個数、height は根のレベル */
+void test_graphviz_content_cpp(const std::string& s, ullint size, int height)
+{
+    test_eq(countSubstring(s, "digraph {"), 1u);
+    /* 1つのノードにつき、ノードの定義行と 0-枝、1-枝の行が出力される */
+    test_eq(countSubstring(s, "shape = circle"), size);
+    test_eq(countSubstring(s, ", style = dotted];"), size);
+    test_eq(countSubstring(s, ", penwidth = 2.5];"), size);
+    /* 各レベルと終端のための rank 行 */
+    test_eq(countSubstring(s, "{rank = same;"), (ullint)height + 1);
+    /* レベルを縦に並べるための不可視のノードと枝 */
+    test_eq(countSubstring(s, "style = invis"), (ullint)height + 2);
+}
+
+/* SVG 形式で出力された DD の構造を検査する */
+void test_svg_content_cpp(const std::string& s, ullint size)
+{
+    test(s.compare(0, 4, "<svg") == 0);
+    test_eq(countSubstring(s, "</svg>"), 1u);
+    /* ノードごとに円と、その中に描かれる変数番号のラベルがある */
+    test_eq(countSubstring(s, "<circle"), size);
+    /* ノードごとに 0-枝と 1-枝の線がある */
+    test_eq(countSubstring(s, "<line"), 2 * size);
+    /* 2つの終端は矩形と、その中に描かれるラベルで表される */
+    test_eq(countSubstring(s, "<rect"), 2u);
+    test_eq(countSubstring(s, "<text"), size + 2);
+}
+
+/* FILE* に出力した内容が、ostream に出力した内容と一致することを確認する */
+void test_export_file_and_stream_cpp(const std::string& s, bool is_zbdd,
+                                        bool is_svg, const ZBDD& f,
+                                        const BDD& b)
+{
+    FILE* fp = fopen(g_filename1, "wb");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    if (is_svg) {
+        if (is_zbdd) {
+            exportZBDDAsSvg(fp, f);
+        } else {
+            exportBDDAsSvg(fp, b);
+        }
+    } else {
+        if (is_zbdd) {
+            exportZBDDAsGraphviz(fp, f);
+        } else {
+            exportBDDAsGraphviz(fp, b);
+        }
+    }
+    fclose(fp);
+
+    test(s == fileToString(g_filename1));
+
+    if (remove(g_filename1) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+}
+
+void test_graphviz_zbdd_cpp(const ZBDD& f)
+{
+    DDIndex<int> index(f);
+    std::stringstream ss;
+    std::stringstream ss_index;
+
+    exportZBDDAsGraphviz(ss, f);
+    test_graphviz_content_cpp(ss.str(), index.size(), index.height());
+
+    test_export_file_and_stream_cpp(ss.str(), true, false, f, BDD(0));
+
+    /* あらかじめ構築したインデックスを渡しても同じ内容が出力される */
+    exportZBDDAsGraphviz(ss_index, f, NULL, &index);
+    test(ss.str() == ss_index.str());
+}
+
+void test_graphviz_bdd_cpp(const BDD& b)
+{
+    DDIndex<int> index(b);
+    std::stringstream ss;
+    std::stringstream ss_index;
+
+    exportBDDAsGraphviz(ss, b);
+    test_graphviz_content_cpp(ss.str(), index.size(), index.height());
+
+    test_export_file_and_stream_cpp(ss.str(), false, false, ZBDD(0), b);
+
+    exportBDDAsGraphviz(ss_index, b, NULL, &index);
+    test(ss.str() == ss_index.str());
+}
+
+void test_svg_zbdd_cpp(const ZBDD& f)
+{
+    DDIndex<int> index(f);
+    std::stringstream ss;
+    std::stringstream ss_index;
+
+    exportZBDDAsSvg(ss, f);
+    test_svg_content_cpp(ss.str(), index.size());
+
+    test_export_file_and_stream_cpp(ss.str(), true, true, f, BDD(0));
+
+    /* あらかじめ構築したインデックスを渡しても同じ内容が出力される */
+    exportZBDDAsSvg(ss_index, f, NULL, &index);
+    test(ss.str() == ss_index.str());
+}
+
+void test_svg_bdd_cpp(const BDD& b)
+{
+    DDIndex<int> index(b);
+    std::stringstream ss;
+    std::stringstream ss_index;
+
+    exportBDDAsSvg(ss, b);
+    test_svg_content_cpp(ss.str(), index.size());
+
+    test_export_file_and_stream_cpp(ss.str(), false, true, ZBDD(0), b);
+
+    exportBDDAsSvg(ss_index, b, NULL, &index);
+    test(ss.str() == ss_index.str());
+}
+
+void test_graphviz_cpp()
+{
+    ZBDD f = ZBDD_ID(make_test_zbdd());
+    BDD b = (BDDvar(1) & BDDvar(2)) | BDDvar(3);
+    std::stringstream ss;
+
+    /* 終端のみからなる DD では、終端の定義だけが出力される */
+    exportZBDDAsGraphviz(ss, ZBDD(0));
+    test_eq(countSubstring(ss.str(), "digraph {"), 1u);
+    test_eq(countSubstring(ss.str(), "shape = circle"), 0u);
+    test_eq(countSubstring(ss.str(), "t0 [label"), 1u);
+    test_eq(countSubstring(ss.str(), "t1 [label"), 0u);
+
+    std::stringstream ss1;
+    exportZBDDAsGraphviz(ss1, ZBDD(1));
+    test_eq(countSubstring(ss1.str(), "digraph {"), 1u);
+    test_eq(countSubstring(ss1.str(), "shape = circle"), 0u);
+    test_eq(countSubstring(ss1.str(), "t0 [label"), 0u);
+    test_eq(countSubstring(ss1.str(), "t1 [label"), 1u);
+
+    test_graphviz_zbdd_cpp(f);
+    test_graphviz_zbdd_cpp(getPowerSetWithCard(5, 2));
+    test_graphviz_zbdd_cpp(getSingleSet(1, 1));
+    test_graphviz_bdd_cpp(b);
+    test_graphviz_bdd_cpp(BDDvar(1));
+}
+
+void test_svg_cpp()
+{
+    ZBDD f = ZBDD_ID(make_test_zbdd());
+    BDD b = (BDDvar(1) & BDDvar(2)) | BDDvar(3);
+
+    /* 終端のみからなる DD では、2つの終端だけが描かれる */
+    std::stringstream ss;
+    exportZBDDAsSvg(ss, ZBDD(0));
+    test_svg_content_cpp(ss.str(), 0);
+
+    std::stringstream ss1;
+    exportZBDDAsSvg(ss1, ZBDD(1));
+    test_svg_content_cpp(ss1.str(), 0);
+
+    test_svg_zbdd_cpp(f);
+    test_svg_zbdd_cpp(getPowerSetWithCard(5, 2));
+    test_svg_zbdd_cpp(getSingleSet(1, 1));
+    test_svg_bdd_cpp(b);
+    test_svg_bdd_cpp(BDDvar(1));
 }
 
 void test_index_cpp()
@@ -2044,6 +2250,8 @@ void start_test_cpp(bool exhaustive)
     test_graphillion_empty_stream_cpp();
     test_knuth_empty_stream_cpp();
     test_io_all_func_cpp();
+    test_graphviz_cpp();
+    test_svg_cpp();
     test_index_cpp();
     test_elementIterator_cpp();
     test_ddindex(exhaustive);

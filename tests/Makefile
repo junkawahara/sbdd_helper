@@ -1,4 +1,6 @@
 SBDDDIR = ../../SAPPOROBDD
+# used only by the testtdzdd target
+TDZDDDIR = ../../TdZdd
 SBDDSRCDIR = $(SBDDDIR)/src
 SBDDINCLUDEDIR = $(SBDDDIR)/include
 OPT = -O3 -DB_64 -I$(SBDDINCLUDEDIR)
@@ -97,6 +99,13 @@ testcppclang: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
 	$(CLANGPP) $(OPT) $(WOPT2) bddc-clang.o BDD-clang.o ZBDD-clang.o \
 	BDDCT-clang.o SBDD_helper_testcpp.cpp -o testcppclang
 
+# test of SBDD_helper_tdzdd.h. It is not included in the all target
+# because it requires TdZdd.
+testtdzdd: SBDD_helper_testtdzdd.cpp ../devel/SBDD_helper.h ../devel/*.h \
+        ../SBDD_helper_tdzdd.h bddc.o BDD.o ZBDD.o
+	g++ $(STD) $(OPT) -isystem $(TDZDDDIR)/include $(WOPT4) bddc.o BDD.o \
+	ZBDD.o SBDD_helper_testtdzdd.cpp -o testtdzdd
+
 testnewc: SBDD_helper_testc_cpp.h SBDD_helper_testc.c \
         ../devel/SBDD_helper.h ../devel/*.h bddc.o
 	gcc $(OPT) $(WOPT4) -DSBDD_VERSION=185 bddc.o SBDD_helper_testc.c \
@@ -148,4 +157,4 @@ clean:
 	rm -f *.o *.stackdump testc.exe testc testcpp.exe testcpp \
 	testoldgcc.exe testoldgcc testoldgpp.exe testoldgpp \
 	testcpp98.exe testcppg.exe testcppg testcpp98 testcpp-gmp.exe \
-	testcpp-gmp testcppclang
+	testcpp-gmp testcppclang testtdzdd

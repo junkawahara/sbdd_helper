@@ -11,6 +11,12 @@
 #
 #     make SBDDDIR=/path/to/SAPPOROBDD all
 #
+# The testtdzdd target, which tests SBDD_helper_tdzdd.h, additionally
+# requires TdZdd. Its location is specified by TDZDDDIR in the same way
+# (its default value is ../../TdZdd as seen from tests/):
+#
+#     make SBDDDIR=/path/to/SAPPOROBDD TDZDDDIR=/path/to/TdZdd testtdzdd
+#
 # The distributed header SBDD_helper.h is not built by this Makefile.
 # It is generated from the sources in devel/ by
 #
@@ -21,7 +27,7 @@ TESTDIR = tests
 TARGETS = all clang oldgcc \
 testc testc99 testcpp testcpp-gmp testcpp98 \
 testclang testcppclang testoldgcc testoldgpp \
-testnewc testnewcpp clean
+testnewc testnewcpp testtdzdd clean
 
 .PHONY: $(TARGETS)
 

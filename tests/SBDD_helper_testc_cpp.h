@@ -103,6 +103,57 @@ int is_expected_str(FILE* fp, const char* str)
 }
 
 
+/* fp の内容のうち、substr を含む行の数を返す。
+   呼び出しの前後で、ファイル位置は先頭に移動する */
+int count_lines_containing(FILE* fp, const char* substr)
+{
+    char buf[1024];
+    int count = 0;
+
+    if (fseek(fp, 0l, SEEK_SET) != 0) {
+        fprintf(stderr, "fseek failed\n");
+        exit(1);
+    }
+    while (fgets(buf, (int)sizeof(buf), fp) != NULL) {
+        if (strstr(buf, substr) != NULL) {
+            ++count;
+        }
+    }
+    if (fseek(fp, 0l, SEEK_SET) != 0) {
+        fprintf(stderr, "fseek failed\n");
+        exit(1);
+    }
+    return count;
+}
+
+/* 2つのファイルの内容が一致するかどうかを返す */
+int is_same_file(const char* filename1, const char* filename2)
+{
+    FILE* fp1;
+    FILE* fp2;
+    int c1, c2, b;
+
+    fp1 = fopen(filename1, "rb");
+    fp2 = fopen(filename2, "rb");
+    if (fp1 == NULL || fp2 == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    b = 1;
+    do {
+        c1 = fgetc(fp1);
+        c2 = fgetc(fp2);
+        if (c1 != c2) {
+            b = 0;
+            break;
+        }
+    } while (c1 != EOF);
+    fclose(fp1);
+    fclose(fp2);
+    return b;
+}
+
+
 void initialize(void)
 {
     bddinit(1000ll, 10000000ll);
@@ -772,8 +823,6 @@ void test_io(void)
         exit(1);
     }
 
-    /* need test bddoutputbddforgraphviz(stderr, f, NULL); here */
-
     /*f = bddtruthtabletobdd(table1, vararr, 3); */
     /*g = bddor(bddor(bddprime(2), bddprime(3)), bddnot(bddprime(5))); */
     /*test(f == g); */
@@ -783,13 +832,6 @@ void test_io(void)
     /*          bddand(bddnot(bddor(bddprime(2), bddprime(5))), */
     /*                 bddprime(3))); */
     /*test(f == g); */
-
-    /*bddconstructzbddfromelements_inner_getoneset("10 20 30 40 50", 14, " ", 1); */
-    /*bddconstructzbddfromelements_inner_getoneset("10,2,30,4,50", 12, ",", 1); */
-    /*bddconstructzbddfromelements_inner_getoneset("30!&20!&10", 10, "!&", 2); */
-    /*bddconstructzbddfromelements_inner_getoneset("10!!30!!20", 10, "!!", 2); */
-    /*bddconstructzbddfromelements_inner_getoneset("1", 1, "!&", 2); */
-    /*bddconstructzbddfromelements(stdin, "!", ","); */
 
     fp1 = fopen(g_filename3, "w+");
     if (fp1 == NULL) {
@@ -831,6 +873,228 @@ void test_io(void)
         exit(1);
     }
     test(f == g);
+}
+
+/* graphviz 形式で出力された DD の構造を検査する。
+   size は（否定枝表現を用いない）ノードの個数、height は根のレベル */
+void test_graphviz_content(FILE* fp, int size, int height)
+{
+    /* 1つのノードにつき、ノードの定義行と 0-枝、1-枝の行が出力される */
+    test_eq(count_lines_containing(fp, "shape = circle"), size);
+    test_eq(count_lines_containing(fp, ", style = dotted];"), size);
+    test_eq(count_lines_containing(fp, ", penwidth = 2.5];"), size);
+    /* 各レベルと終端のための rank 行 */
+    test_eq(count_lines_containing(fp, "{rank = same;"), height + 1);
+    /* レベルを縦に並べるための不可視のノードと枝 */
+    test_eq(count_lines_containing(fp, "style = invis"), height + 2);
+    /* 終端は両方とも出力される */
+    test_eq(count_lines_containing(fp, "t0 [label = \"0\""), 1);
+    test_eq(count_lines_containing(fp, "t1 [label = \"1\""), 1);
+    test_eq(count_lines_containing(fp, "digraph {"), 1);
+}
+
+/* f を graphviz 形式で filename に書き出す */
+void export_graphviz_to_file(const char* filename, bddp f, int is_zbdd,
+                                bddNodeIndex* node_index)
+{
+    FILE* fp;
+
+    fp = fopen(filename, "wb");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    if (is_zbdd != 0) {
+        bddexportzbddasgraphviz(fp, f, node_index);
+    } else {
+        bddexportbddasgraphviz(fp, f, node_index);
+    }
+    fclose(fp);
+}
+
+void test_graphviz_dd(bddp f, int is_zbdd)
+{
+    FILE* fp;
+    bddNodeIndex* node_index;
+    int size, height;
+
+    if (is_zbdd != 0) {
+        node_index = bddNodeIndex_makeIndexZWithoutCount(f);
+    } else {
+        node_index = bddNodeIndex_makeIndexBWithoutCount(f);
+    }
+    size = (int)bddNodeIndex_size(node_index);
+    height = (int)bddgetlev(f);
+
+    export_graphviz_to_file(g_filename1, f, is_zbdd, NULL);
+
+    fp = fopen(g_filename1, "rb");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    test_graphviz_content(fp, size, height);
+    fclose(fp);
+
+    /* あらかじめ構築したインデックスを渡しても同じ内容が出力される */
+    export_graphviz_to_file(g_filename2, f, is_zbdd, node_index);
+    test(is_same_file(g_filename1, g_filename2));
+
+    bddNodeIndex_destruct(node_index);
+    free(node_index);
+
+    if (remove(g_filename1) != 0 || remove(g_filename2) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+}
+
+/* 終端のみからなる DD では、終端の定義だけが出力される */
+void test_graphviz_terminal(bddp f, int t0_count, int t1_count)
+{
+    FILE* fp;
+
+    fp = fopen(g_filename1, "wb+");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    bddexportzbddasgraphviz(fp, f, NULL);
+    test_eq(count_lines_containing(fp, "digraph {"), 1);
+    test_eq(count_lines_containing(fp, "t0 [label = \"0\""), t0_count);
+    test_eq(count_lines_containing(fp, "t1 [label = \"1\""), t1_count);
+    test_eq(count_lines_containing(fp, "shape = circle"), 0);
+    fclose(fp);
+
+    if (remove(g_filename1) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+}
+
+void test_graphviz(void)
+{
+    bddp f, g;
+    bddvar vararr[3];
+
+    test_graphviz_terminal(bddempty, 1, 0);
+    test_graphviz_terminal(bddsingle, 0, 1);
+
+    f = make_test_zbdd();
+    test_graphviz_dd(f, 1);
+    bddfree(f);
+
+    vararr[0] = 2, vararr[1] = 3, vararr[2] = 5;
+    f = bddgetpowerset(vararr, 3);
+    test_graphviz_dd(f, 1);
+    bddfree(f);
+
+    f = bddgetsingleton(1);
+    test_graphviz_dd(f, 1);
+    bddfree(f);
+
+    /* BDD の場合 */
+    f = bddand(bddprime(1), bddprime(2));
+    g = bddor(f, bddprime(3));
+    test_graphviz_dd(f, 0);
+    test_graphviz_dd(g, 0);
+    bddfree(f);
+    bddfree(g);
+}
+
+/* content を elements 形式として読み込んだ結果が expected と一致することを
+   確認する */
+void test_elementsformat_content(const char* content, bddp expected)
+{
+    bddp f;
+    FILE* fp;
+
+    fp = fopen(g_filename3, "wb+");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    fputs(content, fp);
+
+    if (fseek(fp, 0l, SEEK_SET) != 0) {
+        fprintf(stderr, "fseek failed\n");
+        exit(1);
+    }
+    f = bddconstructzbddfromelements(fp);
+    fclose(fp);
+
+    if (remove(g_filename3) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+    test(f == expected);
+    bddfree(f);
+}
+
+/* f を elements 形式で出力してから読み込むと、元の ZBDD に戻ることを
+   確認する */
+void test_elementsformat_roundtrip(bddp f)
+{
+    bddp g;
+    FILE* fp;
+
+    fp = fopen(g_filename3, "wb+");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    bddprintzbddelements(fp, f, "\n", " ");
+
+    if (fseek(fp, 0l, SEEK_SET) != 0) {
+        fprintf(stderr, "fseek failed\n");
+        exit(1);
+    }
+    g = bddconstructzbddfromelements(fp);
+    fclose(fp);
+
+    if (remove(g_filename3) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+    test(f == g);
+    bddfree(g);
+}
+
+void test_elementsformat(void)
+{
+    bddp f;
+    bddvar vararr[3];
+
+    /* 1文字目が T の場合は空集合のみからなる族、
+       B, E, F の場合は空の族を表す */
+    test_elementsformat_content("T\n", bddsingle);
+    test_elementsformat_content("B\n", bddempty);
+    test_elementsformat_content("E\n", bddempty);
+    test_elementsformat_content("F\n", bddempty);
+
+    /* 空行は空集合を表す */
+    test_elementsformat_content("\n", bddsingle);
+
+    f = make_test_zbdd(); /* {{1, 2}, {1, 3}, {2, 3}} */
+    test_elementsformat_content("1 2\n1 3\n2 3\n", f);
+    /* 集合や変数の順序は任意でよく、区切りは空白文字の並びでよい */
+    test_elementsformat_content("2 1\n3 1\n  3   2  \n", f);
+    test_elementsformat_content("1\t2\n1\t3\n2\t3\n", f);
+    /* 最終行に改行がなくてもよい */
+    test_elementsformat_content("1 2\n1 3\n2 3", f);
+    /* 同じ集合が複数回現れてもよい */
+    test_elementsformat_content("1 2\n2 3\n1 3\n1 2\n", f);
+
+    test_elementsformat_roundtrip(f);
+    bddfree(f);
+
+    test_elementsformat_roundtrip(bddempty);
+    test_elementsformat_roundtrip(bddsingle);
+
+    vararr[0] = 2, vararr[1] = 3, vararr[2] = 5;
+    f = bddgetpowerset(vararr, 3);
+    test_elementsformat_roundtrip(f);
+    bddfree(f);
 }
 
 void test_index(void)
@@ -1680,6 +1944,8 @@ void start_test(void)
     test_getsingleandpowerset();
     test_ismemberz();
     test_io();
+    test_graphviz();
+    test_elementsformat();
     test_at_random();
     test_index();
     test_index_copy();
