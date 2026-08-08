@@ -6,6 +6,11 @@ BDD/ZBDD の各ノードに情報を格納させる際に用いるクラスで�
 `DDNode<T>` はテンプレートクラスである。型 T は、各ノードに情報を保持させる場合に、保持させたいデータの型を指定する。
 ノードに保持された情報は T の参照型（T&）である value メンバ変数で参照できる。value は DDIndex に格納されているため、`DDNode<T>` の value に値を格納した後に、`DDNode<T>` を削除（デストラクタ呼び出し）しても情報は保持されたままである。
 
+逆に、value が参照している実体を所有しているのは `DDIndex<T>` であるため、
+`DDIndex<T>` の [clear()](reference_cpp_DDIndex.md#clear) を呼び出すか、
+`DDIndex<T>` 自体を破棄すると、その前に取得していた `DDNode<T>` の value は
+無効な参照となる。この状態で value を読み書きしてはいけない。
+
 使用例は [DDIndex クラスのリファレンスを参照](reference_cpp_DDIndex.md)。
 
 ## コンストラクタ

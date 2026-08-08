@@ -569,6 +569,9 @@ private:
     const bddp f_;
     DDIndex<T>& node_index_;
 public:
+    /* A reference to the storage of node_index_ for f_. DDIndex::clear()
+       destroys the storage, so the value of a DDNode obtained before the
+       call is a dangling reference afterwards. */
     T& value;
 
 public:
@@ -1151,6 +1154,10 @@ public:
         clear();
     }
 
+    /* Releases the memory held by the index. The data attached to the
+       nodes is destroyed as well, so the references returned by
+       getStorageRef() and the value member of the DDNodes obtained
+       before the call must not be used afterwards. */
     void clear()
     {
         if (node_index_ != NULL) {
