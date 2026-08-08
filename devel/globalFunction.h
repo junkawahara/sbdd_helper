@@ -849,17 +849,13 @@ sbddextended_INLINE_FUNC ZBDD getChildRaw(const ZBDD& f, int child)
 sbddextended_INLINE_FUNC
 BDD makeNode(bddvar v, const BDD& f0, const BDD& f1)
 {
-    assert(bddlevofvar(v) > getLev(f0));
-    assert(bddlevofvar(v) > getLev(f1));
-    return (f0 & ~BDDvar(v)) | (f1 & BDDvar(v));
+    return BDD_ID(bddmakenodeb(v, f0.GetID(), f1.GetID()));
 }
 
 sbddextended_INLINE_FUNC
 ZBDD makeNode(bddvar v, const ZBDD& f0, const ZBDD& f1)
 {
-    assert(bddlevofvar(v) > getLev(f0));
-    assert(bddlevofvar(v) > getLev(f1));
-    return f0 + f1.Change(v);
+    return ZBDD_ID(bddmakenodez(v, f0.GetID(), f1.GetID()));
 }
 
 sbddextended_INLINE_FUNC BDD getPrimeNot(bddvar v)

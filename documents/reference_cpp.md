@@ -243,6 +243,11 @@ ZBDD makeNode(bddvar v, const ZBDD& f0, const ZBDD& f1)
 
 根ノードの変数番号が v、0-枝側が f0、1-枝側が f1 である BDD/ZBDD を構築し、それを返す。
 f0、f1 の根ノードのレベルは、変数番号 v のレベルより小さくなければならない。
+v が bddvarused()（現在使用している変数の数）より大きい場合、および、
+f0、f1 の根ノードのレベルが変数番号 v のレベル以上である場合は、
+エラーメッセージを出力してプログラムを終了（exit(1)）する。
+（本関数は C 版の [bddmakenodeb](reference_c.md#bddmakenodeb) /
+[bddmakenodez](reference_c.md#bddmakenodez) を呼び出す。）
 
 ## getPrimeNot
 
