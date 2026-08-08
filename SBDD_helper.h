@@ -1771,16 +1771,16 @@ bddp bddmakenodeb(bddvar v, bddp f0, bddp f1)
     bddp p, pn, g0, g1, g;
 
     if (v > bddvarused()) {
-        fprintf(stderr, "bddmakenodeb: Invalid VarID %d", v);
+        fprintf(stderr, "bddmakenodeb: Invalid VarID %u\n", v);
         exit(1);
     }
     if (bddlevofvar(v) <= bddgetlev(f0)) {
-        fprintf(stderr, "bddmakenodeb: The level of VarID %d "
+        fprintf(stderr, "bddmakenodeb: The level of VarID %u "
             "must be larger than the level of f0\n", v);
         exit(1);
     }
     if (bddlevofvar(v) <= bddgetlev(f1)) {
-        fprintf(stderr, "bddmakenodeb: The level of VarID %d "
+        fprintf(stderr, "bddmakenodeb: The level of VarID %u "
             "must be larger than the level of f1\n", v);
         exit(1);
     }
@@ -1802,16 +1802,16 @@ bddp bddmakenodez(bddvar v, bddp f0, bddp f1)
     bddp g1, g;
 
     if (v > bddvarused()) {
-        fprintf(stderr, "bddmakenodez: Invalid VarID %d", v);
+        fprintf(stderr, "bddmakenodez: Invalid VarID %u\n", v);
         exit(1);
     }
     if (bddlevofvar(v) <= bddgetlev(f0)) {
-        fprintf(stderr, "bddmakenodez: The level of VarID %d "
+        fprintf(stderr, "bddmakenodez: The level of VarID %u "
             "must be larger than the level of f0\n", v);
         exit(1);
     }
     if (bddlevofvar(v) <= bddgetlev(f1)) {
-        fprintf(stderr, "bddmakenodez: The level of VarID %d "
+        fprintf(stderr, "bddmakenodez: The level of VarID %u "
             "must be larger than the level of f1\n", v);
         exit(1);
     }
@@ -1828,7 +1828,7 @@ bddp bddprimenot(bddvar v)
     bddp f;
 
     if (v > bddvarused()) {
-        fprintf(stderr, "bddprimenot: Invalid VarID %d", v);
+        fprintf(stderr, "bddprimenot: Invalid VarID %u\n", v);
         exit(1);
     }
     f = bddprime(v);
@@ -1839,7 +1839,7 @@ sbddextended_INLINE_FUNC
 bddp bddgetsingleton(bddvar v)
 {
     if (v > bddvarused()) {
-        fprintf(stderr, "bddgetsingleton: Invalid VarID %d", v);
+        fprintf(stderr, "bddgetsingleton: Invalid VarID %u\n", v);
         exit(1);
     }
     return bddchange(bddsingle, v);
