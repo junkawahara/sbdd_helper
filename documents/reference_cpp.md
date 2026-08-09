@@ -482,7 +482,7 @@ BDD クラスと ZBDD クラスには operator< が定義されていないた�
 std::vector<ZBDD> dds;
 // ZBDD f0, f1, f2 は何らかの方法で作成
 dds.push_back(f0), dds.push_back(f1), dds.push_back(f2);
-printf("%d", countNodes(dds, false));
+printf("%lld", countNodes(dds, false)); // llint は long long int
 ```
 
 ## DDComparator
@@ -500,7 +500,7 @@ BDD/ZBDD を std::set や std::map のキーとして使うための比較関数
 std::set<ZBDD, DDComparator<ZBDD> > dds;
 // ZBDD f0, f1, f2 は何らかの方法で作成
 dds.insert(f0), dds.insert(f1), dds.insert(f2);
-printf("%d", countNodes(dds, false));
+printf("%lld", countNodes(dds, false)); // llint は long long int
 ```
 
 ## getUniformlyRandomZBDD
