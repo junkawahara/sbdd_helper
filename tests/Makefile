@@ -78,8 +78,8 @@ testoldgpp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
 testcppg: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
         SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h \
 		bddc.o BDD.o ZBDD.o BDDCT.o
-	g++ -g -DB_64 $(WOPT4) bddc.o BDD.o ZBDD.o BDDCT.o SBDD_helper_testcpp.cpp \
-	-o testcppg
+	g++ -g -DB_64 -I$(SBDDINCLUDEDIR) $(WOPT4) bddc.o BDD.o ZBDD.o BDDCT.o \
+	SBDD_helper_testcpp.cpp -o testcppg
 
 testcpp-gmp: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
         SBDD_helper_testc.c ../devel/SBDD_helper.h  ../devel/*.h \
