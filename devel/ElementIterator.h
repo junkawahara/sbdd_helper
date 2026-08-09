@@ -86,6 +86,11 @@ bddElementIterator* bddElementIterator_make(bddp f)
     return itor;
 }
 
+/* Stores the element the iterator currently points at into arr as a */
+/* sequence of variable numbers terminated by (bddvar)-1. Since an */
+/* element consists of at most bddgetlev(f) variables, where f is the */
+/* ZBDD passed to bddElementIterator_make, arr must have room for at */
+/* least bddgetlev(f) + 1 elements (the variables and the terminator). */
 sbddextended_INLINE_FUNC
 void bddElementIterator_getValue(bddElementIterator* itor, bddvar* arr)
 {
@@ -101,6 +106,10 @@ void bddElementIterator_getValue(bddElementIterator* itor, bddvar* arr)
     arr[c] = (bddvar)-1;
 }
 
+/* Stores the current element into arr and proceeds to the next element. */
+/* arr may be NULL, in which case the current element is discarded. */
+/* Otherwise arr must be as large as bddElementIterator_getValue requires, */
+/* that is, at least bddgetlev(f) + 1 elements. */
 sbddextended_INLINE_FUNC
 void bddElementIterator_next(bddElementIterator* itor, bddvar* arr)
 {
