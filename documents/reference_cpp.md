@@ -696,7 +696,7 @@ zbdd が bddnull のときは "N" と出力し、bddempty のときは
 
 引数の delim1 は、集合族の要素（集合）の区切りである。delim2 は集合族の要素（集合）の要素の区切りである。例えば、`delim1 == "};{"`, `delim2 == ","` なら、"4,2,1};{3,1};{1};{" のような出力が得られる（この場合、先頭と末尾の "{", "}" は別途出力しなければならない）。delim1 と delim2 を指定しない場合（`void printZBDDElements(std::ostream& ost, const ZBDD& zbdd)`）、例えば、"{4,2,1},{3,1},{1},{}" のように出力される。
 
-ver_name_map は変数番号をインデックスとする、任意の文字列の配列であり、
+var_name_map は変数番号をインデックスとする、任意の文字列の配列であり、
 変数番号の代わりに、変数番号に対応する文字列を取得する。
 
 ## printZBDDElementsAsValueList
