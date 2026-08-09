@@ -770,7 +770,8 @@ ifs.close();
 
 ```
 template <typename T>
-void exportBDDAsBinary(FILE* fp, const BDD& bdd, bool use_negative_arcs, DDIndex<T>* index)void exportBDDAsBinary(FILE* fp, const BDD& bdd, bool use_negative_arcs = true)
+void exportBDDAsBinary(FILE* fp, const BDD& bdd, bool use_negative_arcs, DDIndex<T>* index)
+void exportBDDAsBinary(FILE* fp, const BDD& bdd, bool use_negative_arcs = true)
 void exportBDDAsBinary(std::ostream& ost, const BDD& bdd, bool use_negative_arcs, DDIndex<T>* index)
 void exportBDDAsBinary(std::ostream& ost, const BDD& bdd, bool use_negative_arcs = true)
 void exportZBDDAsBinary(FILE* fp, const ZBDD& zbdd, bool use_negative_arcs, DDIndex<T>* index)
