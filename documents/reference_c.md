@@ -550,7 +550,7 @@ const char* var_name_map[] = {"", "apple", "banana", "cherry", "grape", "peach"}
 
 FILE* fp = fopen("output.txt", "w");
 fprintf(fp, "{");
-bddprintzbddelements_with_map(fp, f, "},{", ",", var_name_map2);
+bddprintzbddelementswithmap(fp, f, "},{", ",", var_name_map);
 fprintf(fp, "}");
 fclose(fp);
 ```
