@@ -696,6 +696,58 @@ void test_knuth_empty_stream_cpp()
     fprintf(stderr, "(end of the expected messages)\n");
 }
 
+/* 全ての書き込みを拒否する streambuf */
+class FailingStreambuf : public std::streambuf {
+protected:
+    virtual int_type overflow(int_type) {
+        return traits_type::eof();
+    }
+    virtual std::streamsize xsputn(const char*, std::streamsize) {
+        return 0;
+    }
+};
+
+/* ostream への書き込みが失敗したとき、WriteObject が false を返すことを
+   確認する。数値の overload は書き込み後の状態を調べていなかった。 */
+void test_writeobject_failure_cpp()
+{
+    {
+        FailingStreambuf buf;
+        std::ostream ost(&buf);
+        WriteObject wo(true, false, &ost);
+        test(!wo("abc", NULL));
+        test(!ost);
+    }
+    {
+        FailingStreambuf buf;
+        std::ostream ost(&buf);
+        WriteObject wo(true, false, &ost);
+        test(!wo((unsigned char)1u, NULL));
+        test(!ost);
+    }
+    {
+        FailingStreambuf buf;
+        std::ostream ost(&buf);
+        WriteObject wo(true, false, &ost);
+        test(!wo((unsigned short)1u, NULL));
+        test(!ost);
+    }
+    {
+        FailingStreambuf buf;
+        std::ostream ost(&buf);
+        WriteObject wo(true, false, &ost);
+        test(!wo((unsigned int)1u, NULL));
+        test(!ost);
+    }
+    {
+        FailingStreambuf buf;
+        std::ostream ost(&buf);
+        WriteObject wo(true, false, &ost);
+        test(!wo((ullint)1ull, NULL));
+        test(!ost);
+    }
+}
+
 void test_io_all_func_cpp()
 {
     const llint n = 3;
@@ -2716,6 +2768,7 @@ void start_test_cpp(bool exhaustive)
     test_io_cpp();
     test_graphillion_empty_stream_cpp();
     test_knuth_empty_stream_cpp();
+    test_writeobject_failure_cpp();
     test_io_all_func_cpp();
     test_graphviz_cpp();
     test_svg_cpp();

@@ -123,7 +123,10 @@ public:
             if (!*ost_) {
                 return false;
             }
-            ost_->write(reinterpret_cast<char*>(&v), sizeof(unsigned char));
+            if (!ost_->write(reinterpret_cast<char*>(&v),
+                             sizeof(unsigned char))) {
+                return false;
+            }
         } else {
             assert(fp != NULL);
             return sbddextended_writeUint8_inner(v, fp) != 0;
@@ -139,7 +142,9 @@ public:
                 return false;
             }
             sbddextended_uint16ToBytes(v, buf);
-            ost_->write(reinterpret_cast<char*>(buf), 2);
+            if (!ost_->write(reinterpret_cast<char*>(buf), 2)) {
+                return false;
+            }
         } else {
             assert(fp != NULL);
             return sbddextended_writeUint16_inner(v, fp) != 0;
@@ -155,7 +160,9 @@ public:
                 return false;
             }
             sbddextended_uint32ToBytes(v, buf);
-            ost_->write(reinterpret_cast<char*>(buf), 4);
+            if (!ost_->write(reinterpret_cast<char*>(buf), 4)) {
+                return false;
+            }
         } else {
             assert(fp != NULL);
             return sbddextended_writeUint32_inner(v, fp) != 0;
@@ -171,7 +178,9 @@ public:
                 return false;
             }
             sbddextended_uint64ToBytes(v, buf);
-            ost_->write(reinterpret_cast<char*>(buf), 8);
+            if (!ost_->write(reinterpret_cast<char*>(buf), 8)) {
+                return false;
+            }
         } else {
             assert(fp != NULL);
             return sbddextended_writeUint64_inner(v, fp) != 0;
