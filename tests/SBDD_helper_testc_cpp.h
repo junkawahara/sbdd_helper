@@ -1381,7 +1381,13 @@ void test_elementIterator(void)
 
     f = make_test_zbdd();
     /* f is expected to be {{3, 2}, {3, 1}, {2, 1}} */
-    arr = (bddvar*)malloc(bddgetlev(f) * sizeof(bddvar));
+    /* bddElementIterator_getValue needs bddgetlev(f) + 1 elements: the
+       variables of the element and the terminator. */
+    arr = (bddvar*)malloc((size_t)(bddgetlev(f) + 1) * sizeof(bddvar));
+    if (arr == NULL) {
+        fprintf(stderr, "out of memory\n");
+        exit(1);
+    }
 
     itor = bddElementIterator_make(f);
     test(bddElementIterator_hasNext(itor) != 0);
