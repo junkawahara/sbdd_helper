@@ -103,11 +103,14 @@ int is_expected_str(FILE* fp, const char* str)
         fprintf(stderr, "malloc failed\n");
         exit(1);
     }
+    buf[0] = '\0'; /* the loop below does not run for an empty file */
     c = 0;
     while (c < v && fgets(buf + c, (int)v + 1 - c, fp) != NULL) {
         c += (int)strlen(buf + c);
     }
-    if (c == 0) {
+    /* An empty file matches an empty expected string; only a non-empty
+       file that could not be read at all is an error. */
+    if (v > 0 && c == 0) {
         fprintf(stderr, "fgets failed!\n");
         exit(1);
     }
@@ -612,6 +615,11 @@ void test_getsingleandpowerset(void)
         fprintf(stderr, "file cannot be opened\n");
         exit(1);
     }
+
+    /* an empty file must match an empty expected string */
+    test(is_expected_str(fp, ""));
+    test(!is_expected_str(fp, "x"));
+
     bddprintzbddelements(fp, f, "\n", " ");
 
     test(is_expected_str(fp, "11 7 5 3 2"));
