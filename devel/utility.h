@@ -111,6 +111,53 @@ mpz_class sbddh_ullint_to_mpz(ullint v)
 
 #endif /* SBDDH_GMP */
 
+/* Signed overflow is undefined behavior in C++, so the weight
+   computations in DDIndex check the range before each operation and
+   report an error instead of overflowing. */
+sbddextended_INLINE_FUNC
+llint sbddh_checkedAdd(llint v1, llint v2)
+{
+    if ((v2 > 0 && v1 > LLONG_MAX - v2)
+            || (v2 < 0 && v1 < LLONG_MIN - v2)) {
+        std::cerr << "The weight computation causes an overflow of "
+                     "long long int." << std::endl;
+        exit(1);
+    }
+    return v1 + v2;
+}
+
+/* Multiplication of a weight and a number of sets. */
+sbddextended_INLINE_FUNC
+llint sbddh_checkedMul(llint v1, ullint v2)
+{
+    if (v1 == 0 || v2 == 0) {
+        return 0;
+    }
+    if (v1 > 0) {
+        if (v2 > static_cast<ullint>(LLONG_MAX) / static_cast<ullint>(v1)) {
+            std::cerr << "The weight computation causes an overflow of "
+                         "long long int." << std::endl;
+            exit(1);
+        }
+        return v1 * static_cast<llint>(v2);
+    } else {
+        /* -LLONG_MIN cannot be represented as llint, so compute the
+           absolute value of v1 in ullint. */
+        const ullint abs_v1 = static_cast<ullint>(-(v1 + 1)) + 1;
+        const ullint limit = static_cast<ullint>(LLONG_MAX) + 1;
+        if (v2 > limit / abs_v1) {
+            std::cerr << "The weight computation causes an overflow of "
+                         "long long int." << std::endl;
+            exit(1);
+        }
+        const ullint product = abs_v1 * v2;
+        if (product == limit) {
+            return LLONG_MIN;
+        }
+        return -static_cast<llint>(product);
+    }
+}
+
 template<typename value_t>
 value_t sbddh_getZero()
 {

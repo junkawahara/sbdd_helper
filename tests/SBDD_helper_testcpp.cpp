@@ -2104,6 +2104,17 @@ void test_ddindex_extreme_weights()
     test_eq(dd_index2.getMinimum(weights, ss), 0ll);
     test_eq(ss.size(), 1u);
     test(ss.count(2) > 0);
+
+    /* オーバーフローしない限り、極値の重みでも getSum は正しい和を返す */
+    weights[1] = llint_max;
+    test_eq(dd_index.getSum(weights), llint_max);
+    weights[1] = llint_min;
+    test_eq(dd_index.getSum(weights), llint_min);
+    test_eq(dd_index2.getSum(weights), llint_min);
+
+    weights[1] = -5;
+    weights[2] = 3;
+    test_eq(dd_index2.getSum(weights), 1ll); /* (-5 + 3) + 3 */
 }
 
 void test_ddindex_clear()

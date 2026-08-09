@@ -725,19 +725,19 @@ private:
                 bddp f = getBddp(level, pos);
                 bddp child0 = bddgetchild0z(f);
                 bddp child1 = bddgetchild1z(f);
+                llint value1 = sbddh_checkedAdd(sto[child1].first,
+                                                weights[var]);
                 bool takes_1_arc;
                 if (child0 == bddempty) {
                     /* the 1-arc side is the only choice */
                     takes_1_arc = true;
                 } else if (is_max) {
-                    takes_1_arc = !(sto[child0].first
-                                    > sto[child1].first + weights[var]);
+                    takes_1_arc = !(sto[child0].first > value1);
                 } else {
-                    takes_1_arc = (sto[child0].first
-                                   > sto[child1].first + weights[var]);
+                    takes_1_arc = (sto[child0].first > value1);
                 }
                 if (takes_1_arc) {
-                    sto[f].first = sto[child1].first + weights[var];
+                    sto[f].first = value1;
                     sto[f].second = true; /* 1-arc side */
                 } else {
                     sto[f].first = sto[child0].first;
@@ -1368,7 +1368,10 @@ public:
                 bddp f = getBddp(level, pos);
                 bddp child0 = bddgetchild0z(f);
                 bddp child1 = bddgetchild1z(f);
-                sto[f] = sto[child0] + sto[child1] + weights[var] * getStorageValue(child1);
+                sto[f] = sbddh_checkedAdd(
+                    sbddh_checkedAdd(sto[child0], sto[child1]),
+                    sbddh_checkedMul(weights[var],
+                                     getStorageValue(child1)));
             }
         }
         return sto[node_index_->f];
