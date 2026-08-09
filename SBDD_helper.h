@@ -5211,6 +5211,14 @@ bddNodeIterator* bddNodeIterator_make(bddNodeIndex* node_index)
     return itor;
 }
 
+/* Frees the iterator made by bddNodeIterator_make. The node index the */
+/* iterator was made from is not owned by the iterator and is not freed. */
+sbddextended_INLINE_FUNC
+void bddNodeIterator_destruct(bddNodeIterator* itor)
+{
+    free(itor);
+}
+
 sbddextended_INLINE_FUNC
 int bddNodeIterator_hasNext(const bddNodeIterator* itor)
 {

@@ -50,6 +50,7 @@ SBDD_helper の機能は以下のマクロによって切り替わる。
     * writeBDDForGraphviz → exportBDDAsGraphviz
     * writeZBDDForGraphviz → exportZBDDAsGraphviz
 * 同様に名前空間の外に影響していた `unused` マクロを `sbddextended_unused` に改名。
+* C 版に bddNodeIterator_destruct 関数を追加。bddNodeIterator_make で確保したイテレータを解放する（bddElementIterator_destruct と同様）。
 
 ### Version 1.2.0 (2024/1/4)
 
