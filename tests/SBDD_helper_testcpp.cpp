@@ -2238,6 +2238,257 @@ void test_ddindex_bdd()
     test_eq(num_nodes, 2);
 }
 
+/* 旧関数名（マクロではなくインライン関数として提供している別名）が、
+   新しい名前と同じ結果を返すことを確認する。すべてのオーバーロードを
+   1回ずつ呼び、引数の型が新しい関数と一致していることも確かめる。 */
+void test_compatibility_cpp()
+{
+    std::vector<bddvar> base_variables;
+    std::vector<bddvar> tvec;
+    std::set<bddvar> tset;
+    base_variables.push_back(2);
+    base_variables.push_back(3);
+    tvec.push_back(1);
+    tset.insert(1);
+
+    /* getPowerSetIncluding */
+    test(getAllSetsIncluding(base_variables, tvec)
+            == getPowerSetIncluding(base_variables, tvec));
+    test(getAllSetsIncluding(base_variables, tset)
+            == getPowerSetIncluding(base_variables, tset));
+    test(getAllSetsIncluding(base_variables, static_cast<bddvar>(1))
+            == getPowerSetIncluding(base_variables, static_cast<bddvar>(1)));
+    test(getAllSetsIncluding(3, tvec) == getPowerSetIncluding(3, tvec));
+    test(getAllSetsIncluding(3, tset) == getPowerSetIncluding(3, tset));
+    test(getAllSetsIncluding(3, 1) == getPowerSetIncluding(3, 1));
+
+    test(getAllPowerSetsIncluding(base_variables, tvec)
+            == getPowerSetIncluding(base_variables, tvec));
+    test(getAllPowerSetsIncluding(base_variables, tset)
+            == getPowerSetIncluding(base_variables, tset));
+    test(getAllPowerSetsIncluding(base_variables, static_cast<bddvar>(1))
+            == getPowerSetIncluding(base_variables, static_cast<bddvar>(1)));
+    test(getAllPowerSetsIncluding(3, tvec) == getPowerSetIncluding(3, tvec));
+    test(getAllPowerSetsIncluding(3, tset) == getPowerSetIncluding(3, tset));
+    test(getAllPowerSetsIncluding(3, 1) == getPowerSetIncluding(3, 1));
+
+    /* getPowerSetNotIncluding */
+    test(getAllPowerSetsNotIncluding(3, tvec)
+            == getPowerSetNotIncluding(3, tvec));
+    test(getAllPowerSetsNotIncluding(3, tset)
+            == getPowerSetNotIncluding(3, tset));
+    test(getAllPowerSetsNotIncluding(3, 1) == getPowerSetNotIncluding(3, 1));
+
+    /* getPowerSetWithCard */
+    test(getAllSetsWithCard(base_variables, 1)
+            == getPowerSetWithCard(base_variables, 1));
+    test(getAllSetsWithCard(3, 1) == getPowerSetWithCard(3, 1));
+    test(getAllPowerSetsWithCard(base_variables, 1)
+            == getPowerSetWithCard(base_variables, 1));
+    test(getAllPowerSetsWithCard(3, 1) == getPowerSetWithCard(3, 1));
+
+    ZBDD f = getPowerSet(3);
+    BDD b = (BDDvar(1) & BDDvar(2)) | BDDvar(3);
+    DDIndex<int> zindex(f);
+    DDIndex<int> bindex(b);
+    FILE* fp;
+
+    { /* binary 形式 */
+        std::stringstream so1;
+        std::stringstream sn1;
+        std::stringstream so2;
+        std::stringstream sn2;
+        writeZBDDToBinary(so1, f);
+        exportZBDDAsBinary(sn1, f);
+        test(!sn1.str().empty());
+        test(so1.str() == sn1.str());
+        writeZBDDToBinary(so2, f, false, &zindex);
+        exportZBDDAsBinary(sn2, f, false, &zindex);
+        test(so2.str() == sn2.str());
+
+        fp = fopen(g_filename1, "wb");
+        writeZBDDToBinary(fp, f);
+        fclose(fp);
+        std::string fo1 = fileToString(g_filename1);
+        fp = fopen(g_filename1, "wb");
+        exportZBDDAsBinary(fp, f);
+        fclose(fp);
+        test(fo1 == fileToString(g_filename1));
+
+        fp = fopen(g_filename1, "wb");
+        writeZBDDToBinary(fp, f, false, &zindex);
+        fclose(fp);
+        std::string fo2 = fileToString(g_filename1);
+        fp = fopen(g_filename1, "wb");
+        exportZBDDAsBinary(fp, f, false, &zindex);
+        fclose(fp);
+        test(fo2 == fileToString(g_filename1));
+
+        fp = fopen(g_filename1, "wb");
+        exportZBDDAsBinary(fp, f);
+        fclose(fp);
+        fp = fopen(g_filename1, "rb");
+        test(constructZBDDFromBinary(fp) == f);
+        fclose(fp);
+        std::stringstream ss_read(sn1.str());
+        test(constructZBDDFromBinary(ss_read) == f);
+    }
+
+    { /* graphillion 形式 */
+        std::stringstream so1;
+        std::stringstream sn1;
+        std::stringstream so2;
+        std::stringstream sn2;
+        writeZBDDForGraphillion(so1, f);
+        exportZBDDAsGraphillion(sn1, f);
+        test(so1.str() == sn1.str());
+        writeZBDDForGraphillion(so2, f, -1, &zindex);
+        exportZBDDAsGraphillion(sn2, f, -1, &zindex);
+        test(so2.str() == sn2.str());
+
+        fp = fopen(g_filename1, "w");
+        writeZBDDForGraphillion(fp, f);
+        fclose(fp);
+        std::string fo1 = fileToString(g_filename1);
+        fp = fopen(g_filename1, "w");
+        exportZBDDAsGraphillion(fp, f);
+        fclose(fp);
+        test(fo1 == fileToString(g_filename1));
+
+        fp = fopen(g_filename1, "w");
+        writeZBDDForGraphillion(fp, f, -1, &zindex);
+        fclose(fp);
+        std::string fo2 = fileToString(g_filename1);
+        fp = fopen(g_filename1, "w");
+        exportZBDDAsGraphillion(fp, f, -1, &zindex);
+        fclose(fp);
+        test(fo2 == fileToString(g_filename1));
+
+        fp = fopen(g_filename1, "r");
+        test(constructZBDDFromGraphillion(fp) == f);
+        fclose(fp);
+        std::stringstream ss_read(sn1.str());
+        test(constructZBDDFromGraphillion(ss_read) == f);
+    }
+
+    { /* Knuth 形式 */
+        std::stringstream so1;
+        std::stringstream sn1;
+        std::stringstream so2;
+        std::stringstream sn2;
+        writeZBDDToFileKnuth(so1, f);
+        exportZBDDAsKnuth(sn1, f);
+        test(so1.str() == sn1.str());
+        writeZBDDToFileKnuth(so2, f, false, &zindex);
+        exportZBDDAsKnuth(sn2, f, false, &zindex);
+        test(so2.str() == sn2.str());
+
+        fp = fopen(g_filename1, "w");
+        writeZBDDToFileKnuth(fp, f);
+        fclose(fp);
+        std::string fo1 = fileToString(g_filename1);
+        fp = fopen(g_filename1, "w");
+        exportZBDDAsKnuth(fp, f);
+        fclose(fp);
+        test(fo1 == fileToString(g_filename1));
+
+        fp = fopen(g_filename1, "w");
+        writeZBDDToFileKnuth(fp, f, false, &zindex);
+        fclose(fp);
+        std::string fo2 = fileToString(g_filename1);
+        fp = fopen(g_filename1, "w");
+        exportZBDDAsKnuth(fp, f, false, &zindex);
+        fclose(fp);
+        test(fo2 == fileToString(g_filename1));
+
+        fp = fopen(g_filename1, "w");
+        exportZBDDAsKnuth(fp, f);
+        fclose(fp);
+        fp = fopen(g_filename1, "r");
+        test(constructZBDDFromFileKnuth(fp, false) == f);
+        fclose(fp);
+        std::stringstream ss_read(sn1.str());
+        test(constructZBDDFromFileKnuth(ss_read, false) == f);
+
+        /* BDD の入力 */
+        std::stringstream bsn;
+        exportBDDAsKnuth(bsn, b);
+        fp = fopen(g_filename1, "w");
+        exportBDDAsKnuth(fp, b);
+        fclose(fp);
+        fp = fopen(g_filename1, "r");
+        test(constructBDDFromFileKnuth(fp, false) == b);
+        fclose(fp);
+        std::stringstream bss_read(bsn.str());
+        test(constructBDDFromFileKnuth(bss_read, false) == b);
+    }
+
+    { /* graphviz 形式 */
+        std::stringstream so1;
+        std::stringstream sn1;
+        std::stringstream so2;
+        std::stringstream sn2;
+        writeZBDDForGraphviz(so1, f);
+        exportZBDDAsGraphviz(sn1, f);
+        test(so1.str() == sn1.str());
+        writeZBDDForGraphviz(so2, f, NULL, &zindex);
+        exportZBDDAsGraphviz(sn2, f, NULL, &zindex);
+        test(so2.str() == sn2.str());
+
+        fp = fopen(g_filename1, "w");
+        writeZBDDForGraphviz(fp, f);
+        fclose(fp);
+        std::string fo1 = fileToString(g_filename1);
+        fp = fopen(g_filename1, "w");
+        exportZBDDAsGraphviz(fp, f);
+        fclose(fp);
+        test(fo1 == fileToString(g_filename1));
+
+        fp = fopen(g_filename1, "w");
+        writeZBDDForGraphviz(fp, f, NULL, &zindex);
+        fclose(fp);
+        std::string fo2 = fileToString(g_filename1);
+        fp = fopen(g_filename1, "w");
+        exportZBDDAsGraphviz(fp, f, NULL, &zindex);
+        fclose(fp);
+        test(fo2 == fileToString(g_filename1));
+
+        std::stringstream bso1;
+        std::stringstream bsn1;
+        std::stringstream bso2;
+        std::stringstream bsn2;
+        writeBDDForGraphviz(bso1, b);
+        exportBDDAsGraphviz(bsn1, b);
+        test(bso1.str() == bsn1.str());
+        writeBDDForGraphviz(bso2, b, NULL, &bindex);
+        exportBDDAsGraphviz(bsn2, b, NULL, &bindex);
+        test(bso2.str() == bsn2.str());
+
+        fp = fopen(g_filename1, "w");
+        writeBDDForGraphviz(fp, b);
+        fclose(fp);
+        std::string bfo1 = fileToString(g_filename1);
+        fp = fopen(g_filename1, "w");
+        exportBDDAsGraphviz(fp, b);
+        fclose(fp);
+        test(bfo1 == fileToString(g_filename1));
+
+        fp = fopen(g_filename1, "w");
+        writeBDDForGraphviz(fp, b, NULL, &bindex);
+        fclose(fp);
+        std::string bfo2 = fileToString(g_filename1);
+        fp = fopen(g_filename1, "w");
+        exportBDDAsGraphviz(fp, b, NULL, &bindex);
+        fclose(fp);
+        test(bfo2 == fileToString(g_filename1));
+    }
+
+    if (remove(g_filename1) != 0) {
+        fprintf(stderr, "file cannot be removed\n");
+        exit(1);
+    }
+}
+
 void start_test_cpp(bool exhaustive)
 {
 #ifdef SBDDH_GMP
@@ -2260,6 +2511,7 @@ void start_test_cpp(bool exhaustive)
     test_ddindex_empty_family();
     test_ddindex_null();
     test_ddindex_bdd();
+    test_compatibility_cpp();
 }
 
 int main(int argc, char** argv)

@@ -112,6 +112,7 @@ typedef unsigned long long int ullint;
 #include "io_knuth.h"
 #include "io_graphviz.h"
 #include "io_svg.h"
+#include "compatibility.h"
 
 #ifdef __cplusplus
 } /* end of namespace sbddh */

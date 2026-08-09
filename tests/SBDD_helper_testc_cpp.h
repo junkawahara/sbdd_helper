@@ -2044,6 +2044,110 @@ void test_readline_no_newline_at_end(void)
     }
 }
 
+/* 旧関数名（マクロではなくインライン関数として提供している別名）が、
+   新しい名前と同じ結果を返すことを確認する。 */
+void test_compatibility(void)
+{
+    bddp f;
+    bddp b;
+    bddp p1;
+    bddp p2;
+    bddp g;
+    bddp h;
+    FILE* fp;
+    bddNodeIndex* zindex;
+    bddNodeIndex* bindex;
+
+    f = make_test_zbdd();
+    p1 = bddprime(1);
+    p2 = bddprime(2);
+    b = bddand(p1, p2);
+    bddfree(p1);
+    bddfree(p2);
+    zindex = bddNodeIndex_makeIndexZWithoutCount(f);
+    bindex = bddNodeIndex_makeIndexBWithoutCount(b);
+
+    /* binary 形式 */
+    fp = fopen(g_filename1, "wb");
+    bddwritezbddtobinary(fp, f, 1, NULL);
+    fclose(fp);
+    fp = fopen(g_filename2, "wb");
+    bddexportzbddasbinary(fp, f, 1, NULL);
+    fclose(fp);
+    test(is_same_file(g_filename1, g_filename2));
+
+    fp = fopen(g_filename1, "rb");
+    g = bddconstructzbddfrombinary(fp, -1);
+    fclose(fp);
+    fp = fopen(g_filename1, "rb");
+    h = bddimportzbddasbinary(fp, -1);
+    fclose(fp);
+    test(g == h);
+    bddfree(g);
+    bddfree(h);
+
+    /* graphillion 形式 */
+    fp = fopen(g_filename1, "w");
+    bddwritebddforgraphillion(fp, f, zindex, -1);
+    fclose(fp);
+    fp = fopen(g_filename2, "w");
+    bddexportbddasgraphillion(fp, f, zindex, -1);
+    fclose(fp);
+    test(is_same_file(g_filename1, g_filename2));
+
+    /* Knuth 形式 */
+    fp = fopen(g_filename1, "w");
+    bddwritezbddtofileknuth(fp, f, 0, NULL);
+    fclose(fp);
+    fp = fopen(g_filename2, "w");
+    bddexportzbddasknuth(fp, f, 0, NULL);
+    fclose(fp);
+    test(is_same_file(g_filename1, g_filename2));
+
+    fp = fopen(g_filename1, "r");
+    g = bddconstructzbddfromfileknuth(fp, 0, -1);
+    fclose(fp);
+    fp = fopen(g_filename1, "r");
+    h = bddimportzbddasknuth(fp, 0, -1);
+    fclose(fp);
+    test(g == h);
+    bddfree(g);
+    bddfree(h);
+
+    fp = fopen(g_filename1, "w");
+    bddexportbddasknuth(fp, b, 0, NULL);
+    fclose(fp);
+    fp = fopen(g_filename1, "r");
+    g = bddconstructbddfromfileknuth(fp, 0, -1);
+    fclose(fp);
+    fp = fopen(g_filename1, "r");
+    h = bddimportbddasknuth(fp, 0, -1);
+    fclose(fp);
+    test(g == h);
+    bddfree(g);
+    bddfree(h);
+
+    /* graphviz 形式 */
+    fp = fopen(g_filename1, "w");
+    bddwritebddforgraphviz(fp, b, bindex);
+    fclose(fp);
+    fp = fopen(g_filename2, "w");
+    bddexportbddasgraphviz(fp, b, bindex);
+    fclose(fp);
+    test(is_same_file(g_filename1, g_filename2));
+
+    bddNodeIndex_destruct(bindex);
+    free(bindex);
+    bddNodeIndex_destruct(zindex);
+    free(zindex);
+    bddfree(b);
+
+    if (remove(g_filename1) != 0 || remove(g_filename2) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+}
+
 void start_test(void)
 {
     srand(1);
@@ -2072,4 +2176,5 @@ void start_test(void)
     test_knuthformat_wrong_level();
     test_elementsformat_out_of_range();
     test_readline_no_newline_at_end();
+    test_compatibility();
 }

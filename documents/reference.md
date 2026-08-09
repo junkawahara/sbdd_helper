@@ -29,9 +29,11 @@ SBDD_helper の機能は以下のマクロによって切り替わる。
 
 #### 非互換な変更
 
-* 互換性のために `#define` で残されていた以下の旧関数名を削除。新しい名前を使用すること。
-これらはマクロであったため、名前空間 sbddh の外にも影響し、
-利用者側の同名の関数や変数を書き換えてしまう問題があった。
+* 互換性のために残されていた以下の旧関数名の定義を、`#define` によるマクロから
+インライン関数に変更。旧名はこれまで通り使用できる。
+マクロは名前空間 sbddh の外にも影響し、利用者側の同名の関数や変数を
+書き換えてしまう問題があったが、インライン関数にすることでその問題がなくなった。
+（左が旧名、右が新しい名前である。新しい名前を使用することを推奨する。）
     * getAllSetsIncluding、getAllPowerSetsIncluding → getPowerSetIncluding
     * getAllPowerSetsNotIncluding → getPowerSetNotIncluding
     * getAllSetsWithCard、getAllPowerSetsWithCard → getPowerSetWithCard
