@@ -466,19 +466,19 @@ void test_at_random_cpp()
     test(isMember(f, std::vector<bddvar>()));
 
     { /* duplicated variables are regarded as one element */
-        ZBDD h = getSingleSet(2, 1, 2);
+        ZBDD dup_f = getSingleSet(2, 1, 2);
         std::vector<bddvar> dup;
         dup.push_back(1);
         dup.push_back(2);
         dup.push_back(2);
-        test(isMemberZ(h, dup));
-        test(isMember(h, dup));
+        test(isMemberZ(dup_f, dup));
+        test(isMember(dup_f, dup));
 
         dup.clear();
         dup.push_back(1);
         dup.push_back(1);
-        test(!isMemberZ(h, dup));
-        test(!isMember(h, dup));
+        test(!isMemberZ(dup_f, dup));
+        test(!isMember(dup_f, dup));
     }
 
     ofs.open(g_filename1);
@@ -994,6 +994,29 @@ void test_svg_cpp()
     test_svg_bdd_cpp(BDDvar(1));
 }
 
+/* The input iterator requirements include a postfix operator++ whose
+   result dereferences to the value before the increment. */
+template <typename InputIterator>
+void check_iterator_postfix(const InputIterator& first,
+                            const InputIterator& last)
+{
+    const int check_th = 1000;
+    InputIterator prefix_itor = first;
+    InputIterator postfix_itor = first;
+    int count = 0;
+    while (postfix_itor != last && count < check_th) {
+        test(prefix_itor != last);
+        typename InputIterator::value_type v = *postfix_itor++;
+        test(v == *prefix_itor);
+        ++prefix_itor;
+        ++count;
+    }
+    if (count < check_th) {
+        test(postfix_itor == last);
+        test(prefix_itor == last);
+    }
+}
+
 void test_index_cpp()
 {
     ZBDD f = ZBDD_ID(make_test_zbdd());
@@ -1020,6 +1043,8 @@ void test_index_cpp()
         ++count;
     }
     test_eq(count, 4);
+
+    check_iterator_postfix(index.begin(), index.end());
 
     ZBDD g = f.Change(4);
 
@@ -1161,6 +1186,7 @@ void check_iterator_all(const ZBDD& f, DDIndex<int>& dd_index,
                         const std::vector<llint>& weights =
                             std::vector<llint>())
 {
+    check_iterator_postfix(first, last);
     if (first == last) {
         test(f == ZBDD(0) || f == ZBDD(-1));
         return;
@@ -1863,6 +1889,8 @@ void check_ddindex(const ZBDD& f, DDIndex<int>& dd_index)
     check_k_lightest(f, dd_index, weights);
 
     /* check iterators */
+    check_iterator_postfix(dd_index.begin(), dd_index.end());
+
     check_iterator_all(f, dd_index,
         dd_index.weight_min_begin(weights),
         dd_index.weight_min_end(),
