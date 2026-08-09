@@ -1,6 +1,6 @@
 # SBDD_helper リファレンス
 
-Version 1.2.0
+Version 1.3.0
 
 本プログラムで提供している関数は開発中であるため、予告なく仕様を変更することがある。
 
@@ -25,7 +25,9 @@ SBDD_helper の機能は以下のマクロによって切り替わる。
 
 以下では C 版、C++ 版の両方の変更点について記述する。
 
-### 未リリース
+### Version 1.3.0 (未リリース)
+
+#### 非互換な変更
 
 * 互換性のために `#define` で残されていた以下の旧関数名を削除。新しい名前を使用すること。
 これらはマクロであったため、名前空間 sbddh の外にも影響し、
@@ -50,7 +52,51 @@ SBDD_helper の機能は以下のマクロによって切り替わる。
     * writeBDDForGraphviz → exportBDDAsGraphviz
     * writeZBDDForGraphviz → exportZBDDAsGraphviz
 * 同様に名前空間の外に影響していた `unused` マクロを `sbddextended_unused` に改名。
+
+#### 追加
+
+* [SAPPOROBDD++](https://github.com/junkawahara/SAPPOROBDD-plus-plus) に対応。SAPPOROBDD_PLUS_PLUS マクロを参照のこと。
+* DDIndex にインデックスを破棄する clear 関数と、インデックスが有効かどうかを調べる isValid 関数を追加。
 * C 版に bddNodeIterator_destruct 関数を追加。bddNodeIterator_make で確保したイテレータを解放する（bddElementIterator_destruct と同様）。
+* countNodes を std::set<BDD>、std::set<ZBDD> に対しても使用できるようにした（BDD、ZBDD に operator< がないため、これまでは事実上呼び出せなかった）。
+
+#### 不具合の修正
+
+* 複数の翻訳単位から SBDD_helper.h をインクルードするとリンクエラーになる不具合を修正（C 版の定数と、GMP 版の sbddh_divide の明示的特殊化）。
+* DDIndex::getOrderNumber、getOrderNumberMP が、対象の族に含まれない集合に対して -1 ではなく誤った順序番号を返す不具合を修正。
+* bddcountnodes が BDD と ZBDD の混在を検出できず、誤ったノード数を返す不具合を修正。
+* bddgetsingleset が重複した変数を検出できず、誤った集合を返す不具合を修正。
+* getSingleSet に変数を 1 つも渡さなかったときに不正な ZBDD を返す不具合を修正。
+* getKHeaviestZBDD が k に要素数より大きい値を渡されたときの結果を、GMP の有無によらず全ての集合を返すように統一。
+* 要素数が 2^63 以上の族に対して getSet と辞書順イテレータが正しく動作しない不具合を修正。
+* weightRange 系の関数で、bddcost の範囲を超える重みや境界値を検出できていなかった不具合を修正。
+* getPowerSetWithCard に負の濃度を渡したときの動作と、getRandomZBDDWithCard、getRandomZBDDWithCardX に実現不可能な濃度を渡したときの無限ループを修正。
+* GMP 版の sampleRandomlyA が、要素数が 2^64 の倍数のときに空集合を返す不具合を修正。非 GMP・C++11 版の sampleRandomly が空の族に対して未定義動作となる不具合を修正。
+* DDIndex、DDNodeIndex をコピー不可にした（生ポインタを所有しているため、コピーすると二重解放になっていた）。bddNodeIndex_copy の実装も修正。
+* sbddextended_MyDict_copy の作業領域のリークと、メモリ不足時の誤ったポインタ検査を修正。
+* DDIndex::clear の後に usedVar を呼ぶと segfault する不具合を修正。
+* BDD から構築した DDIndex に対して ZBDD 専用の機能を呼び出したとき、および DDNodeIndex(const BDD&) に対して count を呼び出したときの異常終了を、実行時のエラー検出に変更。
+* DDIndex のコンストラクタの is_raw 引数が黙って無視されていたため、raw モードを指定した場合は明示的にエラーとするようにした。また、bddnull から構築した DDIndex を無効なインデックスと判定するようにした。
+* ElementIterator が終端を越えて進み、終端で直前の要素を返す不具合を修正。
+
+#### 入出力の堅牢性
+
+* バイナリ形式の読み込みで、全ての読み込みの成否とノード ID の範囲を検査するようにし、作業領域のリークを修正。
+* バイナリ形式の入出力をバイトオーダーに依存しないようにし、異なる機種の間でもファイルを受け渡せるようにした。
+* graphillion 形式の読み込みで、空ファイル、root_level の指定、未登録の子ノード ID を正しく扱うようにし、フォーマットエラー時のリークを修正。
+* Knuth 形式の読み込みで、ノードを含まない入力、範囲外の子ノード ID、順序の誤ったレベルのヘッダ行を検出するようにし、フォーマットエラー時のリークを修正。レベルのヘッダ行の検査は assert ではなく実行時に行うため、NDEBUG を定義したビルドでも有効。
+* C 版の readLine が、最終行に改行のないファイルを C++ 版と同じように扱うようにした。
+* 要素形式の読み込みで、範囲外の変数番号と変数番号のオーバーフローを検出するようにした。
+* graphviz 形式の出力で、raw モードで構築したインデックスを拒否するようにし、自前で構築したインデックスのリークを修正。
+* 文字列の連結時に snprintf へ残りのバッファサイズを渡すようにした。
+
+#### その他
+
+* C 版の MyDict の実装を AVL 木に変更し、単調な順序でキーを挿入した場合に性能が劣化しないようにした。
+* C++ 版の makeNode が C 版と同じ引数検査を行うようにし、optimize と getSum が weights の大きさを検査するようにした。
+* std::iterator が非推奨であることによる警告を解消。
+* リポジトリのルートの Makefile が tests/Makefile へ転送するようにし、combine.py が失敗時に配布用ヘッダを壊さないようにした。
+* bddisvalid、bddgetchild 系の返す弱参照、DDIndex がインデックス対象の DD を所有しないこと、clear が DDNode の値を無効にすることなどをドキュメントに追記。
 
 ### Version 1.2.0 (2024/1/4)
 
