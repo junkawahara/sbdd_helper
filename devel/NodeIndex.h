@@ -711,37 +711,37 @@ private:
         /* llint -> max/min value, bool -> 1-arc if true, 0-arc if false */
         std::map<bddp, std::pair<llint, bool> > sto;
 
-        if (is_max) {
-            sto[bddempty].first = LLONG_MIN;
-        } else {
-            sto[bddempty].first = LLONG_MAX;
-        }
         sto[bddsingle].first = 0;
 
+        /* By the zero-suppress rule, the 1-child of a ZDD node is never
+           bddempty, so every node except bddempty represents a non-empty
+           family and has a value in sto. We detect the empty 0-child by
+           comparing the node with bddempty itself instead of assigning a
+           sentinel value (LLONG_MIN/LLONG_MAX) to it, because a
+           legitimate set can also have such a weight. */
         for (int level = 1; level <= height(); ++level) {
             for (ullint pos = 0; pos < size(level); ++pos) {
                 int var = bddvaroflev(level);
                 bddp f = getBddp(level, pos);
                 bddp child0 = bddgetchild0z(f);
                 bddp child1 = bddgetchild1z(f);
-                if (is_max) {
-                    if (sto[child1].first == sto[bddempty].first
-                            || sto[child0].first > sto[child1].first + weights[var]) {
-                        sto[f].first = sto[child0].first;
-                        sto[f].second = false; /* 0-arc side */
-                    } else {
-                        sto[f].first = sto[child1].first + weights[var];
-                        sto[f].second = true; /* 1-arc side */
-                    }
+                bool takes_1_arc;
+                if (child0 == bddempty) {
+                    /* the 1-arc side is the only choice */
+                    takes_1_arc = true;
+                } else if (is_max) {
+                    takes_1_arc = !(sto[child0].first
+                                    > sto[child1].first + weights[var]);
                 } else {
-                    if (sto[child1].first == sto[bddempty].first
-                            || sto[child0].first > sto[child1].first + weights[var]) {
-                        sto[f].first = sto[child1].first + weights[var];
-                        sto[f].second = true; /* 1-arc side */
-                    } else {
-                        sto[f].first = sto[child0].first;
-                        sto[f].second = false; /* 0-arc side */
-                    }
+                    takes_1_arc = (sto[child0].first
+                                   > sto[child1].first + weights[var]);
+                }
+                if (takes_1_arc) {
+                    sto[f].first = sto[child1].first + weights[var];
+                    sto[f].second = true; /* 1-arc side */
+                } else {
+                    sto[f].first = sto[child0].first;
+                    sto[f].second = false; /* 0-arc side */
                 }
             }
         }

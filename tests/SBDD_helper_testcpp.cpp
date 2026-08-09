@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <limits>
 
 #define BDD_CPP
 #include "bddc.h"
@@ -2053,6 +2054,58 @@ void test_ddindex_large_getset_order()
     test(isMember(plus_one, plus_one_last));
 }
 
+void test_ddindex_extreme_weights()
+{
+    /* LLONG_MIN / LLONG_MAX は正当な集合の重みとしても現れるため、
+       「到達不能」の印と混同してはならない */
+    const llint llint_min = std::numeric_limits<llint>::min();
+    const llint llint_max = std::numeric_limits<llint>::max();
+
+    ZBDD f = getSingleSet(2, 1, 2); /* {{1, 2}} */
+    DDIndex<int> dd_index(f);
+    std::vector<llint> weights(3);
+    weights[0] = 0;
+    weights[2] = 0;
+
+    weights[1] = llint_min;
+    std::set<bddvar> ss;
+    test_eq(dd_index.getMaximum(weights, ss), llint_min);
+    test_eq(ss.size(), 2u);
+    test(ss.count(1) > 0 && ss.count(2) > 0);
+    ss.clear();
+    test_eq(dd_index.getMinimum(weights, ss), llint_min);
+    test_eq(ss.size(), 2u);
+
+    weights[1] = llint_max;
+    ss.clear();
+    test_eq(dd_index.getMaximum(weights, ss), llint_max);
+    test_eq(ss.size(), 2u);
+    ss.clear();
+    test_eq(dd_index.getMinimum(weights, ss), llint_max);
+    test_eq(ss.size(), 2u);
+    test(ss.count(1) > 0 && ss.count(2) > 0);
+
+    ZBDD g = f + getSingleSet(1, 2); /* {{1, 2}, {2}} */
+    DDIndex<int> dd_index2(g);
+    weights[1] = llint_min;
+    ss.clear();
+    test_eq(dd_index2.getMaximum(weights, ss), 0ll);
+    test_eq(ss.size(), 1u);
+    test(ss.count(2) > 0);
+    ss.clear();
+    test_eq(dd_index2.getMinimum(weights, ss), llint_min);
+    test_eq(ss.size(), 2u);
+
+    weights[1] = llint_max;
+    ss.clear();
+    test_eq(dd_index2.getMaximum(weights, ss), llint_max);
+    test_eq(ss.size(), 2u);
+    ss.clear();
+    test_eq(dd_index2.getMinimum(weights, ss), 0ll);
+    test_eq(ss.size(), 1u);
+    test(ss.count(2) > 0);
+}
+
 void test_ddindex_clear()
 {
     ZBDD f = getPowerSet(4);
@@ -2520,6 +2573,7 @@ void start_test_cpp(bool exhaustive)
     test_elementIterator_cpp();
     test_ddindex(exhaustive);
     test_ddindex_large_getset_order();
+    test_ddindex_extreme_weights();
     test_ddindex_clear();
     test_ddindex_empty_family();
     test_ddindex_null();
