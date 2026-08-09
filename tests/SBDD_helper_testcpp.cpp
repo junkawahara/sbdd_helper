@@ -1598,6 +1598,7 @@ void test_elementIterator_cpp()
     {
         ElementIteratorHolder eih(f);
         check_iterator(eih.begin(), eih.end());
+        check_iterator_postfix(eih.begin(), eih.end());
         check_iterator(ddindex_f.weight_min_begin(weights),
                         ddindex_f.weight_min_end());
         check_iterator(ddindex_f.weight_max_begin(weights),

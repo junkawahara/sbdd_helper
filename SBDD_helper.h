@@ -5560,12 +5560,15 @@ public:
     using iterator_category = std::input_iterator_tag;
     using value_type = std::set<bddvar>;
     using difference_type = std::ptrdiff_t;
-    using pointer = std::set<bddvar>*;
-    using reference = std::set<bddvar>&;
+    /* operator* returns a value, not a reference to an element. */
+    using pointer = const std::set<bddvar>*;
+    using reference = std::set<bddvar>;
 private:
 #else
 class ElementIterator
-    : public std::iterator<std::input_iterator_tag, std::set<bddvar> > {
+    : public std::iterator<std::input_iterator_tag, std::set<bddvar>,
+                           std::ptrdiff_t, const std::set<bddvar>*,
+                           std::set<bddvar> > {
 private:
 #endif
     int sp_;
@@ -5662,6 +5665,13 @@ public:
         /* when the iterator reaches the end by this increment. */
         setToBuff();
         return *this;
+    }
+
+    ElementIterator operator++(int)
+    {
+        ElementIterator it(*this);
+        operator++();
+        return it;
     }
 
     bool operator==(const ElementIterator& it) const
