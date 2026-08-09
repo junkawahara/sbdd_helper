@@ -460,7 +460,7 @@ llint bddcountnodes(bddp* dds, int n, int is_raw)
 ```
 bddp dds[3];
 dds[0] = f0, dds[1] = f1, dds[2] = f2; // f0, f1, f2 は何らかの方法で作成
-printf("%d", bddcountnodes(dds, 3, 0));
+printf("%lld", bddcountnodes(dds, 3, 0)); // llint は long long int
 ```
 
 ## bddconstructzbddfromelements
