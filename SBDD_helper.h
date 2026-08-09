@@ -7152,6 +7152,17 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
     }
     if (root_level < 0) {
         root_level = (int)bddlevofvar(bddtop(f));
+    } else if (root_level < node_index->height) {
+        /* The graphillion level of a node at index level i is
+           (root_level - i + 1), so a root_level smaller than the height
+           would produce invalid levels smaller than 1. */
+        fprintf(stderr, "The argument \"root_level\" must be "
+                "larger than or equal to the height of the DD.\n");
+        if (is_making_index) {
+            bddNodeIndex_destruct(node_index);
+            free(node_index);
+        }
+        return;
     }
 
     for (i = 1; i <= node_index->height; ++i) {

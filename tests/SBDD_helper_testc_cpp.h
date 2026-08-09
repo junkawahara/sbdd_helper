@@ -1726,6 +1726,74 @@ void test_graphillionformat_root_level(void)
     }
 }
 
+/* exporter が DD の高さより小さい正の root_level を拒否し、
+   不正なレベル（0 以下）を含むデータを出力しないことを確認する */
+void test_graphillionformat_export_root_level(void)
+{
+    bddp f, g;
+    FILE* fp;
+    long file_size;
+
+    while (bddvarused() < 3) {
+        bddnewvar();
+    }
+    /* 根のレベルが 3 の ZBDD（高さ 3） */
+    f = bddgetsingleton(bddvaroflev(3));
+
+    fprintf(stderr, "(the following \"root_level\" messages are expected)\n");
+
+    /* root_level (1) < 高さ (3) はエラーになり、何も出力されない */
+    fp = fopen(g_filename1, "w");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    bddexportzbddasgraphillion(fp, f, NULL, 1);
+    fclose(fp);
+
+    fp = fopen(g_filename1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    if (fseek(fp, 0, SEEK_END) != 0) {
+        fprintf(stderr, "fseek failed\n");
+        exit(1);
+    }
+    file_size = ftell(fp);
+    fclose(fp);
+    test(file_size == 0);
+
+    fprintf(stderr, "(end of the expected messages)\n");
+
+    /* root_level == 高さは受理され、往復で同じ ZBDD に戻る */
+    fp = fopen(g_filename1, "w");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    bddexportzbddasgraphillion(fp, f, NULL, 3);
+    fclose(fp);
+
+    fp = fopen(g_filename1, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    /* graphillion 形式のレベルは根からの相対値なので、
+       もとのレベルに戻すには import 側にも root_level を渡す */
+    g = bddimportzbddasgraphillion(fp, 3);
+    fclose(fp);
+    test(g == f);
+    bddfree(g);
+    bddfree(f);
+
+    if (remove(g_filename1) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+}
+
 /* content の内容のファイルを graphillion 形式として読み込ませ、
    bddnull が返ることを確認する */
 void test_graphillionformat_corrupted_content(const char* content)
@@ -2189,6 +2257,7 @@ void start_test(void)
     test_bddbinaryformat();
     test_graphillionformat_empty();
     test_graphillionformat_root_level();
+    test_graphillionformat_export_root_level();
     test_graphillionformat_corrupted();
     test_knuthformat_empty();
     test_knuthformat_corrupted();
