@@ -21,11 +21,16 @@
 # It is generated from the sources in devel/ by
 #
 #     cd devel && python3 combine.py
+#
+# The testc-release and testcpp-release targets, which the all target
+# includes, compile that generated header instead of the sources in
+# devel/, so it has to be regenerated before running them.
 
 TESTDIR = tests
 
 TARGETS = all clang oldgcc \
 testc testc99 testcpp testcpp-gmp testcpp98 \
+testc-release testcpp-release \
 testclang testcppclang testoldgcc testoldgpp \
 testnewc testnewcpp testtdzdd clean
 

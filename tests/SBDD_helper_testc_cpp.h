@@ -32,7 +32,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #endif
 
 #include "bddc.h"
+
+/* Define SBDDH_TEST_RELEASE_HEADER to test the single header that is
+   distributed to the users instead of the sources it is generated from,
+   so that a stale or broken combine.py result is detected. */
+#ifdef SBDDH_TEST_RELEASE_HEADER
+#include "../SBDD_helper.h"
+#else
 #include "../devel/SBDD_helper.h"
+#endif
 
 #ifdef __cplusplus
 using namespace sbddh;

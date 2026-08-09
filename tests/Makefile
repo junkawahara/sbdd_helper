@@ -21,10 +21,12 @@ WOPT2 = -Wall -Wextra -pedantic -Wshadow -Wformat=2 -Wfloat-equal \
 WOPT3 = $(WOPT2) -Wlogical-op
 WOPT4 = $(WOPT3) -Wconversion
 
-all: testc testcpp testcpp-gmp
+all: testc testcpp testcpp-gmp testc-release testcpp-release
 	./testc
 	./testcpp
 	./testcpp-gmp
+	./testc-release
+	./testcpp-release
 
 oldgcc: testoldgcc testoldgpp
 	./testoldgcc
@@ -37,6 +39,19 @@ clang: testclang testcppclang
 testc: SBDD_helper_testc_cpp.h SBDD_helper_testc.c ../devel/SBDD_helper.h \
         ../devel/*.h bddc.o
 	gcc $(STD) $(OPT) $(WOPT4) -Wc++-compat bddc.o SBDD_helper_testc.c -o testc
+
+# The two targets below compile ../SBDD_helper.h, the single header that is
+# distributed to the users, instead of the sources it is generated from.
+testc-release: SBDD_helper_testc_cpp.h SBDD_helper_testc.c \
+        ../SBDD_helper.h bddc.o
+	gcc $(STD) $(OPT) $(WOPT4) -Wc++-compat -DSBDDH_TEST_RELEASE_HEADER \
+	bddc.o SBDD_helper_testc.c -o testc-release
+
+testcpp-release: SBDD_helper_testc_cpp.h SBDD_helper_testcpp.cpp \
+        SBDD_helper_testc.c ../SBDD_helper.h \
+		bddc.o BDD.o ZBDD.o BDDCT.o
+	g++ $(STD) $(OPT) $(WOPT4) -DSBDDH_TEST_RELEASE_HEADER \
+	bddc.o BDD.o ZBDD.o BDDCT.o SBDD_helper_testcpp.cpp -o testcpp-release
 
 # currently is not supported
 testc90: SBDD_helper_testc_cpp.h SBDD_helper_testc.c ../devel/SBDD_helper.h \
@@ -155,6 +170,7 @@ BDDCT-clang.o: $(SBDDSRCDIR)/BDD+/BDDCT.cc $(SBDDINCLUDEDIR)/BDDCT.h
 
 clean:
 	rm -f *.o *.stackdump testc.exe testc testc90.exe testc90 \
+	testc-release.exe testc-release testcpp-release.exe testcpp-release \
 	testc99.exe testc99 testcpp.exe testcpp testcppa.exe testcppa \
 	testoldgcc.exe testoldgcc testoldgpp.exe testoldgpp \
 	testcpp98.exe testcppg.exe testcppg testcpp98 testcpp-gmp.exe \
