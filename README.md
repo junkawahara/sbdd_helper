@@ -235,7 +235,7 @@ ZBDD に関する関数
 |`getSingleton(bddvar v)`|{{v}} を表す ZBDD を構築|
 |`getSingleSet(T& variables)`|variables からなる集合1つを表す ZBDD を構築|
 |`getSingleSet(int n, ...)`|引数で指定した要素からなる集合1つを表す ZBDD を構築|
-|`getSingleSet(T& variables)`|variables のべき集合を表す ZBDD を構築|
+|`getPowerSet(T& variables)`|variables のべき集合を表す ZBDD を構築|
 |`getPowerSet(int n)`| n 変数のべき集合を表す ZBDD を構築|
 |`getPowerSetIncluding(略)`|指定したべき集合の中から、指定した要素をすべて含む集合を表す ZBDD を構築|
 |`getPowerSetNotIncluding(略)`|指定したべき集合の中から、指定した要素をすべて含む集合を表す ZBDD を構築|
