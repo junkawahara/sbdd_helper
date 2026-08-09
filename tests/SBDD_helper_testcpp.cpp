@@ -140,7 +140,7 @@ void test_BDD_functions()
     test(isConstant(ZBDD(0)));
     test(isConstant(ZBDD(1)));
     test(!isConstant(b1));
-    test(!isConstant(b1));
+    test(!isConstant(b2));
     test(!isConstant(z1));
     test(!isConstant(z2));
     test(!isConstant(z3));
@@ -150,7 +150,7 @@ void test_BDD_functions()
     test(isTerminal(ZBDD(0)));
     test(isTerminal(ZBDD(1)));
     test(!isTerminal(b1));
-    test(!isTerminal(b1));
+    test(!isTerminal(b2));
     test(!isTerminal(z1));
     test(!isTerminal(z2));
     test(!isTerminal(z3));
