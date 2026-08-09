@@ -71,9 +71,9 @@ bddp bddimportbddasbinary_inner(FILE* fp, int root_level, int is_zbdd
         fprintf(stderr, "Need to specify BDD or ZBDD.\n");
         return bddnull;
     } else if (is_zbdd > 0 && v8 == 2) {
-        fprintf(stderr, "The binary indicates that it is BDD, but we interpret it as a ZBDD.\n");
+        fprintf(stderr, "The binary indicates that it is a BDD, but we interpret it as a ZBDD.\n");
     } else if (is_zbdd == 0 && v8 == 3) {
-        fprintf(stderr, "The binary indicates that it is ZDDD, but we interpret it as a BDD.\n");
+        fprintf(stderr, "The binary indicates that it is a ZDD, but we interpret it as a BDD.\n");
     }
 
     sbddextended_readOrReturnNull(sbddextended_readUint16, &v16); /* number_of_arcs */
