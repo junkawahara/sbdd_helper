@@ -573,6 +573,15 @@ void test_at_random_cpp()
     f = getPowerSetWithCard(basev, -2);
     test(f == ZBDD(0));
 
+    std::vector<bddvar> dupv; /* treated as the set {2, 4} */
+    dupv.push_back(2);
+    dupv.push_back(2);
+    dupv.push_back(4);
+    f = getPowerSetWithCard(dupv, 2);
+    test(f == getSingleSet(2, 2, 4));
+    f = getPowerSetWithCard(dupv, 3);
+    test(f == ZBDD(0));
+
     f = getPowerSetWithCard(5, 2);
     test(f.Card() == 10);
 

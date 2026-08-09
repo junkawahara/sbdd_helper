@@ -1095,6 +1095,20 @@ sbddextended_INLINE_FUNC ZBDD getPowerSetWithCard(const T& variables, int k)
 
     sbddextended_sort_array(ar, n);
 
+    /* remove the duplicated variables to treat the container as a set */
+    int num_unique = 0;
+    for (int i = 0; i < n; ++i) {
+        if (i == 0 || ar[i] != ar[i - 1]) {
+            ar[num_unique] = ar[i];
+            ++num_unique;
+        }
+    }
+    n = num_unique;
+    if (n < k) {
+        delete[] ar;
+        return ZBDD(0);
+    }
+
     std::vector<ZBDD> current;
     std::vector<ZBDD> next(static_cast<size_t>(k) + 1);
 
