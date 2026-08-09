@@ -7221,7 +7221,13 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
                 sbddextended_MyVector_deinitialize(&level_vec);
                 return bddnull;
             }
-            assert(level == level_count);
+            if (level != level_count) {
+                fprintf(stderr, "Format error in line %lld: the level "
+                        "header must be #%d\n", line_count, level_count);
+                /* lo_vec and hi_vec are not initialized yet. */
+                sbddextended_MyVector_deinitialize(&level_vec);
+                return bddnull;
+            }
             ++level_count;
             sbddextended_MyVector_add(&level_vec, (llint)2);
             break;
@@ -7244,7 +7250,11 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
                 fprintf(stderr, "Format error in line %lld\n", line_count);
                 sbddextended_freeVectorsAndReturnNull();
             }
-            assert(level == level_count);
+            if (level != level_count) {
+                fprintf(stderr, "Format error in line %lld: the level "
+                        "header must be #%d\n", line_count, level_count);
+                sbddextended_freeVectorsAndReturnNull();
+            }
             ++level_count;
             sbddextended_MyVector_add(&level_vec, (llint)lo_vec.count);
         } else {
@@ -7270,6 +7280,10 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
         }
     }
     sbddextended_MyVector_add(&level_vec, (llint)lo_vec.count);
+    /* level_vec holds one entry per level header line and one more added */
+    /* just above, and the checks of the header lines guarantee that the */
+    /* headers are #1, #2, ..., so the following is an invariant of this */
+    /* function rather than a check of the input. */
     assert(level_count == (int)level_vec.count);
 
     /* The input contains no node (the file is empty or consists only of */
@@ -7307,6 +7321,10 @@ bddp bddimportbddasknuth_inner(FILE* fp, int is_hex, int root_level,
                 break;
             }
         }
+        /* The entries of level_vec are non-decreasing and the last one is */
+        /* lo_vec.count, so the loop above always finds the level of i, and */
+        /* root_level >= level_count - 1 >= level has been checked, so the */
+        /* following are invariants rather than checks of the input. */
         assert(level < (llint)level_vec.count);
         assert((1 <= root_level - level + 1) && ((root_level - level + 1) <= (int)bddvarused()));
         lo = sbddextended_MyVector_get(&lo_vec, i);

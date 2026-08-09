@@ -1861,6 +1861,22 @@ void test_knuthformat_corrupted(void)
     fprintf(stderr, "(end of the expected messages)\n");
 }
 
+/* レベルのヘッダ行が #1, #2, ... の順になっていないファイルを読み込むと、
+   NDEBUG の有無によらず bddnull が返ることを確認する */
+void test_knuthformat_wrong_level(void)
+{
+    fprintf(stderr, "(the following \"Format error\" messages are expected)\n");
+
+    /* 最初のヘッダ行が #1 でない */
+    test_knuthformat_corrupted_content("#2\n2:0,1\n", 0);
+    /* 2 番目のヘッダ行が #2 でない（レベルの飛ばし） */
+    test_knuthformat_corrupted_content("#1\n2:0,1\n#3\n3:2,0\n", 0);
+    /* ヘッダ行のレベルが逆順 */
+    test_knuthformat_corrupted_content("#1\n2:0,1\n#1\n3:2,0\n", 0);
+
+    fprintf(stderr, "(end of the expected messages)\n");
+}
+
 /* content の内容のファイルを要素形式として読み込ませ、
    bddnull が返ることを確認する */
 void test_elementsformat_out_of_range_content(const char* content)
@@ -2017,6 +2033,7 @@ void start_test(void)
     test_graphillionformat_corrupted();
     test_knuthformat_empty();
     test_knuthformat_corrupted();
+    test_knuthformat_wrong_level();
     test_elementsformat_out_of_range();
     test_readline_no_newline_at_end();
 }
