@@ -1778,6 +1778,25 @@ void test_graphillionformat_corrupted(void)
     /* 子ノード (1) が自分より後に定義されている（前方参照） */
     test_graphillionformat_corrupted_content("0 1 1 T\n1 2 B T\n.\n");
 
+    /* 数値トークンの後にゴミが続く */
+    test_graphillionformat_corrupted_content("0junk 1 B T\n.\n");
+    test_graphillionformat_corrupted_content("0 1junk B T\n.\n");
+    /* 終端トークンの後にゴミが続く */
+    test_graphillionformat_corrupted_content("0 1 Bjunk T\n.\n");
+    test_graphillionformat_corrupted_content("0 1 B Tjunk\n.\n");
+    /* ID + 2 が llint でオーバーフローする（LLONG_MAX） */
+    test_graphillionformat_corrupted_content(
+        "9223372036854775807 1 B T\n.\n");
+    /* ID が llint の範囲を超える */
+    test_graphillionformat_corrupted_content(
+        "99999999999999999999 1 B T\n.\n");
+    /* ID が負 */
+    test_graphillionformat_corrupted_content("-1 1 B T\n.\n");
+    /* レベルが 0 */
+    test_graphillionformat_corrupted_content("0 0 B T\n.\n");
+    /* 余分な 5 番目のトークン */
+    test_graphillionformat_corrupted_content("0 1 B T x\n.\n");
+
     fprintf(stderr, "(end of the expected messages)\n");
 }
 

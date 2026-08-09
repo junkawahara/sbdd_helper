@@ -26,6 +26,61 @@
         sbddextended_freeVectorsAndReturnNull(); \
     } while (0)
 
+/* Parses the whole token as a decimal node ID in [0, LLONG_MAX - 2] and
+   stores the internal ID (the parsed value plus 2). Returns 0 if the token
+   contains extra characters, is out of range, or the addition of 2 would
+   overflow. */
+sbddextended_INLINE_FUNC
+int bddimportbddasgraphillion_readid(const char* token, llint* id)
+{
+    char* end;
+    llint v;
+    errno = 0;
+    end = NULL;
+    v = strtoll(token, &end, 10);
+    if (end == token || *end != '\0' || errno == ERANGE
+            || v < 0 || v > LLONG_MAX - 2) {
+        return 0;
+    }
+    *id = v + 2;
+    return 1;
+}
+
+/* Parses a child token of the graphillion format: "B" (0-terminal),
+   "T" (1-terminal), or a node ID. Stores the internal ID (0, 1, or the
+   parsed ID plus 2). Returns 0 on failure. */
+sbddextended_INLINE_FUNC
+int bddimportbddasgraphillion_readchild(const char* token, llint* id)
+{
+    if (token[0] == 'B' && token[1] == '\0') {
+        *id = 0;
+        return 1;
+    }
+    if (token[0] == 'T' && token[1] == '\0') {
+        *id = 1;
+        return 1;
+    }
+    return bddimportbddasgraphillion_readid(token, id);
+}
+
+/* Parses the whole token as a decimal level in [1, INT_MAX].
+   Returns 0 on failure. */
+sbddextended_INLINE_FUNC
+int bddimportbddasgraphillion_readlevel(const char* token, int* level)
+{
+    char* end;
+    llint v;
+    errno = 0;
+    end = NULL;
+    v = strtoll(token, &end, 10);
+    if (end == token || *end != '\0' || errno == ERANGE
+            || v < 1 || v > INT_MAX) {
+        return 0;
+    }
+    *level = (int)v;
+    return 1;
+}
+
 sbddextended_INLINE_FUNC
 bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
 #ifdef __cplusplus
@@ -43,6 +98,7 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
     char buf2[sbddextended_BUFSIZE];
     char buf3[sbddextended_BUFSIZE];
     char buf4[sbddextended_BUFSIZE];
+    char buf5[sbddextended_BUFSIZE];
     bddp p, p0, p1, pf, pfn;
     sbddextended_MyVector node_vec, level_vec, lo_vec, hi_vec;
     sbddextended_MyDict node_dict;
@@ -69,27 +125,17 @@ bddp bddimportbddasgraphillion_inner(FILE* fp, int root_level, int is_zdd
         if (buf[0] == '.') { /* end of file */
             break;
         }
-        c = sscanf(buf, "%s %s %s %s", buf1, buf2, buf3, buf4);
-        if (c < 4) {
+        /* Each line must consist of exactly four tokens: the node ID,
+           the level, the 0-child, and the 1-child. */
+        c = sscanf(buf, "%s %s %s %s %s", buf1, buf2, buf3, buf4, buf5);
+        if (c != 4
+                || bddimportbddasgraphillion_readid(buf1, &id) == 0
+                || bddimportbddasgraphillion_readlevel(buf2, &level) == 0
+                || bddimportbddasgraphillion_readchild(buf3, &lo) == 0
+                || bddimportbddasgraphillion_readchild(buf4, &hi) == 0) {
             fprintf(stderr, "Format error in line %lld\n", line_count);
             sbddextended_freeVectorsAndReturnNull();
         }
-        if (buf3[0] == 'B') {
-            lo = 0;
-        } else if (buf3[0] == 'T') {
-            lo = 1;
-        } else {
-            lo = strtoll(buf3, NULL, 10) + 2;
-        }
-        if (buf4[0] == 'B') {
-            hi = 0;
-        } else if (buf4[0] == 'T') {
-            hi = 1;
-        } else {
-            hi = strtoll(buf4, NULL, 10) + 2;
-        }
-        id = strtoll(buf1, NULL, 10) + 2;
-        level = (int)strtol(buf2, NULL, 10);
         sbddextended_MyVector_add(&node_vec, id);
         sbddextended_MyVector_add(&level_vec, (llint)level);
         sbddextended_MyVector_add(&lo_vec, lo);
