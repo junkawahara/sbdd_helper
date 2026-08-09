@@ -2052,6 +2052,26 @@ void test_ddindex_large_getset_order()
     std::set<bddvar> plus_one_last = *plus_one_ritor;
     test(!plus_one_last.empty());
     test(isMember(plus_one, plus_one_last));
+
+    /* The card is 2^63 + 1, so the order number does not fit in llint.
+       sampleRandomly used to build
+       std::uniform_int_distribution<llint>(0, count() - 1), whose upper
+       bound wraps to a negative value here (undefined behaviour, and an
+       abort with assertion-enabled standard libraries). */
+#ifdef SBDDH_GMP
+    gmp_randclass random(gmp_randinit_default);
+    random.seed(1);
+    for (int i = 0; i < 10; ++i) {
+        std::set<bddvar> varset = plus_one_index.sampleRandomly(random);
+        test(isMember(plus_one, varset));
+    }
+#elif __cplusplus >= 201103L
+    std::mt19937_64 mt(1);
+    for (int i = 0; i < 10; ++i) {
+        std::set<bddvar> varset = plus_one_index.sampleRandomly(mt);
+        test(isMember(plus_one, varset));
+    }
+#endif
 }
 
 void test_ddindex_extreme_weights()
