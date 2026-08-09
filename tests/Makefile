@@ -154,7 +154,9 @@ BDDCT-clang.o: $(SBDDSRCDIR)/BDD+/BDDCT.cc $(SBDDINCLUDEDIR)/BDDCT.h
 	$(CLANGPP) $(OPT) $(SBDDSRCDIR)/BDD+/BDDCT.cc -c -o BDDCT-clang.o
 
 clean:
-	rm -f *.o *.stackdump testc.exe testc testcpp.exe testcpp \
+	rm -f *.o *.stackdump testc.exe testc testc90.exe testc90 \
+	testc99.exe testc99 testcpp.exe testcpp testcppa.exe testcppa \
 	testoldgcc.exe testoldgcc testoldgpp.exe testoldgpp \
 	testcpp98.exe testcppg.exe testcppg testcpp98 testcpp-gmp.exe \
-	testcpp-gmp testcppclang testtdzdd
+	testcpp-gmp testclang.exe testclang testcppclang.exe testcppclang \
+	testtdzdd.exe testtdzdd
