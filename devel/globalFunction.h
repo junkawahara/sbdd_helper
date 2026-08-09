@@ -526,7 +526,7 @@ int bddismemberz_inner(bddp f, const bddvar* levarr, int n)
 sbddextended_INLINE_FUNC
 int bddismemberz(bddp f, const bddvar* vararr, int n)
 {
-    int i, c;
+    int i, c, num_unique;
     bddvar* ar;
 
     assert(n >= 0);
@@ -542,7 +542,17 @@ int bddismemberz(bddp f, const bddvar* vararr, int n)
     }
 
     ar = sbddextended_getsortedarraybylevel_inner(vararr, n);
-    c = bddismemberz_inner(f, ar, n);
+
+    /* remove the duplicated variables to treat the array as a set */
+    num_unique = 0;
+    for (i = 0; i < n; ++i) {
+        if (i == 0 || ar[i] != ar[i - 1]) {
+            ar[num_unique] = ar[i];
+            ++num_unique;
+        }
+    }
+
+    c = bddismemberz_inner(f, ar, num_unique);
 
     free(ar);
 
@@ -1190,7 +1200,16 @@ sbddextended_INLINE_FUNC bool isMemberZ(const ZBDD& f, const T& variables)
 
     sbddextended_sort_array(ar, n);
 
-    int b = bddismemberz_inner(f.GetID(), ar, n);
+    /* remove the duplicated variables to treat the container as a set */
+    int num_unique = 0;
+    for (int i = 0; i < n; ++i) {
+        if (i == 0 || ar[i] != ar[i - 1]) {
+            ar[num_unique] = ar[i];
+            ++num_unique;
+        }
+    }
+
+    int b = bddismemberz_inner(f.GetID(), ar, num_unique);
 
     delete[] ar;
 

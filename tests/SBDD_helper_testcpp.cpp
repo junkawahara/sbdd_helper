@@ -465,6 +465,22 @@ void test_at_random_cpp()
     test(isMemberZ(f, std::vector<bddvar>()));
     test(isMember(f, std::vector<bddvar>()));
 
+    { /* duplicated variables are regarded as one element */
+        ZBDD h = getSingleSet(2, 1, 2);
+        std::vector<bddvar> dup;
+        dup.push_back(1);
+        dup.push_back(2);
+        dup.push_back(2);
+        test(isMemberZ(h, dup));
+        test(isMember(h, dup));
+
+        dup.clear();
+        dup.push_back(1);
+        dup.push_back(1);
+        test(!isMemberZ(h, dup));
+        test(!isMember(h, dup));
+    }
+
     ofs.open(g_filename1);
     if (!ofs) {
         fprintf(stderr, "file cannot be opened\n");

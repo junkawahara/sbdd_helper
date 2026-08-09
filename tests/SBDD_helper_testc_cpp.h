@@ -654,6 +654,16 @@ void test_ismemberz(void)
 
     test(!bddismemberz(f, vararr, 0));
 
+    /* duplicated variables are regarded as one element */
+    vararr[0] = 1, vararr[1] = 2, vararr[2] = 2;
+    test(bddismemberz(f, vararr, 3));
+
+    vararr[0] = 2, vararr[1] = 2, vararr[2] = 1;
+    test(bddismemberz(f, vararr, 3));
+
+    vararr[0] = 1, vararr[1] = 1;
+    test(!bddismemberz(f, vararr, 2));
+
     vararr[0] = 1, vararr[1] = 2, vararr[2] = 3;
     f = bddgetpowerset(vararr, 3);
 
