@@ -500,6 +500,10 @@ void test_at_random_cpp()
 
     test(f == g);
 
+    std::vector<bddvar> emptybv;
+    f = getPowerSet(emptybv);
+    test(f == ZBDD(1));
+
     f = getPowerSetIncluding(3, 2);
     test(f.Card() == 4);
     test(f.OnSet(2).Card() == 4);

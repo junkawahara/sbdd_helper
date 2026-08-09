@@ -949,7 +949,9 @@ sbddextended_INLINE_FUNC ZBDD getPowerSet(const T& variables)
     int n;
     bddvar* ar = containerToArray(variables, &n);
     if (n == 0) {
-        return ZBDD(0);
+        /* The power set of the empty set is {{}}, which is the
+           unit set as a ZBDD. */
+        return ZBDD(1);
     }
 
     bddp f = bddgetpowerset(ar, n);
