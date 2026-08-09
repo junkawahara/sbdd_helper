@@ -32,6 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <cmath>
 #include <cassert>
 #include <cstdarg>
+#include <cstddef>
 
 #include <string>
 #include <iostream>
@@ -41,6 +42,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <map>
 #include <set>
 #include <algorithm>
+#include <iterator>
 
 #if __cplusplus >= 201103L /* use rand() function */
 #include <random>
