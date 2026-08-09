@@ -1409,6 +1409,15 @@ void test_elementIterator(void)
     test(bddElementIterator_hasNext(itor) == 0);
     bddElementIterator_destruct(itor);
 
+    /* a BDD that is not a terminal must be rejected */
+    fprintf(stderr, "(the following \"only ZDD\" message is expected)\n");
+    g = bddand(bddprime(1), bddprime(2));
+    itor = bddElementIterator_make(g);
+    test(bddElementIterator_hasNext(itor) == 0);
+    bddElementIterator_destruct(itor);
+    bddfree(g);
+    fprintf(stderr, "(end of the expected message)\n");
+
     free(arr);
 }
 

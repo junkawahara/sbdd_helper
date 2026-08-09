@@ -65,6 +65,18 @@ bddElementIterator* bddElementIterator_make(bddp f)
         return itor;
     }
 
+    /* The iterator takes the children with the ZDD rule, which is invalid
+       for a BDD. Return an iterator pointing at the end instead of
+       letting SAPPOROBDD abort with an obscure message. */
+    if (!bddiszbdd(f)) {
+        fprintf(stderr, "The element iterator supports only ZDD, "
+                "but a BDD is given.\n");
+        itor->sp = -1;
+        itor->bddnode_stack = NULL;
+        itor->op_stack = NULL;
+        return itor;
+    }
+
     height = (int)bddgetlev(f) + 1;
     itor->bddnode_stack = (bddp*)malloc((size_t)height * sizeof(bddp));
     if (itor->bddnode_stack == NULL) {
@@ -199,6 +211,13 @@ public:
     ElementIterator(bddp f, bool is_end)
     {
         if (is_end || f == bddnull || f == bddempty) {
+            sp_ = -1;
+        } else if (!bddiszbdd(f)) {
+            /* The iterator takes the children with the ZDD rule, which is
+               invalid for a BDD. Point at the end instead of letting
+               SAPPOROBDD abort with an obscure message. */
+            std::cerr << "The element iterator supports only ZDD, "
+                         "but a BDD is given." << std::endl;
             sp_ = -1;
         } else {
             sp_ = 0;

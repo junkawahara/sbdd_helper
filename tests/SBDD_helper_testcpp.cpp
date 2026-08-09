@@ -1610,6 +1610,15 @@ void test_elementIterator_cpp()
         check_iterator(ddindex_f.dict_rbegin(),
                         ddindex_f.dict_rend());
     }
+
+    /* a BDD that is not a terminal must be rejected */
+    {
+        fprintf(stderr, "(the following \"only ZDD\" message is expected)\n");
+        BDD b = BDDvar(1) & BDDvar(2);
+        ElementIteratorHolder eih(b.GetID());
+        test(eih.begin() == eih.end());
+        fprintf(stderr, "(end of the expected message)\n");
+    }
 }
 
 int compare_dict_order(const std::set<bddvar>& s1,
