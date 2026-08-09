@@ -22,6 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <stdlib.h>
 #include <string.h>
 
+/* for the process ID used by the temporary file names */
+#ifdef _WIN32
+#include <process.h>
+#define sbddh_test_getpid _getpid
+#else
+#include <unistd.h>
+#define sbddh_test_getpid getpid
+#endif
+
 #include "bddc.h"
 #include "../devel/SBDD_helper.h"
 
@@ -32,9 +41,21 @@ using namespace sbddh;
 #define test(b) testfunc((llint)(b), __FILE__, __LINE__)
 #define test_eq(v1, v2) testfunc_eq((llint)(v1), (llint)(v2), __FILE__, __LINE__)
 
-const char g_filename1[] = "SBDD_helper_testc_test_tempdata1.txt";
-const char g_filename2[] = "SBDD_helper_testc_test_tempdata2.txt";
-const char g_filename3[] = "SBDD_helper_testc_test_tempdata3.txt";
+/* The C and the C++ test drivers write the temporary files into the
+   current directory, so the names must contain the process ID; otherwise
+   running testc and testcpp at the same time makes one of them remove or
+   overwrite the file of the other. initialize_filenames fills them in. */
+char g_filename1[64];
+char g_filename2[64];
+char g_filename3[64];
+
+void initialize_filenames(void)
+{
+    int pid = (int)sbddh_test_getpid();
+    sprintf(g_filename1, "SBDD_helper_test_tempdata1_%d.txt", pid);
+    sprintf(g_filename2, "SBDD_helper_test_tempdata2_%d.txt", pid);
+    sprintf(g_filename3, "SBDD_helper_test_tempdata3_%d.txt", pid);
+}
 
 void testfunc(llint b, const char* filename, int error_line)
 {
@@ -156,6 +177,8 @@ int is_same_file(const char* filename1, const char* filename2)
 
 void initialize(void)
 {
+    initialize_filenames();
+
     bddinit(1000ll, 10000000ll);
 
     bddnewvarn(100);
