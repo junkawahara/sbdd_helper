@@ -24,7 +24,7 @@ ElementIteratorHolder eih(f);
 // ElementIteratorHolder の begin メンバ関数により、イテレータを取得
 ElementIterator itor = eih.begin();
 
-// イテレータの使い方は C++ の STL と同じである。
+// イテレータの使い方は C++ の STL と同じである（入力イテレータの要件を満たす）。
 // 以下の while 文で、f が表す集合族の各集合を巡行する。
 while (itor != eih.end()) {
     // 1回目の実行で s は {1, 2} となり、

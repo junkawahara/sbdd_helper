@@ -695,8 +695,10 @@ DictIterator 逆辞書順の終了イテレータを返す。詳細はイテレ�
 ## イテレータ
 
 DDIndex<T> のクラス内クラスとして、各種イテレータが提供されている。
-いずれのイテレータも std::iterator<std::input_iterator_tag, bddp> を継承しており、
-STL ライブラリの入力イテレータとなる。
+いずれのイテレータも STL ライブラリの入力イテレータの要件を満たす。
+前置・後置の operator++ と operator* を持つ。value_type は DDNodeIterator では
+bddp、それ以外では std::set<bddvar> であり、operator* は参照ではなく値を返すため、
+reference も value_type と同じ型である。
 
 DDNodeIterator は各ノードを巡行する。
 WeightIterator は重み最小順、または、重み最大順に集合を巡行する。

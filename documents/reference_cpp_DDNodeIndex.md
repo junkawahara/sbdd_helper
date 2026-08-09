@@ -105,8 +105,9 @@ BDD から構築したインデックスでは size、sizeAtLevel、sizeEachLeve
 
 DDNodeIterator は DDNodeIndex のクラス内クラスである。
 各ノードを巡行するイテレータを表す。
-std::iterator<std::input_iterator_tag, bddp> を継承しており、
-STL ライブラリの入力イテレータとなる。
+STL ライブラリの入力イテレータの要件を満たす。
+前置・後置の operator++ と operator* を持ち、value_type は bddp である
+（operator* は参照ではなく値を返すため、reference も bddp である）。
 
 ### 使用例
 
