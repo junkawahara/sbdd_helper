@@ -949,14 +949,27 @@ void test_svg_cpp()
     ZBDD f = ZBDD_ID(make_test_zbdd());
     BDD b = (BDDvar(1) & BDDvar(2)) | BDDvar(3);
 
-    /* 終端のみからなる DD では、2つの終端だけが描かれる */
+    /* 終端のみからなる DD では、根である終端だけが描かれるため、
+       0終端と1終端の出力が区別できる */
     std::stringstream ss;
     exportZBDDAsSvg(ss, ZBDD(0));
-    test_svg_content_cpp(ss.str(), 0);
+    test(ss.str().compare(0, 4, "<svg") == 0);
+    test_eq(countSubstring(ss.str(), "<circle"), 0u);
+    test_eq(countSubstring(ss.str(), "<line"), 0u);
+    test_eq(countSubstring(ss.str(), "<rect"), 1u);
+    test_eq(countSubstring(ss.str(), ">0</text>"), 1u);
+    test_eq(countSubstring(ss.str(), ">1</text>"), 0u);
 
     std::stringstream ss1;
     exportZBDDAsSvg(ss1, ZBDD(1));
-    test_svg_content_cpp(ss1.str(), 0);
+    test(ss1.str().compare(0, 4, "<svg") == 0);
+    test_eq(countSubstring(ss1.str(), "<circle"), 0u);
+    test_eq(countSubstring(ss1.str(), "<line"), 0u);
+    test_eq(countSubstring(ss1.str(), "<rect"), 1u);
+    test_eq(countSubstring(ss1.str(), ">0</text>"), 0u);
+    test_eq(countSubstring(ss1.str(), ">1</text>"), 1u);
+
+    test(ss.str() != ss1.str());
 
     test_svg_zbdd_cpp(f);
     test_svg_zbdd_cpp(getPowerSetWithCard(5, 2));

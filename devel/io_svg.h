@@ -50,7 +50,13 @@ void bddexportassvg_inner(FILE* fp, bddp f,
     const int margin_y = 20;
     const int label_y = 7;
     const int arc_width = 3;
-    bool draw_zero = true;
+    /* A DD consisting only of a terminal has no internal nodes, so the
+       root terminal is the only object to draw. Draw just that terminal
+       so that the 0-terminal and 1-terminal DDs produce distinguishable
+       images. */
+    const bool is_terminal_dd = (f == bddempty || f == bddsingle);
+    const bool draw_zero = (!is_terminal_dd || f == bddempty);
+    const bool draw_one = (!is_terminal_dd || f == bddsingle);
 
     bool is_made = false;
     if (index == NULL) {
@@ -95,13 +101,15 @@ void bddexportassvg_inner(FILE* fp, bddp f,
         + node_interval_x * (max_nodes - 1)
         + 2 * margin_x);
     const int max_y = y + terminal_y / 2 + margin_y;
-    const int num_terms = (draw_zero ? 2 : 1);
+    const int num_terms = (draw_zero ? 1 : 0) + (draw_one ? 1 : 0);
     int tx = node_x / (num_terms + 1) - (node_radius + node_interval_x - margin_x);
     if (draw_zero) {
         pos_map[bddempty] = std::make_pair(tx, y);
         tx += node_x / (num_terms + 1);
     }
-    pos_map[bddsingle] = std::make_pair(tx, y);
+    if (draw_one) {
+        pos_map[bddsingle] = std::make_pair(tx, y);
+    }
 
     std::map<bddp, std::vector<ExportAsSvg_arcinfo> >::iterator itor = dest_info.begin();
 
@@ -192,32 +200,40 @@ void bddexportassvg_inner(FILE* fp, bddp f,
     }
 
     /*draw terminals */
-    sbddextended_snprintf5(ss, sbddextended_BUFSIZE,
-        "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" "
-        "fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />",
-        pos_map[bddempty].first - terminal_x / 2,
-        pos_map[bddempty].second - terminal_y / 2,
-        terminal_x, terminal_y, arc_width);
-    sbddextended_writeLine(ss, fp);
-    sbddextended_snprintf5(ss, sbddextended_BUFSIZE,
-        "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" "
-        "fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />",
-        pos_map[bddsingle].first - terminal_x / 2,
-        pos_map[bddsingle].second - terminal_y / 2,
-        terminal_x, terminal_y, arc_width);
-    sbddextended_writeLine(ss, fp);
+    if (draw_zero) {
+        sbddextended_snprintf5(ss, sbddextended_BUFSIZE,
+            "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" "
+            "fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />",
+            pos_map[bddempty].first - terminal_x / 2,
+            pos_map[bddempty].second - terminal_y / 2,
+            terminal_x, terminal_y, arc_width);
+        sbddextended_writeLine(ss, fp);
+    }
+    if (draw_one) {
+        sbddextended_snprintf5(ss, sbddextended_BUFSIZE,
+            "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" "
+            "fill=\"#deebf7\" stroke=\"#1b3966\" stroke-width=\"%d\" />",
+            pos_map[bddsingle].first - terminal_x / 2,
+            pos_map[bddsingle].second - terminal_y / 2,
+            terminal_x, terminal_y, arc_width);
+        sbddextended_writeLine(ss, fp);
+    }
 
-    sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
-        "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" "
-        "font-size=\"24\">0</text>", pos_map[bddempty].first,
-        pos_map[bddempty].second + label_y);
-    sbddextended_writeLine(ss, fp);
+    if (draw_zero) {
+        sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
+            "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" "
+            "font-size=\"24\">0</text>", pos_map[bddempty].first,
+            pos_map[bddempty].second + label_y);
+        sbddextended_writeLine(ss, fp);
+    }
 
-    sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
-        "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" "
-        "font-size=\"24\">1</text>", pos_map[bddsingle].first,
-        pos_map[bddsingle].second + label_y);
-    sbddextended_writeLine(ss, fp);
+    if (draw_one) {
+        sbddextended_snprintf2(ss, sbddextended_BUFSIZE,
+            "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" "
+            "font-size=\"24\">1</text>", pos_map[bddsingle].first,
+            pos_map[bddsingle].second + label_y);
+        sbddextended_writeLine(ss, fp);
+    }
 
     sbddextended_writeLine("</svg>", fp);
 
