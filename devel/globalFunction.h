@@ -49,7 +49,9 @@ sbddextended_INLINE_FUNC void bddnewvarn(unsigned int n)
 {
     unsigned int i;
 
-    if (bddvarused() + n > bddvarmax) {
+    /* Compare by subtraction because bddvarused() + n, which is computed
+       in unsigned int, can wrap around and pass this check. */
+    if (n > bddvarmax - bddvarused()) {
         fprintf(stderr, "The number of variables cannot exceed bddvarmax.\n");
         exit(1);
     }
@@ -62,7 +64,9 @@ sbddextended_INLINE_FUNC void bddnewvarrev(unsigned int n)
 {
     unsigned int i;
 
-    if (bddvarused() + n > bddvarmax) {
+    /* Compare by subtraction because bddvarused() + n, which is computed
+       in unsigned int, can wrap around and pass this check. */
+    if (n > bddvarmax - bddvarused()) {
         fprintf(stderr, "The number of variables cannot exceed bddvarmax.\n");
         exit(1);
     }
