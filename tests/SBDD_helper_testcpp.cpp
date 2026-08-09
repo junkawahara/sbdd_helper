@@ -2307,6 +2307,39 @@ void test_ddindex_empty_family()
 }
 
 /* bddnull から構築した DDIndex は無効なインデックスになる */
+void test_ddindex_zero_rand_state()
+{
+    /* A zero random state must not make the sampling degenerate. */
+    ZBDD f = getPowerSet(8);
+    DDIndex<int> dd_index(f);
+
+    ullint state = 0;
+    std::set<bddvar> first = dd_index.sampleRandomlyA(&state);
+    test(state != 0);
+    test(isMember(f, first));
+
+    bool varied = false;
+    for (int i = 0; i < 100; ++i) {
+        std::set<bddvar> varset = dd_index.sampleRandomlyA(&state);
+        test(isMember(f, varset));
+        if (varset != first) {
+            varied = true;
+        }
+    }
+    test(varied);
+
+    varied = false;
+    DDIndex<int>::RandomIterator itor = dd_index.random_begin(0);
+    std::set<bddvar> head = *itor;
+    for (int i = 0; i < 100 && itor != dd_index.random_end(); ++i, ++itor) {
+        test(isMember(f, *itor));
+        if (*itor != head) {
+            varied = true;
+        }
+    }
+    test(varied);
+}
+
 void test_ddindex_null()
 {
     DDIndex<int> dd_index(ZBDD(-1));
@@ -2655,6 +2688,7 @@ void start_test_cpp(bool exhaustive)
     test_ddindex_extreme_weights();
     test_ddindex_clear();
     test_ddindex_empty_family();
+    test_ddindex_zero_rand_state();
     test_ddindex_null();
     test_ddindex_bdd();
     test_compatibility_cpp();

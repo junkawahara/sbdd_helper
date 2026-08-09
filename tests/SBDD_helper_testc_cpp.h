@@ -624,6 +624,27 @@ void test_getsingleandpowerset(void)
     }
 }
 
+void test_xrand(void)
+{
+    ullint state;
+    ullint v1, v2;
+
+    /* 0 is a fixed point of the raw XOR shift, so the helper must */
+    /* escape it instead of returning 0 forever. */
+    state = 0;
+    v1 = sbddextended_getXRand(&state);
+    test(v1 != 0);
+    test(state != 0);
+    v2 = sbddextended_getXRand(&state);
+    test(v2 != 0);
+    test(v2 != v1);
+
+    state = 1;
+    v1 = sbddextended_getXRand(&state);
+    test(v1 != 0);
+    test(state != 0);
+}
+
 void test_ismemberz(void)
 {
     bddp f;
@@ -2257,6 +2278,7 @@ void start_test(void)
     test_bddfunctions();
     test_getsingleandpowerset();
     test_ismemberz();
+    test_xrand();
     test_io();
     test_graphviz();
     test_elementsformat();

@@ -128,6 +128,12 @@ sbddextended_INLINE_FUNC
 ullint sbddextended_getXRand(ullint* state)
 {
     ullint v = *state;
+    /* 0 is a fixed point of the XOR shift, that is, the state would stay
+       0 and the generator would return 0 forever. Replace it with the
+       non-zero value Marsaglia used as the default seed. */
+    if (v == 0) {
+        v = 88172645463325252ull;
+    }
     v ^= (v << 13);
     v ^= (v >> 7);
     v ^= (v << 17);
