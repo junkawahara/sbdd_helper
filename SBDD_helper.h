@@ -6001,12 +6001,15 @@ void bddprintzbddelements_inner(FILE* fp, bddp f, const char* delim1,
     op_stack = (char*)malloc((size_t)(height + 1) * sizeof(char));
     if (op_stack == NULL) {
         fprintf(stderr, "out of memory\n");
+        free(bddnode_stack);
         return;
     }
     if (num_of_variables != 0) {
         value_list = (char*)malloc((size_t)(num_of_variables + 1) * sizeof(char));
         if (value_list == NULL) {
             fprintf(stderr, "out of memory\n");
+            free(op_stack);
+            free(bddnode_stack);
             return;
         }
     }
