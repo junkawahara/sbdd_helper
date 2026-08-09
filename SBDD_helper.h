@@ -4700,11 +4700,18 @@ public:
 
     ZBDD getKSetsZBDD(ullint k)
     {
+#ifdef SBDDH_GMP
+        /* Compute with mpz_class.  The card of the family or of a
+           subfamily may not fit in ullint even when k does, and the
+           truncated card would make the result wrong. */
+        return getKSetsZBDD(sbddh_ullint_to_mpz(k));
+#else
         if (node_index_ == NULL || k <= 0) {
             return ZBDD(0);
         }
         makeCountIndex();
         return ZBDD_ID(getKSetsZBDD<ullint>(node_index_->f, k));
+#endif
     }
 
 #ifdef SBDDH_GMP
@@ -4722,11 +4729,16 @@ public:
     ZBDD getKLightestZBDD(ullint k,
         const std::vector<llint>& weights, int strict)
     {
+#ifdef SBDDH_GMP
+        /* Compute with mpz_class (see getKSetsZBDD(ullint)). */
+        return getKLightestZBDD(sbddh_ullint_to_mpz(k), weights, strict);
+#else
         if (node_index_ == NULL) {
             return ZBDD(0);
         }
         ZBDD f = ZBDD_ID(bddcopy(node_index_->f));
         return getKLightestZBDD<ullint>(f, k, weights, strict);
+#endif
     }
 
 #ifdef SBDDH_GMP
@@ -4744,6 +4756,12 @@ public:
     ZBDD getKHeaviestZBDD(ullint k,
         const std::vector<llint>& weights, int strict)
     {
+#ifdef SBDDH_GMP
+        /* Compute with mpz_class (see getKSetsZBDD(ullint)).  In
+           particular, count() is the card modulo 2^64, so it must not
+           be used to decide whether k covers the whole family. */
+        return getKHeaviestZBDD(sbddh_ullint_to_mpz(k), weights, strict);
+#else
         if (node_index_ == NULL || k == 0) {
             return ZBDD(0);
         }
@@ -4753,6 +4771,7 @@ public:
             return f;
         }
         return f - getKLightestZBDD<ullint>(f, card - k, weights, -strict);
+#endif
     }
 
 #ifdef SBDDH_GMP

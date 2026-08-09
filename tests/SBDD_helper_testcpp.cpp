@@ -2004,6 +2004,25 @@ void test_ddindex(bool exhaustive)
         test(isMember(f64, varset64));
     }
 
+    /* The ullint k-set APIs must compute with the exact card in the
+       GMP build.  They used to run on ullint internally, so the card
+       2^64 was truncated to 0 and k >= card returned the whole f64. */
+    ZBDD kset64 = index64.getKSetsZBDD(static_cast<ullint>(1));
+    test(kset64.Card() == 1);
+    test(kset64 - f64 == ZBDD(0)); /* kset64 is a subset of f64 */
+
+    std::vector<llint> weights64(66, 1);
+    ZBDD lightest64 = index64.getKLightestZBDD(static_cast<ullint>(1),
+        weights64, 0);
+    test(lightest64 == ZBDD(1).Change(65)); /* the unique minimum {65} */
+    ZBDD heaviest64 = index64.getKHeaviestZBDD(static_cast<ullint>(1),
+        weights64, 0);
+    ZBDD full_set64 = ZBDD(1);
+    for (bddvar v = 1; v <= 65; ++v) {
+        full_set64 = full_set64.Change(v);
+    }
+    test(heaviest64 == full_set64); /* the unique maximum {1, ..., 65} */
+
 #endif
 }
 
