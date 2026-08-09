@@ -107,6 +107,9 @@ void bddElementIterator_next(bddElementIterator* itor, bddvar* arr)
     if (arr != NULL) {
         bddElementIterator_getValue(itor, arr);
     }
+    if (itor->sp < 0) { /* The iterator has already reached the end. */
+        return;
+    }
     --itor->sp;
     if (itor->sp >= 0) {
         ++itor->op_stack[itor->sp];
@@ -212,12 +215,17 @@ public:
 
     ElementIterator& operator++()
     {
+        if (sp_ < 0) { /* The iterator has already reached the end. */
+            return *this;
+        }
         --sp_;
         if (sp_ >= 0) {
             ++op_stack_[sp_];
             proceed();
-            setToBuff();
         }
+        /* setToBuff clears the buffer when sp_ becomes negative, that is, */
+        /* when the iterator reaches the end by this increment. */
+        setToBuff();
         return *this;
     }
 
