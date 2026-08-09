@@ -1166,24 +1166,27 @@ protected:
 
     Mode mode_;
     std::istream* ist_;
-    const char* const st_;
+    /* In the STRING mode, the object owns a copy of the source string */
+    /* so that it remains valid even after the caller's string is */
+    /* destroyed or modified. */
+    const std::string st_;
     llint stpos_;
     const llint stlen_;
 
 public:
     ReadCharObject()
-        : mode_(FP), ist_(NULL), st_(NULL), stpos_(0), stlen_(0) { }
+        : mode_(FP), ist_(NULL), st_(), stpos_(0), stlen_(0) { }
 
     ReadCharObject(std::istream* ist)
-        : mode_(STREAM), ist_(ist), st_(NULL), stpos_(0), stlen_(0) { }
+        : mode_(STREAM), ist_(ist), st_(), stpos_(0), stlen_(0) { }
 
     ReadCharObject(const std::string& st)
-        : mode_(STRING), ist_(NULL), st_(st.c_str()), stpos_(0),
+        : mode_(STRING), ist_(NULL), st_(st), stpos_(0),
           stlen_(static_cast<llint>(st.length())) { }
 
     ReadCharObject(const char* st)
-        : mode_(STRING), ist_(NULL), st_(st), stpos_(0),
-          stlen_((st_ != NULL) ? strlen(st_) : 0) { }
+        : mode_(STRING), ist_(NULL), st_((st != NULL) ? st : ""), stpos_(0),
+          stlen_((st != NULL) ? static_cast<llint>(strlen(st)) : 0) { }
 
     int operator()(FILE* fp) {
         switch (mode_) {
@@ -1326,7 +1329,7 @@ public:
                 /* The line length is at most sbddextended_BUFSIZE - 2 */
                 /* because of the check above, and thus the null character */
                 /* always fits in buf. */
-                strncpy(buf, st_ + start, static_cast<size_t>(stpos_ - start));
+                strncpy(buf, st_.c_str() + start, static_cast<size_t>(stpos_ - start));
                 buf[stpos_ - start] = '\0';
                 ++stpos_;
                 return true;
