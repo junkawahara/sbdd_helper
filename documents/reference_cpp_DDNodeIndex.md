@@ -19,7 +19,7 @@ std::cout << index.size() << std::endl; // f のノード数を表示
 // f のレベル 2 にあるノードの数を表示
 std::cout << index.sizeAtLevel(2) << std::endl;
 
-std::vector<bddvar> vec;
+std::vector<ullint> vec;
 index.sizeEachLevel(vec); // f の各レベルのノード数を vec に格納
 ```
 
@@ -77,12 +77,14 @@ ullint sizeAtLevel(int level)
 ## sizeEachLevel
 
 ```
-void sizeEachLevel(std::vector<bddvar>& arr)
+void sizeEachLevel(std::vector<ullint>& arr)
 ```
 
 インデックス元の BDD/ZDD の各レベルのノード数を、引数で指定した arr に
 格納する。レベル i のノード数は arr[i] に格納される。arr の size は
 BDD/ZDD の高さ（根ノードのレベル）+ 1 となる。
+
+Ver 1.3.0 から arr の要素の型を bddvar から ullint に変更。
 
 ## count
 

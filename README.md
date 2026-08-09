@@ -405,7 +405,7 @@ DDIndex は以下のメンバ関数を提供しています。
 |`height()`| 高さ（根ノードのレベル）を取得|
 |`size()`| ノード数を取得（否定枝表現を使用しない）|
 |`size(int level)`| レベルが level のノード数を取得（否定枝表現を使用しない）|
-|`sizeEachLevel(std::vector&lt;bddvar&gt;& arr)`| 各レベルのノード数を vector で取得|
+|`sizeEachLevel(std::vector&lt;ullint&gt;& arr)`| 各レベルのノード数を vector で取得|
 |`usedVar()`| ZBDD が使用している変数の集合を取得|
 |`count()`| ZBDD が表現する集合族の要素数を取得（64ビットまで）|
 |`countMP()`| ZBDD が表現する集合族の要素数を取得（GMP版、任意桁数）|

@@ -1028,7 +1028,7 @@ void test_index_cpp()
     test_eq(index.sizeAtLevel(2), 2);
     test_eq(index.sizeAtLevel(3), 1);
 
-    std::vector<bddvar> vec;
+    std::vector<ullint> vec;
     index.sizeEachLevel(vec);
 
     test_eq(vec.size(), 4);
@@ -1099,7 +1099,7 @@ void test_index_cpp()
     test_eq(index8.sizeAtLevel(2), 0);
     test_eq(index8.sizeAtLevel(3), 1);
 
-    std::vector<bddvar> vec8;
+    std::vector<ullint> vec8;
     index8.sizeEachLevel(vec8);
     test_eq(vec8.size(), 4);
     test_eq(vec8[1], 1);
@@ -2242,7 +2242,7 @@ void test_ddindex_clear()
     test(dd_index.getZBDD() == ZBDD(0));
     test_eq(dd_index.count(), 0ull);
 
-    std::vector<bddvar> size_arr;
+    std::vector<ullint> size_arr;
     dd_index.sizeEachLevel(size_arr);
     test_eq(size_arr.size(), 0u);
 
@@ -2417,7 +2417,7 @@ void test_ddindex_bdd()
     test_eq(dd_index.size(2), 0ull);
     test_eq(dd_index.size(3), 1ull);
 
-    std::vector<bddvar> size_arr;
+    std::vector<ullint> size_arr;
     dd_index.sizeEachLevel(size_arr);
     test_eq(size_arr.size(), 4u);
     test_eq(size_arr[1], 1u);

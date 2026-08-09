@@ -54,6 +54,8 @@ SBDD_helper の機能は以下のマクロによって切り替わる。
     * writeBDDForGraphviz → exportBDDAsGraphviz
     * writeZBDDForGraphviz → exportZBDDAsGraphviz
 * 同様に名前空間の外に影響していた `unused` マクロを `sbddextended_unused` に改名。
+* bddNodeIndex_sizeEachLevel、DDNodeIndex::sizeEachLevel、DDIndex::sizeEachLevel が
+格納するノード数の型を bddvar（変数番号の型）から ullint に変更。1 つのレベルのノード数が bddvar で表せる最大値を超える場合に、正しい個数を格納できなかったため。
 
 #### 追加
 

@@ -259,7 +259,7 @@ Ver 1.1.0 から返り値の型を llint から ullint に変更。
 ## sizeEachLevel
 
 ```
-void sizeEachLevel(std::vector<bddvar>& arr) const
+void sizeEachLevel(std::vector<ullint>& arr) const
 ```
 
 インデックス元の BDD/ZBDD の各レベルのノード数を、引数で指定した arr に
@@ -267,6 +267,8 @@ void sizeEachLevel(std::vector<bddvar>& arr) const
 BDD/ZBDD の高さ（根ノードのレベル）+ 1 となる。
 否定枝表現を用いずにインデックスを構築した場合は、
 否定枝表現を用いない BDD/ZBDD のノード数を取得する。
+
+Ver 1.3.0 から arr の要素の型を bddvar から ullint に変更。
 
 ## usedVar
 

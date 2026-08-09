@@ -3565,14 +3565,17 @@ ullint bddNodeIndex_sizeAtLevel(const bddNodeIndex* node_index, int level)
     return (ullint)(node_index->offset_arr[level - 1] - node_index->offset_arr[level]);
 }
 
+/* arr must have at least node_index->height + 1 elements. The number of
+   nodes is stored as ullint because a single level can hold more nodes
+   than the variable number type can represent. */
 sbddextended_INLINE_FUNC
-void bddNodeIndex_sizeEachLevel(const bddNodeIndex* node_index, bddvar* arr)
+void bddNodeIndex_sizeEachLevel(const bddNodeIndex* node_index, ullint* arr)
 {
     int i;
     if (!(node_index->f == bddnull || bddisterminal(node_index->f))) {
         for (i = 1; i <= node_index->height; ++i) {
             assert(node_index->offset_arr[i - 1] >= node_index->offset_arr[i]);
-            arr[i] = (bddvar)(node_index->offset_arr[i - 1] - node_index->offset_arr[i]);
+            arr[i] = (ullint)(node_index->offset_arr[i - 1] - node_index->offset_arr[i]);
         }
     }
 }
@@ -3750,12 +3753,13 @@ public:
         return bddNodeIndex_sizeAtLevel(node_index_, level);
     }
 
-    void sizeEachLevel(std::vector<bddvar>& arr)
+    void sizeEachLevel(std::vector<ullint>& arr)
     {
         if (!(node_index_->f == bddnull || node_index_->f == bddfalse || node_index_->f == bddtrue)) {
-            arr.resize(node_index_->height + 1);
+            arr.resize(static_cast<size_t>(node_index_->height) + 1);
             for (int i = 1; i <= node_index_->height; ++i) {
-                arr[i] = (bddvar)(node_index_->offset_arr[i - 1] - node_index_->offset_arr[i]);
+                arr[static_cast<size_t>(i)] = (ullint)(node_index_->offset_arr[i - 1]
+                                                        - node_index_->offset_arr[i]);
             }
         }
     }
@@ -4541,15 +4545,16 @@ public:
         return bddNodeIndex_sizeAtLevel(node_index_, level);
     }
 
-    void sizeEachLevel(std::vector<bddvar>& arr) const
+    void sizeEachLevel(std::vector<ullint>& arr) const
     {
         if (node_index_ == NULL) {
             return;
         }
         if (!(node_index_->f == bddnull || node_index_->f == bddfalse || node_index_->f == bddtrue)) {
-            arr.resize(node_index_->height + 1);
+            arr.resize(static_cast<size_t>(node_index_->height) + 1);
             for (int i = 1; i <= node_index_->height; ++i) {
-                arr[i] = (bddvar)(node_index_->offset_arr[i - 1] - node_index_->offset_arr[i]);
+                arr[static_cast<size_t>(i)] = (ullint)(node_index_->offset_arr[i - 1]
+                                                        - node_index_->offset_arr[i]);
             }
         }
     }
@@ -4560,7 +4565,7 @@ public:
         if (node_index_ == NULL) {
             return result;
         }
-        std::vector<bddvar> size_arr;
+        std::vector<ullint> size_arr;
         sizeEachLevel(size_arr);
         for (int lev = 1; lev <= node_index_->height; ++lev) {
             if (size_arr[lev] > 0) {
