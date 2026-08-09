@@ -238,7 +238,7 @@ ZBDD に関する関数
 |`getPowerSet(T& variables)`|variables のべき集合を表す ZBDD を構築|
 |`getPowerSet(int n)`| n 変数のべき集合を表す ZBDD を構築|
 |`getPowerSetIncluding(略)`|指定したべき集合の中から、指定した要素をすべて含む集合を表す ZBDD を構築|
-|`getPowerSetNotIncluding(略)`|指定したべき集合の中から、指定した要素をすべて含む集合を表す ZBDD を構築|
+|`getPowerSetNotIncluding(略)`|指定したべき集合の中から、指定した要素をいずれも含まない集合を表す ZBDD を構築|
 |`getPowerSetWithCard(略)`|指定したべき集合の中から、指定した大きさの集合すべてを表す ZBDD を構築|
 |`makeDontCare(ZBDD& f, T& variables)`|f の各要素について、variables の各要素を含む集合と含まない集合の両方からなる ZBDD を構築|
 |`getUniformlyRandomZBDD(int level, T& random_engine)`|level 個の変数をもつランダムな ZBDD を構築|
