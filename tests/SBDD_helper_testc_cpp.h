@@ -1033,6 +1033,41 @@ void test_graphviz_terminal(bddp f, int t0_count, int t1_count)
     }
 }
 
+/* raw モードで構築したインデックスを渡すと、エラーメッセージを表示して
+   何も出力しないことを確認する */
+void test_graphviz_raw_index(void)
+{
+    FILE* fp;
+    bddp f;
+    bddNodeIndex* node_index;
+
+    fprintf(stderr, "(the following \"raw mode\" message is expected)\n");
+
+    f = make_test_zbdd();
+    node_index = bddNodeIndex_makeRawIndexZ(f);
+
+    fp = fopen(g_filename1, "wb+");
+    if (fp == NULL) {
+        fprintf(stderr, "file cannot be opened\n");
+        exit(1);
+    }
+    bddexportzbddasgraphviz(fp, f, node_index);
+    test_eq(count_lines_containing(fp, "digraph {"), 0);
+    test_eq(count_lines_containing(fp, "shape = circle"), 0);
+    fclose(fp);
+
+    bddNodeIndex_destruct(node_index);
+    free(node_index);
+    bddfree(f);
+
+    if (remove(g_filename1) != 0) {
+        fprintf(stderr, "remove failed\n");
+        exit(1);
+    }
+
+    fprintf(stderr, "(end of the expected message)\n");
+}
+
 void test_graphviz(void)
 {
     bddp f, g;
@@ -1040,6 +1075,7 @@ void test_graphviz(void)
 
     test_graphviz_terminal(bddempty, 1, 0);
     test_graphviz_terminal(bddsingle, 0, 1);
+    test_graphviz_raw_index();
 
     f = make_test_zbdd();
     test_graphviz_dd(f, 1);

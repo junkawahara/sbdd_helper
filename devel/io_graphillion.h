@@ -281,7 +281,8 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
 
     if (node_index != NULL) {
         if (node_index->is_raw != 0) {
-            fprintf(stderr, "The node index must be constructed in the raw mode ");
+            fprintf(stderr, "The node index must not be constructed "
+                    "in the raw mode.\n");
             return;
         }
     }

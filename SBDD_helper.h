@@ -6990,7 +6990,8 @@ void bddexportbddasgraphillion_inner(FILE* fp, bddp f,
 
     if (node_index != NULL) {
         if (node_index->is_raw != 0) {
-            fprintf(stderr, "The node index must be constructed in the raw mode ");
+            fprintf(stderr, "The node index must not be constructed "
+                    "in the raw mode.\n");
             return;
         }
     }
@@ -7492,7 +7493,8 @@ void bddexportbddasknuth_inner(FILE* fp, bddp f, int is_hex,
 
     if (node_index != NULL) {
         if (node_index->is_raw != 0) {
-            fprintf(stderr, "The node index must be constructed in the raw mode ");
+            fprintf(stderr, "The node index must not be constructed "
+                    "in the raw mode.\n");
             return;
         }
     }
@@ -7686,6 +7688,16 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
             is_zbdd = 1;
         } else {
             is_zbdd = 0;
+        }
+    }
+
+    /* The node dictionary of a raw index holds the nodes with their */
+    /* negative arcs, while the children are taken below without them. */
+    if (node_index != NULL) {
+        if (node_index->is_raw != 0) {
+            fprintf(stderr, "The node index must not be constructed "
+                    "in the raw mode.\n");
+            return;
         }
     }
 

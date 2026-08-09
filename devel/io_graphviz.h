@@ -26,6 +26,16 @@ void bddexportbddasgraphviz_inner(FILE* fp, bddp f,
         }
     }
 
+    /* The node dictionary of a raw index holds the nodes with their */
+    /* negative arcs, while the children are taken below without them. */
+    if (node_index != NULL) {
+        if (node_index->is_raw != 0) {
+            fprintf(stderr, "The node index must not be constructed "
+                    "in the raw mode.\n");
+            return;
+        }
+    }
+
     if (node_index == NULL && !(f == bddempty || f == bddsingle)) {
         is_making_index = 1;
         if (is_zbdd != 0) {
