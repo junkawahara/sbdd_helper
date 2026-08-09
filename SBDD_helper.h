@@ -3777,11 +3777,13 @@ public:
         using iterator_category = std::input_iterator_tag;
         using value_type = bddp;
         using difference_type = std::ptrdiff_t;
-        using pointer = bddp*;
-        using reference = bddp&;
+        /* operator* returns a value, not a reference to an element. */
+        using pointer = const bddp*;
+        using reference = bddp;
     private:
 #else
-    class DDNodeIterator : public std::iterator<std::input_iterator_tag, bddp>
+    class DDNodeIterator : public std::iterator<std::input_iterator_tag, bddp,
+                                                std::ptrdiff_t, const bddp*, bddp>
     {
     private:
 #endif
@@ -3820,6 +3822,13 @@ public:
                 }
             }
             return *this;
+        }
+
+        DDNodeIterator operator++(int)
+        {
+            DDNodeIterator it(*this);
+            operator++();
+            return it;
         }
 
         bool operator==(const DDNodeIterator& it) const
@@ -4959,11 +4968,13 @@ public:
         using iterator_category = std::input_iterator_tag;
         using value_type = bddp;
         using difference_type = std::ptrdiff_t;
-        using pointer = bddp*;
-        using reference = bddp&;
+        /* operator* returns a value, not a reference to an element. */
+        using pointer = const bddp*;
+        using reference = bddp;
     private:
 #else
-    class DDNodeIterator : public std::iterator<std::input_iterator_tag, bddp>
+    class DDNodeIterator : public std::iterator<std::input_iterator_tag, bddp,
+                                                std::ptrdiff_t, const bddp*, bddp>
     {
     private:
 #endif
@@ -5004,6 +5015,13 @@ public:
             return *this;
         }
 
+        DDNodeIterator operator++(int)
+        {
+            DDNodeIterator it(*this);
+            operator++();
+            return it;
+        }
+
         bool operator==(const DDNodeIterator& it) const
         {
             if (level_ <= 0) {
@@ -5025,11 +5043,14 @@ public:
         using iterator_category = std::input_iterator_tag;
         using value_type = std::set<bddvar>;
         using difference_type = std::ptrdiff_t;
-        using pointer = std::set<bddvar>*;
-        using reference = std::set<bddvar>&;
+        /* operator* returns a value, not a reference to an element. */
+        using pointer = const std::set<bddvar>*;
+        using reference = std::set<bddvar>;
     private:
 #else
-    class WeightIterator : public std::iterator<std::input_iterator_tag, std::set<bddvar> >
+    class WeightIterator : public std::iterator<std::input_iterator_tag, std::set<bddvar>,
+                                    std::ptrdiff_t, const std::set<bddvar>*,
+                                    std::set<bddvar> >
     {
     private:
 #endif
@@ -5072,6 +5093,13 @@ public:
             return *this;
         }
 
+        WeightIterator operator++(int)
+        {
+            WeightIterator it(*this);
+            operator++();
+            return it;
+        }
+
         bool operator==(const WeightIterator& it) const
         {
             return f_ == it.f_;
@@ -5089,11 +5117,14 @@ public:
         using iterator_category = std::input_iterator_tag;
         using value_type = std::set<bddvar>;
         using difference_type = std::ptrdiff_t;
-        using pointer = std::set<bddvar>*;
-        using reference = std::set<bddvar>&;
+        /* operator* returns a value, not a reference to an element. */
+        using pointer = const std::set<bddvar>*;
+        using reference = std::set<bddvar>;
     private:
 #else
-    class RandomIterator : public std::iterator<std::input_iterator_tag, std::set<bddvar> >
+    class RandomIterator : public std::iterator<std::input_iterator_tag, std::set<bddvar>,
+                                    std::ptrdiff_t, const std::set<bddvar>*,
+                                    std::set<bddvar> >
     {
     private:
 #endif
@@ -5130,6 +5161,13 @@ public:
             return *this;
         }
 
+        RandomIterator operator++(int)
+        {
+            RandomIterator it(*this);
+            operator++();
+            return it;
+        }
+
         bool operator==(const RandomIterator& it) const
         {
             return f_ == it.f_;
@@ -5147,11 +5185,14 @@ public:
         using iterator_category = std::input_iterator_tag;
         using value_type = std::set<bddvar>;
         using difference_type = std::ptrdiff_t;
-        using pointer = std::set<bddvar>*;
-        using reference = std::set<bddvar>&;
+        /* operator* returns a value, not a reference to an element. */
+        using pointer = const std::set<bddvar>*;
+        using reference = std::set<bddvar>;
     private:
 #else
-    class DictIterator : public std::iterator<std::input_iterator_tag, std::set<bddvar> >
+    class DictIterator : public std::iterator<std::input_iterator_tag, std::set<bddvar>,
+                                    std::ptrdiff_t, const std::set<bddvar>*,
+                                    std::set<bddvar> >
     {
     private:
 #endif
@@ -5189,6 +5230,13 @@ public:
                 ++current_;
             }
             return *this;
+        }
+
+        DictIterator operator++(int)
+        {
+            DictIterator it(*this);
+            operator++();
+            return it;
         }
 
         bool operator==(const DictIterator& it) const
