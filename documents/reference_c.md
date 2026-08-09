@@ -491,7 +491,7 @@ bddnull を返す。
 ```
 
 ```
-FILE* fp = fopen("input.txt");
+FILE* fp = fopen("input.txt", "r");
 bddp f = bddconstructzbddfromelements(fp);
 fclose(fp);
 ```
