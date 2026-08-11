@@ -273,6 +273,55 @@ void test_MyVector(void)
 
     sbddextended_MyVector_deinitialize(&v1);
     sbddextended_MyVector_deinitialize(&v);
+
+    /* state after deinitialization */
+    test_eq(v.count, 0);
+    test_eq(v1.count, 0);
+#ifdef __cplusplus
+    test(v.vec == NULL);
+#else
+    test(v.buf == NULL);
+    test_eq(v.capacity, 0);
+#endif
+
+    /* deinitializing twice is safe */
+    sbddextended_MyVector_deinitialize(&v);
+    test_eq(v.count, 0);
+
+    /* a deinitialized vector can be reused after re-initialization */
+    sbddextended_MyVector_initialize(&v);
+    sbddextended_MyVector_initialize(&v1);
+    for (i = 0; i < 5; ++i) {
+        sbddextended_MyVector_add(&v, (llint)i + 10);
+    }
+
+    /* self-copy preserves the elements */
+    sbddextended_MyVector_copy(&v, &v);
+    test_eq(v.count, 5);
+    for (i = 0; i < 5; ++i) {
+        test_eq(sbddextended_MyVector_get(&v, (llint)i), (llint)i + 10);
+    }
+
+    /* copy of a vector that has become small after many pop_backs */
+    for (i = 0; i < N; ++i) {
+        sbddextended_MyVector_add(&v1, (llint)i * 5);
+    }
+    while (v1.count > 3) {
+        sbddextended_MyVector_pop_back(&v1);
+    }
+    sbddextended_MyVector_copy(&v, &v1);
+    test_eq(v.count, 3);
+    for (i = 0; i < 3; ++i) {
+        test_eq(sbddextended_MyVector_get(&v, (llint)i), (llint)i * 5);
+    }
+#ifndef __cplusplus
+    /* the copy allocates memory for the logical size, not for the */
+    /* reserved capacity of the source */
+    test_eq(v.capacity, sbddextended_MyVector_INITIAL_BUFSIZE);
+#endif
+
+    sbddextended_MyVector_deinitialize(&v);
+    sbddextended_MyVector_deinitialize(&v1);
 }
 
 #ifndef __cplusplus
