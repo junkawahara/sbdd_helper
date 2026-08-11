@@ -421,6 +421,11 @@ int sbddextended_sprintf(char *str, const char *format, ...)
 
 #define sbddextended_MyVector_INITIAL_BUFSIZE 1024
 
+/* Internal type. It is not part of the public API.                    */
+/* Raw struct assignment (e.g. "u = v;") must not be used because it   */
+/* copies only the owning pointer ("vec" or "buf"), which leads to     */
+/* use-after-free and double free. Use sbddextended_MyVector_copy      */
+/* instead.                                                            */
 typedef struct tagsbddextended_MyVector {
 #ifdef __cplusplus
     std::vector<llint>* vec;
@@ -450,17 +455,22 @@ void sbddextended_MyVector_initialize(sbddextended_MyVector* v)
 #endif
 }
 
+/* After this function returns, the only functions that may be called  */
+/* on "v" are sbddextended_MyVector_initialize (to reuse "v") and      */
+/* sbddextended_MyVector_deinitialize (that is, deinitializing twice   */
+/* is safe).                                                           */
 sbddextended_INLINE_FUNC
 void sbddextended_MyVector_deinitialize(sbddextended_MyVector* v)
 {
 #ifdef __cplusplus
-    v->vec->clear();
     delete v->vec;
+    v->vec = NULL;
     v->count = 0;
 #else
-    v->capacity = 0;
     free(v->buf);
     v->buf = NULL;
+    v->count = 0;
+    v->capacity = 0;
 #endif
 }
 
@@ -498,6 +508,12 @@ void sbddextended_MyVector_add(sbddextended_MyVector* v, llint value)
     assert(v->vec->size() == static_cast<size_t>(v->count));
 #else
     if (v->count >= v->capacity) {
+        /* guard against the overflow of both "capacity * 2" and */
+        /* "capacity * 2 * sizeof(llint)" */
+        if (v->capacity > (size_t)-1 / 2 / sizeof(llint)) {
+            fprintf(stderr, "out of memory\n");
+            exit(1);
+        }
         v->capacity *= 2;
         assert(v->count < v->capacity);
         v->buf = (llint*)realloc(v->buf, v->capacity * sizeof(llint));
@@ -517,22 +533,34 @@ sbddextended_INLINE_FUNC
 void sbddextended_MyVector_copy(sbddextended_MyVector* dest,
                                 const sbddextended_MyVector* src)
 {
+#ifndef __cplusplus
+    llint* buf;
+    size_t capacity;
+#endif
+
+    if (dest == src) {
+        return;
+    }
 #ifdef __cplusplus
     *dest->vec = *src->vec;
     dest->count = src->count;
 #else
-    llint* buf;
-
-    buf = (llint*)malloc(src->capacity * sizeof(llint));
+    capacity = sbddextended_MyVector_INITIAL_BUFSIZE;
+    if (capacity < src->count) {
+        capacity = src->count;
+    }
+    /* "capacity * sizeof(llint)" cannot overflow because "src->buf" */
+    /* already holds "src->count" elements */
+    buf = (llint*)malloc(capacity * sizeof(llint));
     if (buf == NULL) {
         fprintf(stderr, "out of memory\n");
         exit(1);
     }
+    memcpy(buf, src->buf, src->count * sizeof(llint));
     free(dest->buf);
     dest->buf = buf;
     dest->count = src->count;
-    dest->capacity = src->capacity;
-    memcpy(dest->buf, src->buf, dest->count * sizeof(llint));
+    dest->capacity = capacity;
 #endif
 }
 
