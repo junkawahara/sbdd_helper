@@ -78,6 +78,7 @@ ullint sizeAtLevel(int level)
 
 ```
 void sizeEachLevel(std::vector<ullint>& arr)
+void sizeEachLevel(std::vector<bddvar>& arr)
 ```
 
 インデックス元の BDD/ZDD の各レベルのノード数を、引数で指定した arr に
@@ -85,6 +86,9 @@ void sizeEachLevel(std::vector<ullint>& arr)
 BDD/ZDD の高さ（根ノードのレベル）+ 1 となる。
 
 Ver 1.3.0 から arr の要素の型を bddvar から ullint に変更。
+std::vector<bddvar> を渡す既存のコードのために、bddvar 版も互換性のために残してある。
+ただし、bddvar 版では 1 つのレベルのノード数が bddvar で表せる最大値を超える場合に
+値が切り捨てられるため、新しいコードでは ullint 版を使用すること。
 
 ## count
 

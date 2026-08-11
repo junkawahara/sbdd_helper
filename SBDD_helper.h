@@ -3775,6 +3775,21 @@ public:
         }
     }
 
+    /* for compatibility. The number of nodes of a level is truncated if it
+       exceeds the range of bddvar. Use the std::vector<ullint> version. */
+    void sizeEachLevel(std::vector<bddvar>& arr)
+    {
+        std::vector<ullint> arr_ull;
+        sizeEachLevel(arr_ull);
+        if (arr_ull.empty()) {
+            return;
+        }
+        arr.resize(arr_ull.size());
+        for (size_t i = 0; i < arr_ull.size(); ++i) {
+            arr[i] = static_cast<bddvar>(arr_ull[i]);
+        }
+    }
+
     ullint count()
     {
         return bddNodeIndex_count(node_index_);
@@ -4567,6 +4582,21 @@ public:
                 arr[static_cast<size_t>(i)] = (ullint)(node_index_->offset_arr[i - 1]
                                                         - node_index_->offset_arr[i]);
             }
+        }
+    }
+
+    /* for compatibility. The number of nodes of a level is truncated if it
+       exceeds the range of bddvar. Use the std::vector<ullint> version. */
+    void sizeEachLevel(std::vector<bddvar>& arr) const
+    {
+        std::vector<ullint> arr_ull;
+        sizeEachLevel(arr_ull);
+        if (arr_ull.empty()) {
+            return;
+        }
+        arr.resize(arr_ull.size());
+        for (size_t i = 0; i < arr_ull.size(); ++i) {
+            arr[i] = static_cast<bddvar>(arr_ull[i]);
         }
     }
 

@@ -1088,6 +1088,15 @@ void test_index_cpp()
     test_eq(vec[2], 2);
     test_eq(vec[3], 1);
 
+    /* 互換性のために残している bddvar 版 */
+    std::vector<bddvar> vec_var;
+    index.sizeEachLevel(vec_var);
+
+    test_eq(vec_var.size(), 4);
+    test_eq(vec_var[1], 1);
+    test_eq(vec_var[2], 2);
+    test_eq(vec_var[3], 1);
+
     DDNodeIndex::DDNodeIterator itor = index.begin();
     int count = 0;
     while (itor != index.end()) {
@@ -2308,6 +2317,11 @@ void test_ddindex_clear()
     dd_index.sizeEachLevel(size_arr);
     test_eq(size_arr.size(), 0u);
 
+    /* 互換性のために残している bddvar 版 */
+    std::vector<bddvar> size_arr_var;
+    dd_index.sizeEachLevel(size_arr_var);
+    test_eq(size_arr_var.size(), 0u);
+
     test_eq(dd_index.usedVar().size(), 0u);
 
     std::vector<llint> weights;
@@ -2485,6 +2499,14 @@ void test_ddindex_bdd()
     test_eq(size_arr[1], 1u);
     test_eq(size_arr[2], 0u);
     test_eq(size_arr[3], 1u);
+
+    /* 互換性のために残している bddvar 版 */
+    std::vector<bddvar> size_arr_var;
+    dd_index.sizeEachLevel(size_arr_var);
+    test_eq(size_arr_var.size(), 4u);
+    test_eq(size_arr_var[1], 1u);
+    test_eq(size_arr_var[2], 0u);
+    test_eq(size_arr_var[3], 1u);
 
     std::set<bddvar> used = dd_index.usedVar();
     test_eq(used.size(), 2u);
