@@ -437,6 +437,14 @@ void test_MyDict(void)
         test_eq(value, 16 * N + i);
     }
 
+    /* self-copy preserves the entries */
+    sbddextended_MyDict_copy(&d, &d);
+    test_eq(d.count, N * 2);
+    for (i = 0; i < N; ++i) {
+        test_eq(sbddextended_MyDict_find(&d, i * 2, &value), 1);
+        test_eq(value, 16 * N + i);
+    }
+
     sbddextended_MyDict_deinitialize(&d1);
     sbddextended_MyDict_deinitialize(&d);
 }
@@ -491,6 +499,47 @@ void test_MySet(void)
 
     sbddextended_MySet_deinitialize(&s1);
     sbddextended_MySet_deinitialize(&s);
+
+    /* state after deinitialization */
+#ifdef __cplusplus
+    test(s.se == NULL);
+    test(s1.se == NULL);
+#else
+    test(s.dict.root == NULL);
+    test_eq(s.dict.count, 0);
+#endif
+
+    /* deinitializing twice is safe */
+    sbddextended_MySet_deinitialize(&s);
+
+    /* a deinitialized set can be reused after re-initialization */
+    sbddextended_MySet_initialize(&s);
+    sbddextended_MySet_initialize(&s1);
+    for (i = 0; i < 5; ++i) {
+        sbddextended_MySet_add(&s, i + 10);
+    }
+
+    /* self-copy preserves the elements */
+    sbddextended_MySet_copy(&s, &s);
+    test_eq(sbddextended_MySet_count(&s), 5);
+    for (i = 0; i < 5; ++i) {
+        test_eq(sbddextended_MySet_exists(&s, i + 10), 1);
+    }
+
+    /* copy and deinitialization of a set that is large enough to make
+       the tree deeper than in the tests above */
+    for (i = 0; i < (1 << 17); ++i) {
+        sbddextended_MySet_add(&s1, i * 3);
+    }
+    sbddextended_MySet_copy(&s, &s1);
+    test_eq(sbddextended_MySet_count(&s), (1 << 17));
+    for (i = 0; i < (1 << 17); i += 1000) {
+        test_eq(sbddextended_MySet_exists(&s, i * 3), 1);
+        test_eq(sbddextended_MySet_exists(&s, i * 3 + 1), 0);
+    }
+
+    sbddextended_MySet_deinitialize(&s);
+    sbddextended_MySet_deinitialize(&s1);
 }
 
 /* make zbdd representing {{2}} from file */
