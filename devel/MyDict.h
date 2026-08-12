@@ -138,17 +138,19 @@ sbddextended_INLINE_FUNC
 void sbddextended_MyDict_deinitialize(sbddextended_MyDict* d)
 {
 #ifdef __cplusplus
-    d->dict->clear();
     delete d->dict;
+    d->dict = NULL;
     d->count = 0;
 #else
-    sbddextended_MyDictNode** node_stack;
-    char* op_stack;
+    /* The traversal stack depth is bounded by the tree height, which */
+    /* is less than sbddextended_MYDICT_MAXHEIGHT (see the comment on  */
+    /* that macro). */
+    sbddextended_MyDictNode* node_stack[sbddextended_MYDICT_MAXHEIGHT];
+    char op_stack[sbddextended_MYDICT_MAXHEIGHT];
     char op;
     int sp;
     sbddextended_MyDictNode* node;
     sbddextended_MyDictNode* child;
-    size_t stack_size;
     size_t debug_count;
 
     if (d->root == NULL) {
@@ -157,20 +159,6 @@ void sbddextended_MyDict_deinitialize(sbddextended_MyDict* d)
     }
 
     assert((debug_count = 0) || 1);
-
-    stack_size = d->count + 1;
-
-    node_stack = (sbddextended_MyDictNode**)malloc(stack_size * sizeof(sbddextended_MyDictNode*));
-    if (node_stack == NULL) {
-        fprintf(stderr, "out of memory\n");
-        exit(1);
-    }
-    op_stack = (char*)malloc(stack_size * sizeof(char));
-    if (op_stack == NULL) {
-        fprintf(stderr, "out of memory\n");
-        free(node_stack);
-        exit(1);
-    }
 
     sp = 0;
     node_stack[sp] = d->root;
@@ -200,6 +188,7 @@ void sbddextended_MyDict_deinitialize(sbddextended_MyDict* d)
         }
         if (op <= 1) {
             ++sp;
+            assert(sp < sbddextended_MYDICT_MAXHEIGHT);
             node_stack[sp] = child;
             op_stack[sp] = 0;
         } else {
@@ -212,8 +201,6 @@ void sbddextended_MyDict_deinitialize(sbddextended_MyDict* d)
             ++op_stack[sp];
         }
     }
-    free(op_stack);
-    free(node_stack);
     assert(debug_count == d->count);
     d->count = 0;
     d->root = NULL;
@@ -314,21 +301,28 @@ sbddextended_INLINE_FUNC
 void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
                                 const sbddextended_MyDict* src)
 {
-#ifdef __cplusplus
-    *dest->dict = *src->dict;
-    dest->count = src->count;
-#else
-    sbddextended_MyDictNode** node_stack;
-    sbddextended_MyDictNode** dest_node_stack;
-    char* op_stack;
+#ifndef __cplusplus
+    /* The traversal stack depth is bounded by the tree height, which */
+    /* is less than sbddextended_MYDICT_MAXHEIGHT (see the comment on  */
+    /* that macro). */
+    sbddextended_MyDictNode* node_stack[sbddextended_MYDICT_MAXHEIGHT];
+    sbddextended_MyDictNode* dest_node_stack[sbddextended_MYDICT_MAXHEIGHT];
+    char op_stack[sbddextended_MYDICT_MAXHEIGHT];
     char op;
     int sp;
     sbddextended_MyDictNode* node;
     sbddextended_MyDictNode* child;
     sbddextended_MyDictNode* dest_node;
-    size_t stack_size;
     size_t debug_count;
+#endif
 
+    if (dest == src) {
+        return;
+    }
+#ifdef __cplusplus
+    *dest->dict = *src->dict;
+    dest->count = src->count;
+#else
     /* discard the current content of dest */
     sbddextended_MyDict_deinitialize(dest);
 
@@ -341,27 +335,6 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
 
     assert((debug_count = 0) || 1);
 
-    stack_size = src->count + 1;
-
-    node_stack = (sbddextended_MyDictNode**)malloc(stack_size * sizeof(sbddextended_MyDictNode*));
-    if (node_stack == NULL) {
-        fprintf(stderr, "out of memory\n");
-        exit(1);
-    }
-    dest_node_stack = (sbddextended_MyDictNode**)malloc(stack_size * sizeof(sbddextended_MyDictNode*));
-    if (dest_node_stack == NULL) {
-        fprintf(stderr, "out of memory\n");
-        free(node_stack);
-        exit(1);
-    }
-    op_stack = (char*)malloc(stack_size * sizeof(char));
-    if (op_stack == NULL) {
-        fprintf(stderr, "out of memory\n");
-        free(dest_node_stack);
-        free(node_stack);
-        exit(1);
-    }
-
     dest->root = sbddextended_MyDictNode_makeNewNode(src->root->key,
                                                         src->root->value);
     dest->root->key = src->root->key;
@@ -373,7 +346,7 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
     dest_node_stack[sp] = dest->root;
     op_stack[sp] = 0;
 
-    /* free each node (not using a recursive function) */
+    /* copy each node (not using a recursive function) */
     while (sp >= 0) {
         node = node_stack[sp];
         dest_node = dest_node_stack[sp];
@@ -398,6 +371,7 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
         }
         if (op <= 1) {
             ++sp;
+            assert(sp < sbddextended_MYDICT_MAXHEIGHT);
             node_stack[sp] = child;
             dest_node_stack[sp] =
                 sbddextended_MyDictNode_makeNewNode(child->key, child->value);
@@ -420,8 +394,5 @@ void sbddextended_MyDict_copy(sbddextended_MyDict* dest,
     }
     assert(debug_count == src->count);
     dest->count = src->count;
-    free(op_stack);
-    free(dest_node_stack);
-    free(node_stack);
 #endif
 }
